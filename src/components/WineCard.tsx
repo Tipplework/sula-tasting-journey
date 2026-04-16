@@ -49,49 +49,51 @@ export function WineCard({
       className="flex flex-col min-h-0"
     >
       {/* Hero Image */}
-      <div className="relative w-full aspect-[4/3] overflow-hidden rounded-t-2xl">
+      <div className="relative w-full aspect-[4/3] overflow-hidden rounded-t-2xl bg-secondary">
         <img
           src={wine.image}
           alt={wine.name}
           className="w-full h-full object-cover"
+          loading={currentIndex === 0 ? undefined : "lazy"}
         />
-        <div className="absolute bottom-0 inset-x-0 h-24 bg-gradient-to-t from-background/90 to-transparent" />
+        <div className="absolute bottom-0 inset-x-0 h-28 bg-gradient-to-t from-background/95 via-background/40 to-transparent" />
         <div className="absolute top-4 left-4">
           <span className="wine-badge">{wine.journeyTag}</span>
         </div>
       </div>
 
       {/* Content */}
-      <div className="px-5 pt-4 pb-6 space-y-5">
+      <div className="px-5 pt-5 pb-6 space-y-6">
         {/* Name & Personality */}
-        <div>
-          <h2 className="text-2xl font-heading font-bold leading-tight">
+        <div className="space-y-2">
+          <h2 className="text-2xl font-heading font-bold leading-tight tracking-tight">
             {wine.name}
           </h2>
-          <p className="text-sm text-muted-foreground mt-1">
+          <span className="wine-badge">{wine.personalityLabel}</span>
+          <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
             {wine.personality}
           </p>
         </div>
 
-        {/* USP */}
-        <div className="wine-card p-3.5 border border-wine-gold-light">
-          <p className="text-xs font-medium text-wine-gold flex items-center gap-1.5">
-            <WineIcon size={14} />
-            {wine.usp}
+        {/* USP — Premium Tag */}
+        <div className="wine-card p-4 border border-wine-gold-light/60">
+          <p className="text-xs font-medium text-foreground/80 flex items-start gap-2 leading-relaxed">
+            <WineIcon size={14} className="text-wine-gold flex-shrink-0 mt-0.5" />
+            <span>{wine.usp}</span>
           </p>
         </div>
 
         {/* Tasting Notes */}
-        <div>
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
+        <div className="space-y-2">
+          <h3 className="text-[0.65rem] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
             Tasting Notes
           </h3>
-          <p className="text-sm leading-relaxed">{wine.tastingNotes}</p>
+          <p className="text-sm leading-[1.7] whitespace-pre-line">{wine.tastingNotes}</p>
         </div>
 
         {/* Food Pairing */}
-        <div>
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+        <div className="space-y-2.5">
+          <h3 className="text-[0.65rem] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
             Pairs beautifully with
           </h3>
           <div className="flex flex-wrap gap-2">
@@ -108,41 +110,42 @@ export function WineCard({
           href={wine.vivino}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors duration-200"
         >
           View on Vivino
-          <ExternalLink size={14} />
+          <ExternalLink size={13} />
         </a>
 
         {/* Divider */}
-        <div className="border-t border-border" />
+        <div className="border-t border-border/60" />
 
         {/* Quiz */}
-        <div>
-          <p className="font-heading text-lg font-semibold mb-3">
+        <div className="space-y-3">
+          <p className="font-heading text-lg font-semibold">
             {wine.question}
           </p>
           <div className="flex flex-wrap gap-2">
             {wine.options.map((option) => (
-              <button
+              <motion.button
                 key={option}
                 type="button"
+                whileTap={{ scale: 0.95 }}
                 onClick={() => toggleOption(option)}
-                className={`wine-tag transition-all ${
+                className={`wine-tag transition-all duration-200 ${
                   selectedOptions.includes(option)
-                    ? "!bg-wine-gold-light border border-wine-gold"
-                    : "hover:bg-muted"
+                    ? "!bg-wine-gold-light border border-wine-gold shadow-sm"
+                    : "hover:bg-muted active:bg-muted"
                 }`}
               >
                 {option}
-              </button>
+              </motion.button>
             ))}
           </div>
         </div>
 
         {/* Star Rating */}
-        <div>
-          <p className="text-sm text-muted-foreground mb-2">
+        <div className="space-y-2">
+          <p className="text-sm text-muted-foreground">
             Rate this wine
           </p>
           <StarRating
@@ -152,40 +155,45 @@ export function WineCard({
         </div>
 
         {/* Divider */}
-        <div className="border-t border-border" />
+        <div className="border-t border-border/60" />
 
-        {/* Upsell */}
-        <div className="wine-card p-5 text-center space-y-3">
-          <p className="font-heading text-lg">Enjoying this?</p>
+        {/* Upsell — Soft card */}
+        <div className="wine-card p-5 text-center space-y-3.5 border border-border/40">
+          <p className="font-heading text-lg font-medium">Enjoying this?</p>
           <div className="flex gap-2.5 justify-center">
-            <button
+            <motion.button
               type="button"
+              whileTap={{ scale: 0.96 }}
               onClick={() => setUpsellClick(wine.id, "glass")}
-              className={`btn-secondary text-sm ${
+              className={`btn-secondary text-sm transition-all duration-200 ${
                 response?.upsellClicked === "glass"
                   ? "!bg-wine-gold-light !border-wine-gold"
                   : ""
               }`}
             >
               Order a glass
-            </button>
-            <button
+            </motion.button>
+            <motion.button
               type="button"
+              whileTap={{ scale: 0.96 }}
               onClick={() => setUpsellClick(wine.id, "bottle")}
-              className={`btn-gold text-sm ${
+              className={`btn-gold text-sm transition-all duration-200 ${
                 response?.upsellClicked === "bottle"
-                  ? "ring-2 ring-wine-gold ring-offset-2"
+                  ? "ring-2 ring-wine-gold/50 ring-offset-2 ring-offset-background"
                   : ""
               }`}
             >
               Order a bottle
-            </button>
+            </motion.button>
           </div>
+          <p className="text-[0.65rem] text-muted-foreground/50">
+            Take it further
+          </p>
         </div>
       </div>
 
       {/* Sticky Nav */}
-      <div className="sticky bottom-0 bg-background/95 backdrop-blur-sm border-t border-border px-5 py-3 flex items-center justify-between">
+      <div className="sticky bottom-0 bg-background/95 backdrop-blur-sm border-t border-border/60 px-5 py-3.5 flex items-center justify-between">
         <button
           type="button"
           onClick={onPrev}
@@ -194,8 +202,8 @@ export function WineCard({
         >
           ← Previous
         </button>
-        <span className="text-xs text-muted-foreground font-medium">
-          Wine {currentIndex + 1} of {total}
+        <span className="text-xs text-muted-foreground font-medium tracking-wide">
+          {currentIndex + 1} of {total}
         </span>
         <button
           type="button"
