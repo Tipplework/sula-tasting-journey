@@ -1,18 +1,8 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { wines, journeyLabels } from "@/data/wines";
 
-export const Route = createFileRoute("/flight")({
-  component: FlightOverview,
-  head: () => ({
-    meta: [
-      { title: "Your Wine Flight — Sula TR" },
-      { name: "description", content: "5 curated wines from Fresh to Indulgent." },
-    ],
-  }),
-});
-
-function FlightOverview() {
+export default function FlightOverview() {
   const navigate = useNavigate();
 
   return (
@@ -86,7 +76,7 @@ function FlightOverview() {
         >
           <button
             type="button"
-            onClick={() => navigate({ to: "/tasting" })}
+            onClick={() => navigate("/tasting")}
             className="btn-primary w-full"
           >
             Begin Tasting

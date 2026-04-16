@@ -1,22 +1,12 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import { wines } from "@/data/wines";
 import { WineCard } from "@/components/WineCard";
 import { ProgressBar } from "@/components/ProgressBar";
 import { VibeCheckModal } from "@/components/VibeCheckModal";
 
-export const Route = createFileRoute("/tasting")({
-  component: TastingPage,
-  head: () => ({
-    meta: [
-      { title: "Tasting — Sula TR" },
-      { name: "description", content: "Experience 5 curated wines." },
-    ],
-  }),
-});
-
-function TastingPage() {
+export default function TastingPage() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showVibeCheck, setShowVibeCheck] = useState(false);
   const [vibeShown, setVibeShown] = useState(false);
@@ -26,7 +16,7 @@ function TastingPage() {
 
   const handleNext = () => {
     if (currentIndex === wines.length - 1) {
-      navigate({ to: "/results" });
+      navigate("/results");
       return;
     }
 

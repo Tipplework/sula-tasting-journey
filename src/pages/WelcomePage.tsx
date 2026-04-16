@@ -1,35 +1,16 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useTastingStore } from "@/store/tasting-store";
 
-export const Route = createFileRoute("/")({
-  component: WelcomePage,
-  head: () => ({
-    meta: [
-      { title: "Sula Interactive Wine Flight — TR" },
-      {
-        name: "description",
-        content:
-          "Your self-guided premium wine tasting journey at Sula Vineyards. Sip. Scan. Discover.",
-      },
-      { property: "og:title", content: "Sula Interactive Wine Flight — TR" },
-      {
-        property: "og:description",
-        content: "Your self-guided premium wine tasting journey begins here.",
-      },
-    ],
-  }),
-});
-
-function WelcomePage() {
+export default function WelcomePage() {
   const [name, setName] = useState("");
   const navigate = useNavigate();
   const { setUserName } = useTastingStore();
 
   const handleStart = () => {
     if (name.trim()) setUserName(name.trim());
-    navigate({ to: "/flight" });
+    navigate("/flight");
   };
 
   return (

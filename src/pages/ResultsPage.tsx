@@ -1,21 +1,10 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Share2, Wine as WineIcon } from "lucide-react";
 import { wines, personalityResults } from "@/data/wines";
 import { useTastingStore } from "@/store/tasting-store";
 
-export const Route = createFileRoute("/results")({
-  component: ResultsPage,
-  head: () => ({
-    meta: [
-      { title: "Your Wine Personality — Sula TR" },
-      { name: "description", content: "Discover your wine personality." },
-    ],
-  }),
-});
-
-function ResultsPage() {
+export default function ResultsPage() {
   const { session, getPersonality, setContactInfo } = useTastingStore();
   const [contact, setContact] = useState("");
   const [submitted, setSubmitted] = useState(false);

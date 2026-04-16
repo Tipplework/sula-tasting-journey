@@ -1,16 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { wines } from "@/data/wines";
 import { BarChart3, Users, Star, MousePointerClick, CheckCircle2 } from "lucide-react";
-
-export const Route = createFileRoute("/admin")({
-  component: AdminDashboard,
-  head: () => ({
-    meta: [
-      { title: "Admin Dashboard — Sula TR" },
-      { name: "description", content: "View tasting session analytics." },
-    ],
-  }),
-});
 
 // Mock data - will be replaced with Supabase queries
 const mockStats = {
@@ -47,7 +35,7 @@ function StatCard({
   );
 }
 
-function AdminDashboard() {
+export default function AdminDashboard() {
   return (
     <div className="min-h-screen px-5 py-8 max-w-lg mx-auto">
       <div className="space-y-6">
@@ -107,7 +95,7 @@ function AdminDashboard() {
         </div>
 
         <p className="text-xs text-muted-foreground text-center">
-          Data is mock — connect Lovable Cloud for live analytics
+          Data is mock — connect a database for live analytics
         </p>
       </div>
     </div>
