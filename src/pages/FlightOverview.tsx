@@ -6,7 +6,7 @@ export default function FlightOverview() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen px-5 py-8 max-w-sm mx-auto">
+    <div className="min-h-screen w-full max-w-[480px] mx-auto px-5 py-8">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

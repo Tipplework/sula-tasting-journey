@@ -60,7 +60,7 @@ export default function ResultsPage() {
   };
 
   return (
-    <div className="min-h-screen px-5 py-8 max-w-sm mx-auto w-full">
+    <div className="min-h-screen w-full max-w-[480px] mx-auto px-5 py-8">
       <motion.div
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
@@ -68,13 +68,16 @@ export default function ResultsPage() {
         className="space-y-6"
       >
         {/* Header */}
-        <div className="text-center space-y-1">
+        <div className="text-center space-y-1.5">
           <p className="text-xs tracking-[0.2em] uppercase text-muted-foreground">
             Your Result
           </p>
-          <h1 className="font-heading text-3xl font-bold">
-            Your Wine Personality
+          <h1 className="font-heading text-3xl font-bold leading-tight">
+            Now you know your palate.
           </h1>
+          <p className="text-sm text-muted-foreground">
+            And this is where we'd take you next.
+          </p>
         </div>
 
         {/* Personality Card */}
@@ -148,7 +151,7 @@ export default function ResultsPage() {
               <div className="flex items-center justify-center gap-2">
                 <WineIcon size={16} className="text-wine-gold" />
                 <p className="font-heading font-semibold">
-                  Save your tasting profile
+                  Take your wine journey with you
                 </p>
               </div>
               <p className="text-xs text-muted-foreground">
