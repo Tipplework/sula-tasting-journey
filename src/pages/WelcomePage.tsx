@@ -34,14 +34,14 @@ export default function WelcomePage() {
         {/* Headline */}
         <div className="space-y-3">
           <h1 className="font-heading text-4xl sm:text-5xl font-bold leading-tight">
-            Sip. Scan.
+            Sip. Savour.
             <br />
             Discover.
           </h1>
           <p className="text-muted-foreground text-base leading-relaxed">
-            Your self-guided wine tasting
+            Your wines are in front of you.
             <br />
-            journey begins here.
+            We'll taste them together — one step at a time.
           </p>
         </div>
 

@@ -12,6 +12,10 @@ export interface Wine {
   image: string;
   question: string;
   options: string[];
+  sommelierNote: string;
+  tastingSteps: string[];
+  nextPour: string;
+  nextPourReason: string;
 }
 
 export const wines: Wine[] = [
@@ -27,11 +31,21 @@ export const wines: Wine[] = [
       "https://www.vivino.com/US/en/sula-vineyards-brut-tropicale/w/4488268",
     usp: "India's favourite Sparkling wine, Gold winner at International Wine Challenge.",
     personality:
-      "Cheerful & vibrant — perfect for celebrations and light hearted moments.",
+      "Cheerful & vibrant — perfect for celebrations and light-hearted moments.",
     personalityLabel: "Cheerful",
     image: "https://sulavineyards.com/images/media2/home-page/sula-brut-tropicale-home.webp",
-    question: "What do you taste most?",
+    question: "What did you feel?",
     options: ["Tropical fruit", "Berries", "Citrus zest"],
+    sommelierNote:
+      "We start light and joyful — a sparkling rosé to wake up your palate.",
+    tastingSteps: [
+      "Take a small sip",
+      "Let the bubbles rest on your tongue",
+      "Notice the tropical aromas",
+    ],
+    nextPour: "Sula Brut",
+    nextPourReason:
+      "If you enjoyed this, I'd take you toward our crisp Sula Brut.",
   },
   {
     id: 2,
@@ -40,7 +54,7 @@ export const wines: Wine[] = [
     journeyTag: "Elegant",
     tastingNotes:
       "Lemony, silky and rich — this charming Chardonnay\nis a beautiful expression of the land of Dindori.",
-    foodPairing: ["Butter Garlic Prawns", "Veggie Delight"],
+    foodPairing: ["Butter Garlic Prawns", "Tandoori Chicken", "Veggie Delight"],
     vivino:
       "https://www.vivino.com/US/en/sula-vineyards-dindori-reserve-chardonnay/w/6760667",
     usp: "India's first Gold winner at Paris Wine Cup, premium oak-aged Chardonnay.",
@@ -48,8 +62,18 @@ export const wines: Wine[] = [
       "Complex & indulgent — a wine for refined palates.",
     personalityLabel: "Refined",
     image: "https://sulavineyards.com/images/media2/dindori/dindori-chardonnay-image.webp",
-    question: "How does this make you feel?",
+    question: "How does it feel on your palate?",
     options: ["Sophisticated", "Warm & cozy", "Curious"],
+    sommelierNote:
+      "Now we slow down — oak, lemon and silk. Sip gently, let it bloom.",
+    tastingSteps: [
+      "Take a sip and hold briefly",
+      "Let it sit on your mid-palate",
+      "Notice the oak and citrus finish",
+    ],
+    nextPour: "CBL Reserve",
+    nextPourReason:
+      "If this elegance moved you, I'd take you toward our Chenin Blanc Late Harvest Reserve.",
   },
   {
     id: 3,
@@ -60,7 +84,7 @@ export const wines: Wine[] = [
       "This lively, peachy and luxuriant rosé\nshouts friends and sun! A favourite.",
     foodPairing: [
       "Watermelon & Feta Salad",
-      "Nachos & Salsa",
+      "Kanda Bhaji",
       "Fish Fingers",
     ],
     vivino:
@@ -70,8 +94,18 @@ export const wines: Wine[] = [
       "Romantic & elegant — ideal for sunny afternoons and social gatherings.",
     personalityLabel: "Romantic",
     image: "https://thesourcevineyards.com/images/vines/source-grenache-rose.jpg",
-    question: "Where would you drink this?",
+    question: "What did you feel?",
     options: ["Sunset rooftop", "Garden brunch", "Beach picnic"],
+    sommelierNote:
+      "A breath of Provence in Nashik — soft, peachy, sunlit.",
+    tastingSteps: [
+      "Take a sip",
+      "Let it sit briefly",
+      "Notice the soft peach and floral notes",
+    ],
+    nextPour: "Tropicale Rosé",
+    nextPourReason:
+      "If this charmed you, I'd take you back to our sparkling Tropicale Rosé.",
   },
   {
     id: 4,
@@ -81,9 +115,9 @@ export const wines: Wine[] = [
     tastingNotes:
       "A delicious Syrah — rich and opulent,\nwith a touch of Viognier for more suppleness. Superb!",
     foodPairing: [
-      "Cheezy Chicken Treat",
+      "Tandoori Chicken",
       "Wine Glazed Wings",
-      "Veggie Delight",
+      "Cheese Platter",
     ],
     vivino:
       "https://www.vivino.com/US/en/sula-vineyards-rasa-syrah-nashik-red-wine/w/1176482",
@@ -92,8 +126,18 @@ export const wines: Wine[] = [
       "Bold Explorer — powerful, indulgent, and unforgettable.",
     personalityLabel: "Bold Explorer",
     image: "https://sulavineyards.com/images/media2/home-page/rasa-syrah-home.webp",
-    question: "What stands out?",
+    question: "What stood out?",
     options: ["Deep spice", "Dark fruit", "Smooth finish"],
+    sommelierNote:
+      "Our boldest pour. Swirl gently, breathe it in, then sip slowly.",
+    tastingSteps: [
+      "Swirl the glass gently",
+      "Take a generous sip",
+      "Notice the spice and long finish",
+    ],
+    nextPour: "Rasa Cabernet Sauvignon",
+    nextPourReason:
+      "If this spoke to you, I'd take you deeper with our Rasa Cabernet Sauvignon.",
   },
   {
     id: 5,
@@ -102,7 +146,7 @@ export const wines: Wine[] = [
     journeyTag: "Indulgent",
     tastingNotes:
       "Lightly sparkling with expressive notes of citrus,\nlychee, peach — a perfect balance of acidity\nand sweetness. Delightful!",
-    foodPairing: ["Cheese Board with Chilli Honey"],
+    foodPairing: ["Cheese Platter", "Kanda Bhaji"],
     vivino:
       "https://www.vivino.com/US/en/sula-vineyards-the-source-moscato-nashik/w/12872619",
     usp: "India's first Moscato, Gold medal winner at Asian Sparkling Masters.",
@@ -110,8 +154,18 @@ export const wines: Wine[] = [
       "Playful & indulgent — sweet, bubbly, and full of vibes.",
     personalityLabel: "Playful",
     image: "https://thesourcevineyards.com/images/vines/source-moscato.jpg",
-    question: "What's the dominant note?",
+    question: "Which note shines through?",
     options: ["Lychee", "Peach", "Citrus"],
+    sommelierNote:
+      "We end on a sweet note — gentle bubbles, fruit and balance.",
+    tastingSteps: [
+      "Take a small sip",
+      "Let the sweetness settle",
+      "Notice lychee, peach and citrus",
+    ],
+    nextPour: "Sparkling Shiraz",
+    nextPourReason:
+      "If this delighted you, I'd take you toward our Sparkling Shiraz or LH Chenin Blanc.",
   },
 ];
 
@@ -121,31 +175,26 @@ export const personalityResults = {
   Cheerful: {
     title: "The Life of the Party",
     description: "You're drawn to joyful, celebratory wines. Your spirit is infectious and your palate loves a good sparkle.",
-    recommendedNext: "Try a Prosecco or a Crémant next!",
-    suggestedPairing: "Tapas, bruschetta, or a charcuterie board",
+    suggestedPairing: "Kanda Bhaji, mezze, or a charcuterie board",
   },
   Refined: {
     title: "The Connoisseur",
     description: "You appreciate complexity and depth. Oak, butter, and elegance speak to your sophisticated palate.",
-    recommendedNext: "Explore a Burgundy Chardonnay or a Viognier.",
-    suggestedPairing: "Grilled lobster or truffle risotto",
+    suggestedPairing: "Butter garlic prawns or tandoori chicken",
   },
   Romantic: {
     title: "The Dreamer",
     description: "Sun-kissed rosés and breezy afternoons are your thing. You find beauty in simplicity.",
-    recommendedNext: "Try a Provence Rosé or a Pinot Grigio.",
-    suggestedPairing: "Mediterranean salad or light seafood",
+    suggestedPairing: "Watermelon & feta salad or light seafood",
   },
   "Bold Explorer": {
     title: "The Adventurer",
     description: "You love big, bold flavours that leave an impression. Intensity is your middle name.",
-    recommendedNext: "Explore a Malbec or a Cabernet Sauvignon.",
-    suggestedPairing: "Slow-cooked lamb or aged cheese",
+    suggestedPairing: "Tandoori chicken or aged cheese platter",
   },
   Playful: {
     title: "The Free Spirit",
     description: "Sweet, bubbly, and full of vibes — you don't take life too seriously, and neither does your wine.",
-    recommendedNext: "Try an Asti Spumante or a Riesling.",
-    suggestedPairing: "Fruit desserts or spicy Asian cuisine",
+    suggestedPairing: "Cheese with chilli honey or fruit desserts",
   },
 };

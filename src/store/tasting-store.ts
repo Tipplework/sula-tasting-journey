@@ -14,6 +14,8 @@ export interface TastingSession {
   favoriteWineId: number | null;
   completed: boolean;
   contactInfo: string;
+  phone: string;
+  city: string;
 }
 
 const defaultSession: TastingSession = {
@@ -23,6 +25,8 @@ const defaultSession: TastingSession = {
   favoriteWineId: null,
   completed: false,
   contactInfo: "",
+  phone: "",
+  city: "",
 };
 
 let globalSession: TastingSession = { ...defaultSession };
@@ -41,7 +45,6 @@ export function useTastingStore() {
     return () => listeners.delete(rerender);
   }, []);
 
-  // Force re-render on subscribe
   useState(() => {
     const unsub = subscribe();
     return unsub;
@@ -115,10 +118,22 @@ export function useTastingStore() {
     notify();
   };
 
+  const setGuestProfile = (data: { phone: string; city: string; name?: string }) => {
+    globalSession = {
+      ...globalSession,
+      phone: data.phone,
+      city: data.city,
+      userName: data.name?.trim() || globalSession.userName,
+      contactInfo: data.phone,
+      completed: true,
+    };
+    notify();
+  };
+
   const getPersonality = (): string => {
     const responses = Object.values(globalSession.responses);
     if (responses.length === 0) return "Cheerful";
-    
+
     let bestWineId = 1;
     let bestRating = 0;
     responses.forEach((r) => {
@@ -153,6 +168,7 @@ export function useTastingStore() {
     setUpsellClick,
     setVibeCheck,
     setContactInfo,
+    setGuestProfile,
     getPersonality,
     resetSession,
   };

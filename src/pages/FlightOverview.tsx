@@ -18,9 +18,12 @@ export default function FlightOverview() {
           <p className="text-xs tracking-[0.2em] uppercase text-muted-foreground">
             Your Flight
           </p>
-          <h1 className="font-heading text-2xl font-bold">The Journey</h1>
+          <h1 className="font-heading text-2xl font-bold">Five Wines, One Journey</h1>
           <p className="text-sm text-muted-foreground">
             {journeyLabels.join(" → ")}
+          </p>
+          <p className="text-xs text-muted-foreground/80 italic pt-1">
+            Your wines are numbered 1–5 on the stand. Let's begin.
           </p>
         </div>
 
@@ -34,19 +37,22 @@ export default function FlightOverview() {
               transition={{ delay: i * 0.08, duration: 0.35 }}
               className="wine-card flex items-center gap-4 p-3.5"
             >
-              <div className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0">
+              <div className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 bg-secondary flex items-center justify-center">
                 <img
                   src={wine.image}
                   alt={wine.name}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-contain p-1"
                   loading="lazy"
                 />
               </div>
               <div className="flex-1 min-w-0">
+                <p className="text-[0.65rem] text-muted-foreground font-medium tracking-wider">
+                  WINE {wine.id}
+                </p>
                 <p className="font-heading font-semibold text-sm truncate">
                   {wine.name}
                 </p>
-                <p className="text-xs text-muted-foreground mt-0.5">
+                <p className="text-xs text-muted-foreground mt-0.5 truncate">
                   {wine.subtitle}
                 </p>
               </div>

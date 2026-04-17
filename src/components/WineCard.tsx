@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { ExternalLink, Wine as WineIcon } from "lucide-react";
+import { motion } from "framer-motion";
+import { ExternalLink, Wine as WineIcon, Quote } from "lucide-react";
 import type { Wine } from "@/data/wines";
 import { StarRating } from "./StarRating";
 import { useTastingStore } from "@/store/tasting-store";
@@ -24,8 +24,7 @@ export function WineCard({
   currentIndex,
   total,
 }: WineCardProps) {
-  const { session, setWineRating, setQuizAnswer, setUpsellClick } =
-    useTastingStore();
+  const { session, setWineRating, setQuizAnswer } = useTastingStore();
   const response = session.responses[wine.id];
   const [selectedOptions, setSelectedOptions] = useState<string[]>(
     response?.quizAnswer || []
@@ -46,24 +45,24 @@ export function WineCard({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
       transition={{ duration: 0.35, ease: "easeOut" }}
-      className="flex flex-col min-h-0"
+      className="flex flex-col min-h-0 w-full max-w-full"
     >
-      {/* Hero Image */}
-      <div className="relative w-full aspect-[4/3] overflow-hidden rounded-t-2xl bg-secondary">
+      {/* Hero Image — bottle, contained, no clipping */}
+      <div className="relative w-full max-w-full aspect-[4/3] overflow-hidden rounded-t-2xl bg-secondary flex items-center justify-center">
         <img
           src={wine.image}
           alt={wine.name}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-contain p-4"
           loading={currentIndex === 0 ? undefined : "lazy"}
         />
-        <div className="absolute bottom-0 inset-x-0 h-28 bg-gradient-to-t from-background/95 via-background/40 to-transparent" />
+        <div className="absolute bottom-0 inset-x-0 h-20 bg-gradient-to-t from-background/80 via-background/20 to-transparent pointer-events-none" />
         <div className="absolute top-4 left-4">
-          <span className="wine-badge">{wine.journeyTag}</span>
+          <span className="wine-badge">Wine {wine.id} • {wine.journeyTag}</span>
         </div>
       </div>
 
       {/* Content */}
-      <div className="px-5 pt-5 pb-6 space-y-6">
+      <div className="px-5 pt-5 pb-6 space-y-6 w-full max-w-full">
         {/* Name & Personality */}
         <div className="space-y-2">
           <h2 className="text-2xl font-heading font-bold leading-tight tracking-tight">
@@ -75,12 +74,29 @@ export function WineCard({
           </p>
         </div>
 
-        {/* USP — Premium Tag */}
+        {/* Sommelier Note */}
         <div className="wine-card p-4 border border-wine-gold-light/60">
           <p className="text-xs font-medium text-foreground/80 flex items-start gap-2 leading-relaxed">
-            <WineIcon size={14} className="text-wine-gold flex-shrink-0 mt-0.5" />
-            <span>{wine.usp}</span>
+            <Quote size={14} className="text-wine-gold flex-shrink-0 mt-0.5" />
+            <span className="italic">{wine.sommelierNote}</span>
           </p>
+        </div>
+
+        {/* Guided Tasting Steps */}
+        <div className="space-y-2.5">
+          <h3 className="text-[0.65rem] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
+            How to taste
+          </h3>
+          <ol className="space-y-1.5">
+            {wine.tastingSteps.map((step, i) => (
+              <li key={step} className="flex items-start gap-2.5 text-sm leading-relaxed">
+                <span className="flex-shrink-0 w-5 h-5 rounded-full bg-wine-gold-light text-foreground text-[0.7rem] font-semibold inline-flex items-center justify-center mt-0.5">
+                  {i + 1}
+                </span>
+                <span>{step}</span>
+              </li>
+            ))}
+          </ol>
         </div>
 
         {/* Tasting Notes */}
@@ -91,10 +107,16 @@ export function WineCard({
           <p className="text-sm leading-[1.7] whitespace-pre-line">{wine.tastingNotes}</p>
         </div>
 
+        {/* USP */}
+        <div className="flex items-start gap-2 text-xs text-muted-foreground leading-relaxed">
+          <WineIcon size={13} className="text-wine-gold flex-shrink-0 mt-0.5" />
+          <span>{wine.usp}</span>
+        </div>
+
         {/* Food Pairing */}
         <div className="space-y-2.5">
           <h3 className="text-[0.65rem] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
-            Pairs beautifully with
+            Try this with…
           </h3>
           <div className="flex flex-wrap gap-2">
             {wine.foodPairing.map((food) => (
@@ -104,17 +126,6 @@ export function WineCard({
             ))}
           </div>
         </div>
-
-        {/* Vivino */}
-        <a
-          href={wine.vivino}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors duration-200"
-        >
-          View on Vivino
-          <ExternalLink size={13} />
-        </a>
 
         {/* Divider */}
         <div className="border-t border-border/60" />
@@ -154,42 +165,16 @@ export function WineCard({
           />
         </div>
 
-        {/* Divider */}
-        <div className="border-t border-border/60" />
-
-        {/* Upsell — Soft card */}
-        <div className="wine-card p-5 text-center space-y-3.5 border border-border/40">
-          <p className="font-heading text-lg font-medium">Enjoying this?</p>
-          <div className="flex gap-2.5 justify-center">
-            <motion.button
-              type="button"
-              whileTap={{ scale: 0.96 }}
-              onClick={() => setUpsellClick(wine.id, "glass")}
-              className={`btn-secondary text-sm transition-all duration-200 ${
-                response?.upsellClicked === "glass"
-                  ? "!bg-wine-gold-light !border-wine-gold"
-                  : ""
-              }`}
-            >
-              Order a glass
-            </motion.button>
-            <motion.button
-              type="button"
-              whileTap={{ scale: 0.96 }}
-              onClick={() => setUpsellClick(wine.id, "bottle")}
-              className={`btn-gold text-sm transition-all duration-200 ${
-                response?.upsellClicked === "bottle"
-                  ? "ring-2 ring-wine-gold/50 ring-offset-2 ring-offset-background"
-                  : ""
-              }`}
-            >
-              Order a bottle
-            </motion.button>
-          </div>
-          <p className="text-[0.65rem] text-muted-foreground/50">
-            Take it further
-          </p>
-        </div>
+        {/* Vivino — subtle */}
+        <a
+          href={wine.vivino}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors duration-200"
+        >
+          View on Vivino
+          <ExternalLink size={12} />
+        </a>
       </div>
 
       {/* Sticky Nav */}
@@ -210,7 +195,7 @@ export function WineCard({
           onClick={onNext}
           className="btn-primary text-sm !px-5 !py-2.5"
         >
-          {isLast ? "See Results" : "Next →"}
+          {isLast ? "See Results" : "Continue →"}
         </button>
       </div>
     </motion.div>
