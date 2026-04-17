@@ -11,7 +11,7 @@ export default function WelcomePage() {
 
   const handleStart = () => {
     if (name.trim()) setUserName(name.trim());
-    navigate("/flight");
+    navigate("/how-to-enjoy");
   };
 
   return (

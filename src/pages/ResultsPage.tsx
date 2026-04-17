@@ -126,6 +126,10 @@ export default function ResultsPage() {
           </div>
         </div>
 
+        <p className="text-xs text-muted-foreground text-center -mt-2 px-2 leading-relaxed">
+          Based on your taste, here's what we'd pour next.
+        </p>
+
         <div className="wine-card p-4 border border-wine-gold-light/60">
           <SommelierQuote
             quote={`Now that you know your palate, here's where I'd take you next. ${favoriteWine.nextPourReason}`}
