@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { ExternalLink, Instagram, Star, Wine as WineIcon } from "lucide-react";
+import { Camera, ExternalLink, Star, Wine as WineIcon } from "lucide-react";
 import { wines, personalityResults } from "@/data/wines";
 import { useTastingStore } from "@/store/tasting-store";
 
@@ -229,7 +229,7 @@ export default function ResultsPage() {
             onClick={shareInstagram}
             className="btn-secondary w-full flex items-center justify-center gap-2"
           >
-            <Instagram size={16} />
+            <Camera size={16} />
             Share on Instagram
           </button>
 
