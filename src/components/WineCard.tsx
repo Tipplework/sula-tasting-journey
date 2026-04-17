@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
-import { ExternalLink, Wine as WineIcon } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { ExternalLink, Wine as WineIcon, X } from "lucide-react";
 import type { Wine } from "@/data/wines";
 import { StarRating } from "./StarRating";
 import { SommelierQuote } from "./SommelierQuote";
@@ -31,6 +31,8 @@ export function WineCard({
   const [selectedOptions, setSelectedOptions] = useState<string[]>(
     response?.quizAnswer || []
   );
+  const [vivinoPromptOpen, setVivinoPromptOpen] = useState(false);
+  const [vivinoPromptShown, setVivinoPromptShown] = useState(false);
 
   const toggleOption = (option: string) => {
     const next = selectedOptions.includes(option)
@@ -38,6 +40,21 @@ export function WineCard({
       : [...selectedOptions, option].slice(0, 3);
     setSelectedOptions(next);
     setQuizAnswer(wine.id, next);
+  };
+
+  const handleRating = (rating: number) => {
+    setWineRating(wine.id, rating);
+    if (!vivinoPromptShown) {
+      setVivinoPromptOpen(true);
+      setVivinoPromptShown(true);
+    }
+  };
+
+  const dismissVivinoPrompt = () => setVivinoPromptOpen(false);
+
+  const openVivino = () => {
+    window.open(wine.vivino, "_blank", "noopener,noreferrer");
+    setVivinoPromptOpen(false);
   };
 
   return (
@@ -160,8 +177,58 @@ export function WineCard({
           </p>
           <StarRating
             value={response?.rating || 0}
-            onChange={(r) => setWineRating(wine.id, r)}
+            onChange={handleRating}
           />
+
+          {/* Vivino inline prompt — one-time per wine */}
+          <AnimatePresence>
+            {vivinoPromptOpen && (
+              <motion.div
+                initial={{ opacity: 0, y: -6, height: 0 }}
+                animate={{ opacity: 1, y: 0, height: "auto" }}
+                exit={{ opacity: 0, y: -6, height: 0 }}
+                transition={{ duration: 0.25, ease: "easeOut" }}
+                className="overflow-hidden"
+              >
+                <div className="mt-3 wine-card p-3.5 border border-wine-gold-light/60 flex items-start gap-3">
+                  <img
+                    src={vivinoLogo}
+                    alt="Vivino"
+                    className="h-5 w-auto object-contain flex-shrink-0 mt-0.5 opacity-90"
+                  />
+                  <div className="flex-1 min-w-0 space-y-2.5">
+                    <p className="text-xs leading-relaxed text-foreground/85">
+                      Want to share your rating on Vivino?
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={openVivino}
+                        className="btn-gold !py-1.5 !px-3 !text-xs"
+                      >
+                        Rate on Vivino
+                      </button>
+                      <button
+                        type="button"
+                        onClick={dismissVivinoPrompt}
+                        className="text-xs text-muted-foreground hover:text-foreground transition-colors px-2 py-1.5"
+                      >
+                        Maybe later
+                      </button>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={dismissVivinoPrompt}
+                    aria-label="Dismiss"
+                    className="text-muted-foreground hover:text-foreground transition-colors flex-shrink-0 -mt-1 -mr-1 p-1"
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         {/* Vivino — subtle inline */}
