@@ -4,12 +4,18 @@ import { AnimatePresence } from "framer-motion";
 import { wines } from "@/data/wines";
 import { WineCard } from "@/components/WineCard";
 import { ProgressBar } from "@/components/ProgressBar";
-import { VibeCheckModal } from "@/components/VibeCheckModal";
+import { CompareInterstitial } from "@/components/CompareInterstitial";
+
+const COMPARE_AFTER: Record<number, string> = {
+  // After Wine 2 (index 1)
+  1: "Go back and try Wine 1 again. Notice how it feels different now — your palate has shifted.",
+  // After Wine 4 (index 3)
+  3: "Compare this with the previous wine — which feels fuller, which feels brighter?",
+};
 
 export default function TastingPage() {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [showVibeCheck, setShowVibeCheck] = useState(false);
-  const [vibeShown, setVibeShown] = useState(false);
+  const [showCompare, setShowCompare] = useState(false);
   const navigate = useNavigate();
 
   const wine = wines[currentIndex];
@@ -20,15 +26,18 @@ export default function TastingPage() {
       return;
     }
 
-    const nextIndex = currentIndex + 1;
-
-    // Show vibe check after wine 2 (index 1 -> going to index 2)
-    if (nextIndex === 2 && !vibeShown) {
-      setShowVibeCheck(true);
-      setVibeShown(true);
+    if (COMPARE_AFTER[currentIndex] && !showCompare) {
+      setShowCompare(true);
+      return;
     }
 
-    setCurrentIndex(nextIndex);
+    setShowCompare(false);
+    setCurrentIndex(currentIndex + 1);
+  };
+
+  const handleCompareContinue = () => {
+    setShowCompare(false);
+    setCurrentIndex(currentIndex + 1);
   };
 
   const handlePrev = () => {
@@ -36,7 +45,7 @@ export default function TastingPage() {
   };
 
   return (
-    <div className="min-h-screen max-w-sm mx-auto flex flex-col">
+    <div className="min-h-screen w-full max-w-[480px] mx-auto flex flex-col px-0">
       {/* Progress */}
       <div className="px-5 pt-4 pb-2">
         <ProgressBar current={currentIndex + 1} total={wines.length} />
@@ -45,27 +54,29 @@ export default function TastingPage() {
         </p>
       </div>
 
-      {/* Wine Card */}
+      {/* Wine Card or Compare */}
       <div className="flex-1 overflow-y-auto">
         <AnimatePresence mode="wait">
-          <WineCard
-            key={wine.id}
-            wine={wine}
-            onNext={handleNext}
-            onPrev={handlePrev}
-            isFirst={currentIndex === 0}
-            isLast={currentIndex === wines.length - 1}
-            currentIndex={currentIndex}
-            total={wines.length}
-          />
+          {showCompare ? (
+            <CompareInterstitial
+              key={`compare-${currentIndex}`}
+              message={COMPARE_AFTER[currentIndex]}
+              onContinue={handleCompareContinue}
+            />
+          ) : (
+            <WineCard
+              key={wine.id}
+              wine={wine}
+              onNext={handleNext}
+              onPrev={handlePrev}
+              isFirst={currentIndex === 0}
+              isLast={currentIndex === wines.length - 1}
+              currentIndex={currentIndex}
+              total={wines.length}
+            />
+          )}
         </AnimatePresence>
       </div>
-
-      {/* Vibe Check Modal */}
-      <VibeCheckModal
-        open={showVibeCheck}
-        onClose={() => setShowVibeCheck(false)}
-      />
     </div>
   );
 }
