@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { ExternalLink, Wine as WineIcon, Quote } from "lucide-react";
+import { ExternalLink, Wine as WineIcon } from "lucide-react";
 import type { Wine } from "@/data/wines";
 import { StarRating } from "./StarRating";
+import { SommelierQuote } from "./SommelierQuote";
 import { useTastingStore } from "@/store/tasting-store";
 
 interface WineCardProps {
@@ -76,10 +77,7 @@ export function WineCard({
 
         {/* Sommelier Note */}
         <div className="wine-card p-4 border border-wine-gold-light/60">
-          <p className="text-xs font-medium text-foreground/80 flex items-start gap-2 leading-relaxed">
-            <Quote size={14} className="text-wine-gold flex-shrink-0 mt-0.5" />
-            <span className="italic">{wine.sommelierNote}</span>
-          </p>
+          <SommelierQuote quote={wine.sommelierNote} />
         </div>
 
         {/* Guided Tasting Steps */}

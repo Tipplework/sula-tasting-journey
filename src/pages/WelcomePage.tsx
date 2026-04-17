@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useTastingStore } from "@/store/tasting-store";
+import { SommelierQuote } from "@/components/SommelierQuote";
 
 export default function WelcomePage() {
   const [name, setName] = useState("");
@@ -43,6 +44,15 @@ export default function WelcomePage() {
             <br />
             We'll taste them together — one step at a time.
           </p>
+        </div>
+
+        {/* Sommelier intro */}
+        <div className="wine-card p-4 text-left border border-wine-gold-light/60">
+          <SommelierQuote
+            quote="I'll guide you through this tasting."
+            size="md"
+            attribution=""
+          />
         </div>
 
         {/* Name input */}
