@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Camera, ExternalLink, Star, Wine as WineIcon } from "lucide-react";
 import { wines, personalityResults } from "@/data/wines";
 import { useTastingStore } from "@/store/tasting-store";
+import { SommelierQuote } from "@/components/SommelierQuote";
 
 const SULA_INSTAGRAM = "https://www.instagram.com/sulavineyards/";
 const SULA_GOOGLE_REVIEW = "https://www.google.com/search?q=sula+vineyards+nashik+reviews";
@@ -122,10 +123,10 @@ export default function ResultsPage() {
           </div>
         </div>
 
-        <div className="wine-card p-4 text-center">
-          <p className="text-xs text-muted-foreground mb-1.5 italic">
-            {favoriteWine.nextPourReason}
-          </p>
+        <div className="wine-card p-4 border border-wine-gold-light/60">
+          <SommelierQuote
+            quote={`Now that you know your palate, here's where I'd take you next. ${favoriteWine.nextPourReason}`}
+          />
         </div>
 
         <div className="wine-card p-4 text-center">
