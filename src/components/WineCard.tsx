@@ -5,6 +5,7 @@ import type { Wine } from "@/data/wines";
 import { StarRating } from "./StarRating";
 import { SommelierQuote } from "./SommelierQuote";
 import { useTastingStore } from "@/store/tasting-store";
+import vivinoLogo from "@/assets/vivino-logo.png";
 
 interface WineCardProps {
   wine: Wine;
@@ -163,14 +164,15 @@ export function WineCard({
           />
         </div>
 
-        {/* Vivino — subtle */}
+        {/* Vivino — subtle inline */}
         <a
           href={wine.vivino}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors duration-200"
+          className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors duration-200 opacity-80 hover:opacity-100"
         >
-          View on Vivino
+          <img src={vivinoLogo} alt="Vivino" className="h-4 w-auto object-contain" />
+          <span>View on Vivino</span>
           <ExternalLink size={12} />
         </a>
       </div>
