@@ -15,6 +15,7 @@ export default function ResultsPage() {
   const [phone, setPhone] = useState(session.phone || "");
   const [city, setCity] = useState(session.city || "");
   const [name, setName] = useState(session.userName || "");
+  const [email, setEmail] = useState(session.email || "");
   const [error, setError] = useState("");
   const [submitted, setSubmitted] = useState(session.completed);
 
@@ -28,14 +29,23 @@ export default function ResultsPage() {
   }, []);
 
   const phoneDigits = phone.replace(/\D/g, "");
+  const emailTrim = email.trim();
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const isValidPhone = phoneDigits.length === 10;
   const isValidCity = city.trim().length >= 2;
-  const isFormValid = isValidPhone && isValidCity;
+  const isValidName = name.trim().length >= 1;
+  const isValidEmail = emailRegex.test(emailTrim);
+  const isFormValid = isValidName && isValidEmail && isValidPhone && isValidCity;
 
   const handleSubmit = () => {
     const cleanCity = city.trim();
-    if (!name.trim() && !phoneDigits && !cleanCity) {
+    const cleanName = name.trim();
+    if (!cleanName || !emailTrim || !phoneDigits || !cleanCity) {
       toast("Please fill all details to continue");
+      return;
+    }
+    if (!isValidEmail) {
+      setError("Please enter a valid email address.");
       return;
     }
     if (!isValidPhone) {
@@ -47,14 +57,15 @@ export default function ResultsPage() {
       return;
     }
     setError("");
-    setGuestProfile({ phone: phoneDigits, city: cleanCity, name: name.trim() });
+    setGuestProfile({ phone: phoneDigits, city: cleanCity, name: cleanName, email: emailTrim });
     setSubmitted(true);
 
     // Final submission → Sheets
     logToSheets({
       event: "final_submit",
       step: "final",
-      name: name.trim(),
+      name: cleanName,
+      email: emailTrim,
       phone: phoneDigits,
       city: cleanCity,
       wine: favoriteWine.name,
@@ -213,8 +224,18 @@ export default function ResultsPage() {
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Name (optional)"
+              placeholder="Name *"
               maxLength={60}
+              className="w-full text-center px-4 py-3 rounded-full bg-background border border-border text-sm focus:outline-none focus:ring-2 focus:ring-wine-gold/40"
+            />
+            <input
+              type="email"
+              inputMode="email"
+              autoComplete="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Email *"
+              maxLength={120}
               className="w-full text-center px-4 py-3 rounded-full bg-background border border-border text-sm focus:outline-none focus:ring-2 focus:ring-wine-gold/40"
             />
             {error && (
