@@ -1,11 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import { wines } from "@/data/wines";
 import { WineCard } from "@/components/WineCard";
 import { ProgressBar } from "@/components/ProgressBar";
 import { CompareInterstitial } from "@/components/CompareInterstitial";
-import { useSwipeNav } from "@/hooks/use-swipe-nav";
 
 const COMPARE_AFTER: Record<number, string> = {
   // After Wine 2 (index 1)
@@ -49,11 +48,10 @@ export default function TastingPage() {
     if (currentIndex > 0) setCurrentIndex(currentIndex - 1);
   };
 
-  // Gesture-first navigation — buttons remain as fallback
-  useSwipeNav({
-    onSwipeLeft: handleNext,
-    onSwipeRight: handlePrev,
-  });
+  // Scroll reset on each step change
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "auto" });
+  }, [currentIndex, showCompare]);
 
   return (
     <div className="min-h-screen w-full max-w-[480px] mx-auto flex flex-col px-0">
