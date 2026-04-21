@@ -82,19 +82,30 @@ export function WineCard({
 
     setIsSubmitting(true);
 
-    // Per-step data save (silent, background) — only if email captured
+    const stepPayload = {
+      eventType: "wine_step" as const,
+      step: currentIndex + 1,
+      wine: wine.name,
+      feeling: selectedOptions.join(", "),
+      rating: rating || "",
+      name: session.userName || "",
+      phone: session.phone || "",
+      city: session.city || "",
+    };
+
     if (session.email) {
-      logToSheets({
-        eventType: "wine_step",
-        step: currentIndex + 1,
-        wine: wine.name,
-        feeling: selectedOptions.join(", "),
-        rating: rating || "",
-        name: session.userName || "",
-        email: session.email,
-        phone: session.phone || "",
-        city: session.city || "",
-      });
+      // Email captured → log immediately
+      logToSheets({ ...stepPayload, email: session.email });
+    } else {
+      // No email yet → buffer locally, flushed on final submit
+      try {
+        const raw = localStorage.getItem("pendingSteps");
+        const queue = raw ? JSON.parse(raw) : [];
+        queue.push(stepPayload);
+        localStorage.setItem("pendingSteps", JSON.stringify(queue));
+      } catch {
+        /* ignore quota / parse errors */
+      }
     }
 
     onNext();
