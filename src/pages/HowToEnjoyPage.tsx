@@ -8,7 +8,7 @@ const STEPS = [
   },
   {
     title: "Smell before you sip",
-    body: "Give it a swirl, take a quick smell — that's where the magic starts.",
+    body: "Give it a swirl, take a quick smell, that's where the magic starts.",
   },
   {
     title: "Take your time",
@@ -16,7 +16,7 @@ const STEPS = [
   },
   {
     title: "Go back & compare",
-    body: "Try wines again as you go — your palate evolves with every sip.",
+    body: "Try wines again as you go, your palate evolves with every sip.",
   },
   {
     title: "No right or wrong",
@@ -44,7 +44,7 @@ export default function HowToEnjoyPage() {
             How to enjoy your wine flight
           </h1>
           <p className="text-sm text-muted-foreground">
-            The Sula way — five gentle pointers for the journey ahead.
+            The Sula way, five gentle pointers for the journey ahead.
           </p>
         </div>
 

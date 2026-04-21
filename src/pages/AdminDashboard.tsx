@@ -95,7 +95,7 @@ export default function AdminDashboard() {
         </div>
 
         <p className="text-xs text-muted-foreground text-center">
-          Data is mock — connect a database for live analytics
+          Data is mock, connect a database for live analytics
         </p>
       </div>
     </div>
