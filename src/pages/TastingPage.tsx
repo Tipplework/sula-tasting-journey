@@ -42,8 +42,18 @@ export default function TastingPage() {
   };
 
   const handlePrev = () => {
+    if (showCompare) {
+      setShowCompare(false);
+      return;
+    }
     if (currentIndex > 0) setCurrentIndex(currentIndex - 1);
   };
+
+  // Gesture-first navigation — buttons remain as fallback
+  useSwipeNav({
+    onSwipeLeft: handleNext,
+    onSwipeRight: handlePrev,
+  });
 
   return (
     <div className="min-h-screen w-full max-w-[480px] mx-auto flex flex-col px-0">
