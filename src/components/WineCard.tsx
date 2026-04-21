@@ -36,7 +36,7 @@ export function WineCard({
   );
   const [vivinoPromptOpen, setVivinoPromptOpen] = useState(false);
   const [vivinoPromptShown, setVivinoPromptShown] = useState(false);
-  const [showRatingHint, setShowRatingHint] = useState(false);
+  const [ratingNudgeShown, setRatingNudgeShown] = useState(false);
 
   // Scroll reset whenever wine changes
   useEffect(() => {
@@ -49,12 +49,10 @@ export function WineCard({
       : [...selectedOptions, option].slice(0, 3);
     setSelectedOptions(next);
     setQuizAnswer(wine.id, next);
-    setShowRatingHint(false);
   };
 
   const handleRating = (rating: number) => {
     setWineRating(wine.id, rating);
-    setShowRatingHint(false);
     if (!vivinoPromptShown) {
       setVivinoPromptOpen(true);
       setVivinoPromptShown(true);
@@ -67,14 +65,14 @@ export function WineCard({
       toast("Tell us what you felt before moving ahead");
       return;
     }
-    // Soft nudge for rating (non-blocking)
     const rating = response?.rating || 0;
-    if (!rating && !showRatingHint) {
-      setShowRatingHint(true);
-      toast("Would you like to rate this wine?", {
-        description: "Optional — tap a star, or continue.",
+
+    // Soft, non-blocking nudge once per wine if no rating
+    if (!rating && !ratingNudgeShown) {
+      setRatingNudgeShown(true);
+      toast("Want to rate this wine?", {
+        description: "Optional — tap a star anytime.",
       });
-      return;
     }
 
     // Per-step data save (silent, background)
@@ -85,11 +83,11 @@ export function WineCard({
       feeling: selectedOptions.join(", "),
       rating: rating || "",
       name: session.userName || "",
+      email: session.email || "",
       phone: session.phone || "",
       city: session.city || "",
     });
 
-    setShowRatingHint(false);
     onNext();
   };
 
