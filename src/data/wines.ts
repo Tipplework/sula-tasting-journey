@@ -31,13 +31,13 @@ export const wines: Wine[] = [
       "https://www.vivino.com/US/en/sula-vineyards-brut-tropicale/w/4488268",
     usp: "India's favourite Sparkling wine, Gold winner at International Wine Challenge.",
     personality:
-      "Cheerful & vibrant — perfect for celebrations and light-hearted moments.",
+      "Cheerful & vibrant, perfect for celebrations and light-hearted moments.",
     personalityLabel: "Cheerful",
     image: "https://sulavineyards.com/images/media2/home-page/sula-brut-tropicale-home.webp",
     question: "What did you feel?",
     options: ["Tropical fruit", "Berries", "Citrus zest"],
     sommelierNote:
-      "We start light and joyful — a sparkling rosé to wake up your palate.",
+      "We start light and joyful, a sparkling rosé to wake up your palate.",
     tastingSteps: [
       "Take a small sip",
       "Let the bubbles rest on your tongue",
@@ -53,19 +53,19 @@ export const wines: Wine[] = [
     subtitle: "Oak-aged Chardonnay",
     journeyTag: "Elegant",
     tastingNotes:
-      "Lemony, silky and rich — this charming Chardonnay\nis a beautiful expression of the land of Dindori.",
+      "Lemony, silky and rich, this charming Chardonnay\nis a beautiful expression of the land of Dindori.",
     foodPairing: ["Butter Garlic Prawns", "Tandoori Chicken", "Veggie Delight"],
     vivino:
       "https://www.vivino.com/US/en/sula-vineyards-dindori-reserve-chardonnay/w/6760667",
     usp: "India's first Gold winner at Paris Wine Cup, premium oak-aged Chardonnay.",
     personality:
-      "Complex & indulgent — a wine for refined palates.",
+      "Complex & indulgent, a wine for refined palates.",
     personalityLabel: "Refined",
     image: "https://sulavineyards.com/images/media2/dindori/dindori-chardonnay-image.webp",
     question: "How does it feel on your palate?",
     options: ["Sophisticated", "Warm & cozy", "Curious"],
     sommelierNote:
-      "Now we slow down — oak, lemon and silk. Sip gently, let it bloom.",
+      "Now we slow down, oak, lemon and silk. Sip gently, let it bloom.",
     tastingSteps: [
       "Take a sip and hold briefly",
       "Let it sit on your mid-palate",
@@ -91,13 +91,13 @@ export const wines: Wine[] = [
       "https://www.vivino.com/US/en/the-source-grenache-rose-nashik-rose-wine-v-3yzcq/w/5922800",
     usp: "Provence-style rosé, sustainable winemaking, India's best rosé.",
     personality:
-      "Romantic & elegant — ideal for sunny afternoons and social gatherings.",
+      "Romantic & elegant, ideal for sunny afternoons and social gatherings.",
     personalityLabel: "Romantic",
     image: "https://thesourcevineyards.com/images/vines/source-grenache-rose.jpg",
     question: "What did you feel?",
     options: ["Sunset rooftop", "Garden brunch", "Beach picnic"],
     sommelierNote:
-      "A breath of Provence in Nashik — soft, peachy, sunlit.",
+      "A breath of Provence in Nashik, soft, peachy, sunlit.",
     tastingSteps: [
       "Take a sip",
       "Let it sit briefly",
@@ -113,7 +113,7 @@ export const wines: Wine[] = [
     subtitle: "Premium Red",
     journeyTag: "Bold",
     tastingNotes:
-      "A delicious Syrah — rich and opulent,\nwith a touch of Viognier for more suppleness. Superb!",
+      "A delicious Syrah, rich and opulent,\nwith a touch of Viognier for more suppleness. Superb!",
     foodPairing: [
       "Tandoori Chicken",
       "Wine Glazed Wings",
@@ -123,7 +123,7 @@ export const wines: Wine[] = [
       "https://www.vivino.com/US/en/sula-vineyards-rasa-syrah-nashik-red-wine/w/1176482",
     usp: "Ranked #1 among Indian reds, crafted with sustainable practices.",
     personality:
-      "Bold Explorer — powerful, indulgent, and unforgettable.",
+      "Bold Explorer, powerful, indulgent, and unforgettable.",
     personalityLabel: "Bold Explorer",
     image: "https://sulavineyards.com/images/media2/home-page/rasa-syrah-home.webp",
     question: "What stood out?",
@@ -145,19 +145,19 @@ export const wines: Wine[] = [
     subtitle: "Sparkling Sweet",
     journeyTag: "Indulgent",
     tastingNotes:
-      "Lightly sparkling with expressive notes of citrus,\nlychee, peach — a perfect balance of acidity\nand sweetness. Delightful!",
+      "Lightly sparkling with expressive notes of citrus,\nlychee, peach, a perfect balance of acidity\nand sweetness. Delightful!",
     foodPairing: ["Cheese Platter", "Kanda Bhaji"],
     vivino:
       "https://www.vivino.com/US/en/sula-vineyards-the-source-moscato-nashik/w/12872619",
     usp: "India's first Moscato, Gold medal winner at Asian Sparkling Masters.",
     personality:
-      "Playful & indulgent — sweet, bubbly, and full of vibes.",
+      "Playful & indulgent, sweet, bubbly, and full of vibes.",
     personalityLabel: "Playful",
     image: "https://thesourcevineyards.com/images/vines/source-moscato.jpg",
     question: "Which note shines through?",
     options: ["Lychee", "Peach", "Citrus"],
     sommelierNote:
-      "We end on a sweet note — gentle bubbles, fruit and balance.",
+      "We end on a sweet note, gentle bubbles, fruit and balance.",
     tastingSteps: [
       "Take a small sip",
       "Let the sweetness settle",
@@ -194,7 +194,7 @@ export const personalityResults = {
   },
   Playful: {
     title: "The Free Spirit",
-    description: "Sweet, bubbly, and full of vibes — you don't take life too seriously, and neither does your wine.",
+    description: "Sweet, bubbly, and full of vibes, you don't take life too seriously, and neither does your wine.",
     suggestedPairing: "Cheese with chilli honey or fruit desserts",
   },
 };

@@ -76,7 +76,7 @@ export function WineCard({
     if (!rating && !ratingNudgeShown) {
       setRatingNudgeShown(true);
       toast("Want to rate this wine?", {
-        description: "Optional — tap a star anytime.",
+        description: "Optional, tap a star anytime.",
       });
     }
 

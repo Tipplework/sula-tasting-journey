@@ -8,9 +8,9 @@ import { CompareInterstitial } from "@/components/CompareInterstitial";
 
 const COMPARE_AFTER: Record<number, string> = {
   // After Wine 2 (index 1)
-  1: "Go back and try Wine 1 again. Notice how it feels different now — your palate has shifted.",
+  1: "Go back and try Wine 1 again. Notice how it feels different now, your palate has shifted.",
   // After Wine 4 (index 3)
-  3: "Compare this with the previous wine — which feels fuller, which feels brighter?",
+  3: "Compare this with the previous wine, which feels fuller, which feels brighter?",
 };
 
 export default function TastingPage() {

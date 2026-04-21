@@ -42,7 +42,7 @@ export default function WelcomePage() {
           <p className="text-muted-foreground text-base leading-relaxed">
             Your wines are in front of you.
             <br />
-            We'll taste them together — one step at a time.
+            We'll taste them together, one step at a time.
           </p>
         </div>
 
