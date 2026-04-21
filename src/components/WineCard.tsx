@@ -1,15 +1,17 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ExternalLink, Wine as WineIcon, X } from "lucide-react";
+import { toast } from "sonner";
 import type { Wine } from "@/data/wines";
 import { StarRating } from "./StarRating";
 import { SommelierQuote } from "./SommelierQuote";
 import { useTastingStore } from "@/store/tasting-store";
+import { logToSheets } from "@/lib/sheets-logger";
 import vivinoLogo from "@/assets/vivino-logo.png";
 
 interface WineCardProps {
   wine: Wine;
-  onNext: () => void;
+  onNext: (opts?: { skipValidation?: boolean }) => void;
   onPrev: () => void;
   isFirst: boolean;
   isLast: boolean;
@@ -33,6 +35,12 @@ export function WineCard({
   );
   const [vivinoPromptOpen, setVivinoPromptOpen] = useState(false);
   const [vivinoPromptShown, setVivinoPromptShown] = useState(false);
+  const [showRatingHint, setShowRatingHint] = useState(false);
+
+  // Scroll reset whenever wine changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "auto" });
+  }, [wine.id]);
 
   const toggleOption = (option: string) => {
     const next = selectedOptions.includes(option)
@@ -40,14 +48,48 @@ export function WineCard({
       : [...selectedOptions, option].slice(0, 3);
     setSelectedOptions(next);
     setQuizAnswer(wine.id, next);
+    setShowRatingHint(false);
   };
 
   const handleRating = (rating: number) => {
     setWineRating(wine.id, rating);
+    setShowRatingHint(false);
     if (!vivinoPromptShown) {
       setVivinoPromptOpen(true);
       setVivinoPromptShown(true);
     }
+  };
+
+  const handleContinue = () => {
+    // Mandatory: at least one feeling
+    if (!selectedOptions.length) {
+      toast("Tell us what you felt before moving ahead");
+      return;
+    }
+    // Soft nudge for rating (non-blocking)
+    const rating = response?.rating || 0;
+    if (!rating && !showRatingHint) {
+      setShowRatingHint(true);
+      toast("Would you like to rate this wine?", {
+        description: "Optional — tap a star, or continue.",
+      });
+      return;
+    }
+
+    // Per-step data save (silent, background)
+    logToSheets({
+      event: "wine_step",
+      step: currentIndex + 1,
+      wine: wine.name,
+      feeling: selectedOptions.join(", "),
+      rating: rating || "",
+      name: session.userName || "",
+      phone: session.phone || "",
+      city: session.city || "",
+    });
+
+    setShowRatingHint(false);
+    onNext();
   };
 
   const dismissVivinoPrompt = () => setVivinoPromptOpen(false);
