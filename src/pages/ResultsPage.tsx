@@ -18,6 +18,7 @@ export default function ResultsPage() {
   const [email, setEmail] = useState(session.email || "");
   const [error, setError] = useState("");
   const [submitted, setSubmitted] = useState(session.completed);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const personality = getPersonality();
   const result = personalityResults[personality as keyof typeof personalityResults];
@@ -38,6 +39,7 @@ export default function ResultsPage() {
   const isFormValid = isValidName && isValidEmail && isValidPhone && isValidCity;
 
   const handleSubmit = () => {
+    if (isSubmitting || submitted) return;
     const cleanCity = city.trim();
     const cleanName = name.trim();
     if (!cleanName || !emailTrim || !phoneDigits || !cleanCity) {
@@ -56,13 +58,14 @@ export default function ResultsPage() {
       setError("Please enter your city.");
       return;
     }
+    setIsSubmitting(true);
     setError("");
     setGuestProfile({ phone: phoneDigits, city: cleanCity, name: cleanName, email: emailTrim });
     setSubmitted(true);
 
     // Final submission → Sheets
     logToSheets({
-      event: "final_submit",
+      eventType: "final_submit",
       step: "final",
       name: cleanName,
       email: emailTrim,

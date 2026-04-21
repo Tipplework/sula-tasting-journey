@@ -37,10 +37,12 @@ export function WineCard({
   const [vivinoPromptOpen, setVivinoPromptOpen] = useState(false);
   const [vivinoPromptShown, setVivinoPromptShown] = useState(false);
   const [ratingNudgeShown, setRatingNudgeShown] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Scroll reset whenever wine changes
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "auto" });
+    setIsSubmitting(false);
   }, [wine.id]);
 
   const toggleOption = (option: string) => {
@@ -60,6 +62,9 @@ export function WineCard({
   };
 
   const handleContinue = () => {
+    // Duplicate call protection (swipe + button)
+    if (isSubmitting) return;
+
     // Mandatory: at least one feeling
     if (!selectedOptions.length) {
       toast("Tell us what you felt before moving ahead");
@@ -75,18 +80,22 @@ export function WineCard({
       });
     }
 
-    // Per-step data save (silent, background)
-    logToSheets({
-      event: "wine_step",
-      step: currentIndex + 1,
-      wine: wine.name,
-      feeling: selectedOptions.join(", "),
-      rating: rating || "",
-      name: session.userName || "",
-      email: session.email || "",
-      phone: session.phone || "",
-      city: session.city || "",
-    });
+    setIsSubmitting(true);
+
+    // Per-step data save (silent, background) — only if email captured
+    if (session.email) {
+      logToSheets({
+        eventType: "wine_step",
+        step: currentIndex + 1,
+        wine: wine.name,
+        feeling: selectedOptions.join(", "),
+        rating: rating || "",
+        name: session.userName || "",
+        email: session.email,
+        phone: session.phone || "",
+        city: session.city || "",
+      });
+    }
 
     onNext();
   };
