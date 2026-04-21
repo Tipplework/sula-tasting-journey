@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Camera, ExternalLink, Star, Wine as WineIcon } from "lucide-react";
+import { toast } from "sonner";
 import { wines, personalityResults } from "@/data/wines";
 import { useTastingStore } from "@/store/tasting-store";
 import { SommelierQuote } from "@/components/SommelierQuote";
+import { logToSheets } from "@/lib/sheets-logger";
 
 const SULA_INSTAGRAM = "https://www.instagram.com/sulavineyards/";
 const SULA_GOOGLE_REVIEW = "https://www.google.com/search?q=sula+vineyards+nashik+reviews";
@@ -20,20 +22,48 @@ export default function ResultsPage() {
   const result = personalityResults[personality as keyof typeof personalityResults];
   const favoriteWine = wines.find((w) => w.id === session.favoriteWineId) || wines[0];
 
+  // Scroll reset on mount
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "auto" });
+  }, []);
+
+  const phoneDigits = phone.replace(/\D/g, "");
+  const isValidPhone = phoneDigits.length === 10;
+  const isValidCity = city.trim().length >= 2;
+  const isFormValid = isValidPhone && isValidCity;
+
   const handleSubmit = () => {
-    const cleanPhone = phone.trim();
     const cleanCity = city.trim();
-    if (!/^[0-9+\-\s()]{7,20}$/.test(cleanPhone)) {
-      setError("Please enter a valid phone number.");
+    if (!name.trim() && !phoneDigits && !cleanCity) {
+      toast("Please fill all details to continue");
       return;
     }
-    if (cleanCity.length < 2) {
+    if (!isValidPhone) {
+      setError("Please enter a valid 10-digit phone number.");
+      return;
+    }
+    if (!isValidCity) {
       setError("Please enter your city.");
       return;
     }
     setError("");
-    setGuestProfile({ phone: cleanPhone, city: cleanCity, name: name.trim() });
+    setGuestProfile({ phone: phoneDigits, city: cleanCity, name: name.trim() });
     setSubmitted(true);
+
+    // Final submission → Sheets
+    logToSheets({
+      event: "final_submit",
+      step: "final",
+      name: name.trim(),
+      phone: phoneDigits,
+      city: cleanCity,
+      wine: favoriteWine.name,
+      rating:
+        Object.values(session.responses)
+          .map((r) => `${r.wineId}:${r.rating}`)
+          .join("|"),
+      feeling: personality,
+    });
   };
 
   const personalityEmojis: Record<string, string> = {
@@ -164,11 +194,11 @@ export default function ResultsPage() {
             </div>
             <input
               type="tel"
-              inputMode="tel"
+              inputMode="numeric"
               value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="Phone number *"
-              maxLength={20}
+              onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
+              placeholder="Phone number * (10 digits)"
+              maxLength={10}
               className="w-full text-center px-4 py-3 rounded-full bg-background border border-border text-sm focus:outline-none focus:ring-2 focus:ring-wine-gold/40"
             />
             <input
@@ -193,7 +223,8 @@ export default function ResultsPage() {
             <button
               type="button"
               onClick={handleSubmit}
-              className="btn-primary w-full"
+              disabled={!isFormValid}
+              className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Save My Profile
             </button>
