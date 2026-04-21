@@ -301,7 +301,7 @@ export function WineCard({
         </span>
         <button
           type="button"
-          onClick={onNext}
+          onClick={handleContinue}
           className="btn-primary text-sm !px-5 !py-2.5"
         >
           {isLast ? "See Results" : "Continue →"}
