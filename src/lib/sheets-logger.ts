@@ -2,7 +2,7 @@
 // Failures are queued in localStorage and retried on next call.
 
 const ENDPOINT =
-  "https://script.googleusercontent.com/macros/echo?user_content_key=AWDtjMX4Vs-PkDeQUYA70SCfQPzYV8rWij-fQDIV253pT2T90MYDtkgx4uFK1qoYdrHk5rIYygqGbyPvdDK1hSaEm2FtoZdplWKO2cnDsKN5ojDCcZg9Ni0w2w-bOhJsaiFdGwA9LiVITjAEOCu8zA9_xh3cviBO-oc5ObVG5qv4Kt_wv8ZP0dGzrlicyP26i-edmuW5E7V-gZyI_PhXO4V2hjPkm_n-NNwvGoj5Lxlv4FKcnHzppm6WTxH1Qw37MLl8pZ7nsomOtRmE4STHTDNjI8e1q4Q6Aw&lib=MXOKkezZjgg3EXctlU6KnKy___B1R9FVB";
+  "https://script.google.com/macros/s/AKfycbybryQtmhHaX9W08ZCnIUC9uLCoXWpb8FDHzwRIp6rRCH3lhoiCoNFdO2KNAq1CaBB0/exec";
 
 const QUEUE_KEY = "sula_sheets_queue_v1";
 

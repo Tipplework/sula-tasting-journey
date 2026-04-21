@@ -16,6 +16,7 @@ export interface TastingSession {
   contactInfo: string;
   phone: string;
   city: string;
+  email: string;
 }
 
 const defaultSession: TastingSession = {
@@ -27,6 +28,7 @@ const defaultSession: TastingSession = {
   contactInfo: "",
   phone: "",
   city: "",
+  email: "",
 };
 
 let globalSession: TastingSession = { ...defaultSession };
@@ -118,12 +120,18 @@ export function useTastingStore() {
     notify();
   };
 
-  const setGuestProfile = (data: { phone: string; city: string; name?: string }) => {
+  const setEmail = (email: string) => {
+    globalSession = { ...globalSession, email };
+    notify();
+  };
+
+  const setGuestProfile = (data: { phone: string; city: string; name?: string; email?: string }) => {
     globalSession = {
       ...globalSession,
       phone: data.phone,
       city: data.city,
       userName: data.name?.trim() || globalSession.userName,
+      email: data.email?.trim() || globalSession.email,
       contactInfo: data.phone,
       completed: true,
     };
@@ -168,6 +176,7 @@ export function useTastingStore() {
     setUpsellClick,
     setVibeCheck,
     setContactInfo,
+    setEmail,
     setGuestProfile,
     getPersonality,
     resetSession,
