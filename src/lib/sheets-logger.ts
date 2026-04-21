@@ -15,7 +15,7 @@ export interface SheetsPayload {
   feeling?: string;
   rating?: number | string;
   step?: string | number;
-  event?: string;
+  eventType?: string;
   ts?: string;
 }
 
