@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Camera, ExternalLink, Star, Wine as WineIcon } from "lucide-react";
+import { toast } from "sonner";
 import { wines, personalityResults } from "@/data/wines";
 import { useTastingStore } from "@/store/tasting-store";
 import { SommelierQuote } from "@/components/SommelierQuote";
+import { logToSheets } from "@/lib/sheets-logger";
 
 const SULA_INSTAGRAM = "https://www.instagram.com/sulavineyards/";
 const SULA_GOOGLE_REVIEW = "https://www.google.com/search?q=sula+vineyards+nashik+reviews";
@@ -20,20 +22,48 @@ export default function ResultsPage() {
   const result = personalityResults[personality as keyof typeof personalityResults];
   const favoriteWine = wines.find((w) => w.id === session.favoriteWineId) || wines[0];
 
+  // Scroll reset on mount
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "auto" });
+  }, []);
+
+  const phoneDigits = phone.replace(/\D/g, "");
+  const isValidPhone = phoneDigits.length === 10;
+  const isValidCity = city.trim().length >= 2;
+  const isFormValid = isValidPhone && isValidCity;
+
   const handleSubmit = () => {
-    const cleanPhone = phone.trim();
     const cleanCity = city.trim();
-    if (!/^[0-9+\-\s()]{7,20}$/.test(cleanPhone)) {
-      setError("Please enter a valid phone number.");
+    if (!name.trim() && !phoneDigits && !cleanCity) {
+      toast("Please fill all details to continue");
       return;
     }
-    if (cleanCity.length < 2) {
+    if (!isValidPhone) {
+      setError("Please enter a valid 10-digit phone number.");
+      return;
+    }
+    if (!isValidCity) {
       setError("Please enter your city.");
       return;
     }
     setError("");
-    setGuestProfile({ phone: cleanPhone, city: cleanCity, name: name.trim() });
+    setGuestProfile({ phone: phoneDigits, city: cleanCity, name: name.trim() });
     setSubmitted(true);
+
+    // Final submission → Sheets
+    logToSheets({
+      event: "final_submit",
+      step: "final",
+      name: name.trim(),
+      phone: phoneDigits,
+      city: cleanCity,
+      wine: favoriteWine.name,
+      rating:
+        Object.values(session.responses)
+          .map((r) => `${r.wineId}:${r.rating}`)
+          .join("|"),
+      feeling: personality,
+    });
   };
 
   const personalityEmojis: Record<string, string> = {
