@@ -35,9 +35,9 @@ export default function WelcomePage() {
         {/* Headline */}
         <div className="space-y-3">
           <h1 className="font-heading text-4xl sm:text-5xl font-bold leading-tight">
-            Sip. Savour.
+            Start Your
             <br />
-            Discover.
+            Wine Flight
           </h1>
           <p className="text-muted-foreground text-base leading-relaxed">
             Your wines are in front of you.

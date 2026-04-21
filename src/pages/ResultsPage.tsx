@@ -63,6 +63,25 @@ export default function ResultsPage() {
     setGuestProfile({ phone: phoneDigits, city: cleanCity, name: cleanName, email: emailTrim });
     setSubmitted(true);
 
+    // Flush any buffered wine steps captured before email was known
+    try {
+      const raw = localStorage.getItem("pendingSteps");
+      const queue: Array<Record<string, unknown>> = raw ? JSON.parse(raw) : [];
+      queue.forEach((stepData) => {
+        logToSheets({
+          ...stepData,
+          name: cleanName,
+          email: emailTrim,
+          phone: phoneDigits,
+          city: cleanCity,
+          eventType: "wine_step",
+        });
+      });
+      localStorage.removeItem("pendingSteps");
+    } catch {
+      /* ignore */
+    }
+
     // Final submission → Sheets
     logToSheets({
       eventType: "final_submit",
