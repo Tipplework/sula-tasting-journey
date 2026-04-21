@@ -5,6 +5,7 @@ import { wines } from "@/data/wines";
 import { WineCard } from "@/components/WineCard";
 import { ProgressBar } from "@/components/ProgressBar";
 import { CompareInterstitial } from "@/components/CompareInterstitial";
+import { useSwipeNav } from "@/hooks/use-swipe-nav";
 
 const COMPARE_AFTER: Record<number, string> = {
   // After Wine 2 (index 1)
@@ -41,8 +42,18 @@ export default function TastingPage() {
   };
 
   const handlePrev = () => {
+    if (showCompare) {
+      setShowCompare(false);
+      return;
+    }
     if (currentIndex > 0) setCurrentIndex(currentIndex - 1);
   };
+
+  // Gesture-first navigation — buttons remain as fallback
+  useSwipeNav({
+    onSwipeLeft: handleNext,
+    onSwipeRight: handlePrev,
+  });
 
   return (
     <div className="min-h-screen w-full max-w-[480px] mx-auto flex flex-col px-0">
