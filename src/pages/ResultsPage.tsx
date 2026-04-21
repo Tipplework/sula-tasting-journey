@@ -194,11 +194,11 @@ export default function ResultsPage() {
             </div>
             <input
               type="tel"
-              inputMode="tel"
+              inputMode="numeric"
               value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="Phone number *"
-              maxLength={20}
+              onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
+              placeholder="Phone number * (10 digits)"
+              maxLength={10}
               className="w-full text-center px-4 py-3 rounded-full bg-background border border-border text-sm focus:outline-none focus:ring-2 focus:ring-wine-gold/40"
             />
             <input
@@ -223,7 +223,8 @@ export default function ResultsPage() {
             <button
               type="button"
               onClick={handleSubmit}
-              className="btn-primary w-full"
+              disabled={!isFormValid}
+              className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Save My Profile
             </button>
