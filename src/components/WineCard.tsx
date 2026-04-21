@@ -7,6 +7,7 @@ import { StarRating } from "./StarRating";
 import { SommelierQuote } from "./SommelierQuote";
 import { useTastingStore } from "@/store/tasting-store";
 import { logToSheets } from "@/lib/sheets-logger";
+import { useSwipeNav } from "@/hooks/use-swipe-nav";
 import vivinoLogo from "@/assets/vivino-logo.png";
 
 interface WineCardProps {
@@ -98,6 +99,14 @@ export function WineCard({
     window.open(wine.vivino, "_blank", "noopener,noreferrer");
     setVivinoPromptOpen(false);
   };
+
+  // Swipe + button parity — both run the same validated continue
+  useSwipeNav({
+    onSwipeLeft: handleContinue,
+    onSwipeRight: () => {
+      if (!isFirst) onPrev();
+    },
+  });
 
   return (
     <motion.div
