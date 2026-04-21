@@ -5,6 +5,7 @@ import { wines } from "@/data/wines";
 import { WineCard } from "@/components/WineCard";
 import { ProgressBar } from "@/components/ProgressBar";
 import { CompareInterstitial } from "@/components/CompareInterstitial";
+import { useSwipeNav } from "@/hooks/use-swipe-nav";
 
 const COMPARE_AFTER: Record<number, string> = {
   // After Wine 2 (index 1)
