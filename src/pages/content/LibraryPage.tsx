@@ -12,6 +12,7 @@ export default function LibraryPage() {
   const [settings, setSettings] = useState<SiteSettings | null>(null);
   const [sections, setSections] = useState<HomepageSection[]>([]);
   const [loading, setLoading] = useState(true);
+  const { user, isAdmin } = useAuth();
 
   useEffect(() => {
     (async () => {
