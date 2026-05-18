@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.tg_grant_sula_admin() FROM PUBLIC, anon, authenticated;

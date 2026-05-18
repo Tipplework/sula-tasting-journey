@@ -14,6 +14,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
+  const [mode, setMode] = useState<"in" | "up">("in");
 
   useEffect(() => {
     if (!loading && user && isAdmin) nav("/content-center", { replace: true });
@@ -22,13 +23,20 @@ export default function LoginPage() {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { error } =
+      mode === "in"
+        ? await supabase.auth.signInWithPassword({ email, password })
+        : await supabase.auth.signUp({
+            email,
+            password,
+            options: { emailRedirectTo: window.location.origin + "/content-center" },
+          });
     setBusy(false);
     if (error) {
       toast.error(error.message);
       return;
     }
-    toast.success("Signed in");
+    toast.success(mode === "in" ? "Signed in" : "Account created");
   }
 
   return (
@@ -45,8 +53,15 @@ export default function LoginPage() {
             <Input id="password" type="password" autoComplete="current-password" required value={password} onChange={(e) => setPassword(e.target.value)} />
           </div>
           <Button type="submit" className="w-full" disabled={busy}>
-            {busy ? "Signing in…" : "Sign in"}
+            {busy ? "Working…" : mode === "in" ? "Sign in" : "Create account"}
           </Button>
+          <button
+            type="button"
+            onClick={() => setMode(mode === "in" ? "up" : "in")}
+            className="w-full text-xs text-muted-foreground hover:text-foreground"
+          >
+            {mode === "in" ? "First time? Create your admin account" : "Already have an account? Sign in"}
+          </button>
         </form>
       </Card>
     </div>
