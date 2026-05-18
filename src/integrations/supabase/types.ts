@@ -186,6 +186,96 @@ export type Database = {
         }
         Relationships: []
       }
+      homepage_sections: {
+        Row: {
+          created_at: string
+          cta_label: string | null
+          cta_url: string | null
+          enabled: boolean
+          id: string
+          image_url: string | null
+          item_slugs: string[]
+          section_type: string
+          sort_order: number
+          subtitle: string | null
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          cta_label?: string | null
+          cta_url?: string | null
+          enabled?: boolean
+          id?: string
+          image_url?: string | null
+          item_slugs?: string[]
+          section_type?: string
+          sort_order?: number
+          subtitle?: string | null
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          cta_label?: string | null
+          cta_url?: string | null
+          enabled?: boolean
+          id?: string
+          image_url?: string | null
+          item_slugs?: string[]
+          section_type?: string
+          sort_order?: number
+          subtitle?: string | null
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      site_settings: {
+        Row: {
+          hero_cta_label: string | null
+          hero_cta_url: string | null
+          hero_eyebrow: string | null
+          hero_image_url: string | null
+          hero_subtitle: string | null
+          hero_title: string | null
+          id: string
+          meta_description: string | null
+          meta_title: string | null
+          og_image_url: string | null
+          singleton: boolean
+          updated_at: string
+        }
+        Insert: {
+          hero_cta_label?: string | null
+          hero_cta_url?: string | null
+          hero_eyebrow?: string | null
+          hero_image_url?: string | null
+          hero_subtitle?: string | null
+          hero_title?: string | null
+          id?: string
+          meta_description?: string | null
+          meta_title?: string | null
+          og_image_url?: string | null
+          singleton?: boolean
+          updated_at?: string
+        }
+        Update: {
+          hero_cta_label?: string | null
+          hero_cta_url?: string | null
+          hero_eyebrow?: string | null
+          hero_image_url?: string | null
+          hero_subtitle?: string | null
+          hero_title?: string | null
+          id?: string
+          meta_description?: string | null
+          meta_title?: string | null
+          og_image_url?: string | null
+          singleton?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string

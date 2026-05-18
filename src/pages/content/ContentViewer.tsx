@@ -182,7 +182,9 @@ function PdfExperience({ item, assets }: { item: ContentItem; assets: ContentAss
   const [mode, setMode] = useState<ViewMode>(() => {
     if (typeof window === "undefined") return "book";
     const saved = window.localStorage.getItem(MODE_STORAGE_KEY);
-    return saved === "scroll" ? "scroll" : "book";
+    if (saved === "scroll" || saved === "book") return saved;
+    // Default: mobile → scroll (vertical editorial reading); desktop → book (spread)
+    return window.matchMedia("(max-width: 767px)").matches ? "scroll" : "book";
   });
   useEffect(() => {
     try { window.localStorage.setItem(MODE_STORAGE_KEY, mode); } catch {}
@@ -402,13 +404,19 @@ function PdfExperience({ item, assets }: { item: ContentItem; assets: ContentAss
           </div>
         </div>
       ) : (
-        // Scroll fallback
-        <div className="max-w-3xl mx-auto px-4 sm:px-8 py-20 space-y-5">
+        // Continuous editorial scroll — edge-to-edge on mobile, comfortable on desktop
+        <div
+          className="mx-auto w-full max-w-3xl sm:px-8 sm:space-y-5 space-y-2"
+          style={{
+            paddingTop: "calc(env(safe-area-inset-top) + 72px)",
+            paddingBottom: "calc(env(safe-area-inset-bottom) + 120px)",
+          }}
+        >
           {pages.map((p, i) => (
             <button
               key={p.id}
               onClick={() => setZoom(i)}
-              className="block w-full bg-[#f6f3ee] overflow-hidden cursor-zoom-in shadow-[0_24px_50px_-22px_rgba(0,0,0,0.7)]"
+              className="block w-full bg-[#f6f3ee] overflow-hidden cursor-zoom-in sm:rounded-sm sm:shadow-[0_24px_50px_-22px_rgba(0,0,0,0.7)]"
               style={{ aspectRatio: p.width && p.height ? `${p.width}/${p.height}` : "1/1.414" }}
             >
               <img
