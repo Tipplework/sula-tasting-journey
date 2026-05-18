@@ -336,7 +336,8 @@ function PdfExperience({ item, assets }: { item: ContentItem; assets: ContentAss
       {/* Stage */}
       {mode === "book" ? (
         <div
-          className="min-h-screen flex items-center justify-center px-4 sm:px-10 py-16 sm:py-20 select-none"
+          className="flex items-center justify-center px-3 sm:px-10 select-none overscroll-contain"
+          style={{ minHeight: "100dvh", paddingTop: "calc(env(safe-area-inset-top) + 64px)", paddingBottom: "calc(env(safe-area-inset-bottom) + 96px)" }}
           onTouchStart={onTouchStart}
           onTouchEnd={onTouchEnd}
         >
@@ -352,9 +353,11 @@ function PdfExperience({ item, assets }: { item: ContentItem; assets: ContentAss
             </button>
 
             {/* Spread */}
-            <div className="flex items-stretch gap-1 sm:gap-2 max-h-[78vh]">
+            <div className="flex items-stretch justify-center gap-1 sm:gap-2 w-full" style={{ maxHeight: mobile ? "calc(100dvh - 180px)" : "78vh" }}>
               {currentSpread.map((p, i) => {
                 const aspect = p.width && p.height ? `${p.width}/${p.height}` : "1/1.414";
+                const maxH = mobile ? "calc(100dvh - 180px)" : "78vh";
+                const maxW = mobile ? "calc(100vw - 24px)" : undefined;
                 return (
                   <div
                     key={p.id}
@@ -362,7 +365,8 @@ function PdfExperience({ item, assets }: { item: ContentItem; assets: ContentAss
                     className="relative bg-[#f6f3ee] cursor-zoom-in overflow-hidden shadow-[0_30px_60px_-20px_rgba(0,0,0,0.7),0_18px_36px_-18px_rgba(0,0,0,0.4)]"
                     style={{
                       aspectRatio: aspect,
-                      maxHeight: "78vh",
+                      maxHeight: maxH,
+                      maxWidth: maxW,
                       borderTopLeftRadius: pagesPerView === 2 && i === 0 ? 2 : 1,
                       borderBottomLeftRadius: pagesPerView === 2 && i === 0 ? 2 : 1,
                       borderTopRightRadius: pagesPerView === 2 && i === 1 ? 2 : 1,
@@ -372,7 +376,7 @@ function PdfExperience({ item, assets }: { item: ContentItem; assets: ContentAss
                     <img
                       src={p.file_url}
                       alt={`Page ${pages.indexOf(p) + 1}`}
-                      className="w-auto h-full max-h-[78vh] object-contain block"
+                      className="w-full h-full object-contain block"
                       draggable={false}
                     />
                     {/* Inner gutter shadow on 2-up */}
