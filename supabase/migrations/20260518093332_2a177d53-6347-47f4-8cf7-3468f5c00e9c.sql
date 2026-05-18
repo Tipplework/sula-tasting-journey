@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX IF NOT EXISTS content_items_slug_unique ON public.content_items (slug);

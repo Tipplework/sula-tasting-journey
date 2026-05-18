@@ -9,7 +9,7 @@ import {
   updateItem,
 } from "@/lib/content/api";
 import type { ContentItem, ContentType } from "@/lib/content/types";
-import { detectVideoProvider, slugify } from "@/lib/content/slug";
+import { detectVideoProvider, ensureUniqueSlug, slugify } from "@/lib/content/slug";
 import { uploadImage, uploadVideo } from "@/lib/content/upload";
 import { processPdf } from "@/lib/content/pdf-processor";
 import { Button } from "@/components/ui/button";
@@ -75,9 +75,10 @@ export default function ContentEditor() {
       ...rest,
       slug: item.slug || slugify(item.title || ""),
     };
-    if (!payload.title || !payload.slug) {
-      throw new Error("Title and slug are required");
+    if (!payload.title) {
+      throw new Error("Title is required");
     }
+    payload.slug = await ensureUniqueSlug(payload.slug as string, currentId);
     if (!currentId) {
       const created = await createItem(payload);
       setItem(created);
