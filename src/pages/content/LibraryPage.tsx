@@ -4,6 +4,7 @@ import { Helmet } from "react-helmet-async";
 import { listContentItems } from "@/lib/content/api";
 import { getSiteSettings, listSections, type SiteSettings, type HomepageSection } from "@/lib/content/homepage";
 import { getContentHref } from "@/lib/content/library-href";
+import { useAuth } from "@/hooks/useAuth";
 import type { ContentItem } from "@/lib/content/types";
 
 export default function LibraryPage() {
