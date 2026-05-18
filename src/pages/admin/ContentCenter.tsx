@@ -60,6 +60,9 @@ export default function ContentCenter() {
           <div>
             <h1 className="text-xl font-light tracking-tight">Sula Library Admin</h1>
             <p className="text-xs text-muted-foreground mt-1">Manage brochures, films and editorial collections.</p>
+            <p className="text-[10px] text-muted-foreground/70 mt-1 font-mono">
+              admin: /content-center · live: {LIVE_BASE}/c/&#123;slug&#125;
+            </p>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
             <Link to="/content-center/homepage"><Button size="sm" variant="outline" className="h-10 sm:h-9">Edit homepage</Button></Link>
