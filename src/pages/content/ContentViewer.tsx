@@ -416,14 +416,14 @@ function PdfExperience({ item, assets }: { item: ContentItem; assets: ContentAss
         <div
           className="mx-auto w-full max-w-3xl sm:px-8 sm:space-y-5 space-y-2"
           style={{
-            paddingTop: "calc(env(safe-area-inset-top) + 72px)",
+            paddingTop: "calc(env(safe-area-inset-top) + 56px)",
             paddingBottom: "calc(env(safe-area-inset-bottom) + 120px)",
           }}
         >
           {pages.map((p, i) => (
             <button
               key={p.id}
-              onClick={() => setZoom(i)}
+              onClick={() => { setZoom(i); dismissZoomHint(); }}
               className="block w-full bg-[#f6f3ee] overflow-hidden cursor-zoom-in sm:rounded-sm sm:shadow-[0_24px_50px_-22px_rgba(0,0,0,0.7)]"
               style={{ aspectRatio: p.width && p.height ? `${p.width}/${p.height}` : "1/1.414" }}
             >
@@ -436,6 +436,17 @@ function PdfExperience({ item, assets }: { item: ContentItem; assets: ContentAss
             </button>
           ))}
         </div>
+      )}
+
+      {/* First-open zoom hint (mobile) */}
+      {showZoomHint && mobile && (
+        <button
+          onClick={dismissZoomHint}
+          className="fixed left-1/2 -translate-x-1/2 z-40 px-4 py-2 rounded-full bg-white/95 text-[#1a1614] text-[11px] tracking-[0.2em] uppercase shadow-xl animate-in fade-in"
+          style={{ bottom: "calc(env(safe-area-inset-bottom) + 84px)" }}
+        >
+          Tap page to zoom
+        </button>
       )}
 
       {/* Bottom controls */}
