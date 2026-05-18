@@ -41,6 +41,18 @@ export default function ContentCenter() {
     nav("/login");
   }
 
+  const LIVE_BASE = "https://pdfs.discoversula.com";
+  const previewBase = typeof window !== "undefined" ? window.location.origin : "";
+
+  async function copy(text: string, label: string) {
+    try {
+      await navigator.clipboard.writeText(text);
+      toast.success(`${label} copied`);
+    } catch {
+      toast.error("Copy failed");
+    }
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b">
@@ -48,6 +60,9 @@ export default function ContentCenter() {
           <div>
             <h1 className="text-xl font-light tracking-tight">Sula Library Admin</h1>
             <p className="text-xs text-muted-foreground mt-1">Manage brochures, films and editorial collections.</p>
+            <p className="text-[10px] text-muted-foreground/70 mt-1 font-mono">
+              admin: /content-center · live: {LIVE_BASE}/c/&#123;slug&#125;
+            </p>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
             <Link to="/content-center/homepage"><Button size="sm" variant="outline" className="h-10 sm:h-9">Edit homepage</Button></Link>
@@ -91,10 +106,23 @@ export default function ContentCenter() {
                 {/* Right: actions */}
                 <div className="flex items-center gap-2 flex-wrap lg:flex-nowrap lg:justify-end lg:shrink-0">
                   {it.published && (
-                    <a href={`/c/${it.slug}`} target="_blank" rel="noreferrer">
-                      <Button size="sm" variant="outline" className="h-10 sm:h-9 min-w-[64px]">View</Button>
-                    </a>
+                    <>
+                      <a href={`${LIVE_BASE}/c/${it.slug}`} target="_blank" rel="noreferrer">
+                        <Button size="sm" variant="outline" className="h-10 sm:h-9">View live</Button>
+                      </a>
+                      <Button size="sm" variant="ghost" className="h-10 sm:h-9"
+                        onClick={() => copy(`${LIVE_BASE}/c/${it.slug}`, "Live link")}>
+                        Copy live
+                      </Button>
+                    </>
                   )}
+                  <a href={`/c/${it.slug}`} target="_blank" rel="noreferrer">
+                    <Button size="sm" variant="outline" className="h-10 sm:h-9">Preview</Button>
+                  </a>
+                  <Button size="sm" variant="ghost" className="h-10 sm:h-9"
+                    onClick={() => copy(`${previewBase}/c/${it.slug}`, "Preview link")}>
+                    Copy preview
+                  </Button>
                   <Button size="sm" variant="ghost" className="h-10 sm:h-9" onClick={() => togglePublish(it)}>
                     {it.published ? "Unpublish" : "Publish"}
                   </Button>

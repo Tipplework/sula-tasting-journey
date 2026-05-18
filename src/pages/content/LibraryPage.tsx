@@ -4,6 +4,7 @@ import { Helmet } from "react-helmet-async";
 import { listContentItems } from "@/lib/content/api";
 import { getSiteSettings, listSections, type SiteSettings, type HomepageSection } from "@/lib/content/homepage";
 import { getContentHref } from "@/lib/content/library-href";
+import { useAuth } from "@/hooks/useAuth";
 import type { ContentItem } from "@/lib/content/types";
 
 export default function LibraryPage() {
@@ -11,6 +12,7 @@ export default function LibraryPage() {
   const [settings, setSettings] = useState<SiteSettings | null>(null);
   const [sections, setSections] = useState<HomepageSection[]>([]);
   const [loading, setLoading] = useState(true);
+  const { user, isAdmin } = useAuth();
 
   useEffect(() => {
     (async () => {
@@ -55,6 +57,14 @@ export default function LibraryPage() {
       </Helmet>
 
       <div className="min-h-screen bg-[#f6f3ee] text-[#1a1614]">
+        {user && isAdmin && (
+          <Link
+            to="/content-center"
+            className="fixed top-4 right-4 z-50 px-4 py-2 text-[10px] tracking-[0.25em] uppercase bg-[#1a1614] text-[#f6f3ee] rounded-sm shadow-lg hover:bg-[#1a1614]/85 transition"
+          >
+            Library Admin
+          </Link>
+        )}
         {/* HERO */}
         <header className="relative overflow-hidden">
           {settings?.hero_image_url && (
