@@ -79,7 +79,16 @@ export default async function handler(req: Request): Promise<Response> {
     item?.seo_description ||
     item?.description ||
     "Brochures, films and editorial collections from Sula.";
-  const image = item?.og_image_url || item?.cover_image_url || "";
+  const rawImage = item?.og_image_url || item?.cover_image_url || "";
+  // Auto-version OG image so social caches invalidate when title/desc/cover change.
+  let image = rawImage;
+  if (rawImage) {
+    const sig = `${title}|${description}|${rawImage}`;
+    let h = 5381;
+    for (let i = 0; i < sig.length; i++) h = ((h << 5) + h + sig.charCodeAt(i)) | 0;
+    const v = (h >>> 0).toString(36);
+    image = rawImage + (rawImage.includes("?") ? "&" : "?") + "v=" + v;
+  }
   const ogType = item?.content_type === "video" ? "video.other" : "article";
 
   const T = esc(title);
