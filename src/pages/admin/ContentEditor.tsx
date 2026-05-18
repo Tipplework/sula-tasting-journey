@@ -46,6 +46,7 @@ export default function ContentEditor() {
   const [saving, setSaving] = useState(false);
   const [progress, setProgress] = useState<string>("");
   const [assetCount, setAssetCount] = useState(0);
+  const [slugDirty, setSlugDirty] = useState(!!id); // existing items: don't auto-rewrite slug from title
 
   useEffect(() => {
     if (!id) return;
@@ -235,8 +236,12 @@ export default function ContentEditor() {
               <Input
                 value={item.title ?? ""}
                 onChange={(e) => {
-                  patch("title", e.target.value);
-                  if (isNew && !item.slug) patch("slug", slugify(e.target.value));
+                  const t = e.target.value;
+                  setItem((p) => ({
+                    ...p,
+                    title: t,
+                    slug: slugDirty ? p.slug : slugify(t),
+                  }));
                 }}
               />
             </div>
@@ -244,7 +249,10 @@ export default function ContentEditor() {
               <Label>Slug</Label>
               <Input
                 value={item.slug ?? ""}
-                onChange={(e) => patch("slug", slugify(e.target.value))}
+                onChange={(e) => {
+                  setSlugDirty(true);
+                  patch("slug", slugify(e.target.value));
+                }}
                 placeholder="my-story"
               />
             </div>
