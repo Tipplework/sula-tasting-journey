@@ -106,10 +106,23 @@ export default function ContentCenter() {
                 {/* Right: actions */}
                 <div className="flex items-center gap-2 flex-wrap lg:flex-nowrap lg:justify-end lg:shrink-0">
                   {it.published && (
-                    <a href={`/c/${it.slug}`} target="_blank" rel="noreferrer">
-                      <Button size="sm" variant="outline" className="h-10 sm:h-9 min-w-[64px]">View</Button>
-                    </a>
+                    <>
+                      <a href={`${LIVE_BASE}/c/${it.slug}`} target="_blank" rel="noreferrer">
+                        <Button size="sm" variant="outline" className="h-10 sm:h-9">View live</Button>
+                      </a>
+                      <Button size="sm" variant="ghost" className="h-10 sm:h-9"
+                        onClick={() => copy(`${LIVE_BASE}/c/${it.slug}`, "Live link")}>
+                        Copy live
+                      </Button>
+                    </>
                   )}
+                  <a href={`/c/${it.slug}`} target="_blank" rel="noreferrer">
+                    <Button size="sm" variant="outline" className="h-10 sm:h-9">Preview</Button>
+                  </a>
+                  <Button size="sm" variant="ghost" className="h-10 sm:h-9"
+                    onClick={() => copy(`${previewBase}/c/${it.slug}`, "Preview link")}>
+                    Copy preview
+                  </Button>
                   <Button size="sm" variant="ghost" className="h-10 sm:h-9" onClick={() => togglePublish(it)}>
                     {it.published ? "Unpublish" : "Publish"}
                   </Button>
