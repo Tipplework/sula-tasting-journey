@@ -1,0 +1,1 @@
+UPDATE public.content_items SET slug = 'sula-wedding-brochure' WHERE id = '2f2e4715-be54-4934-8414-831e8dbe9b43';
