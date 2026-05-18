@@ -44,20 +44,20 @@ export default function ContentCenter() {
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b">
-        <div className="max-w-6xl mx-auto px-6 py-5 flex items-center justify-between">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
-            <h1 className="text-xl font-light tracking-tight">Content Center</h1>
-            <p className="text-xs text-muted-foreground mt-1">Sula editorial experiences</p>
+            <h1 className="text-xl font-light tracking-tight">Sula Library Admin</h1>
+            <p className="text-xs text-muted-foreground mt-1">Manage brochures, films and editorial collections.</p>
           </div>
-          <div className="flex items-center gap-2">
-            <Link to="/content-center/homepage"><Button size="sm" variant="outline">Edit homepage</Button></Link>
-            <Link to="/content-center/new"><Button size="sm">New content</Button></Link>
-            <Button size="sm" variant="ghost" onClick={signOut}>Sign out</Button>
+          <div className="flex items-center gap-2 flex-wrap">
+            <Link to="/content-center/homepage"><Button size="sm" variant="outline" className="h-10 sm:h-9">Edit homepage</Button></Link>
+            <Link to="/content-center/new"><Button size="sm" className="h-10 sm:h-9">New content</Button></Link>
+            <Button size="sm" variant="ghost" className="h-10 sm:h-9" onClick={signOut}>Sign out</Button>
           </div>
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-6 py-8">
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
         {loading ? (
           <div className="text-muted-foreground">Loading…</div>
         ) : items.length === 0 ? (
@@ -66,29 +66,49 @@ export default function ContentCenter() {
             <Link to="/content-center/new"><Button>Create your first piece</Button></Link>
           </div>
         ) : (
-          <ul className="divide-y border rounded-md">
+          <ul className="divide-y border rounded-md overflow-hidden">
             {items.map((it) => (
-              <li key={it.id} className="flex items-center gap-4 p-4">
-                <div className="w-20 h-14 bg-muted rounded overflow-hidden shrink-0">
-                  {it.cover_image_url && <img src={it.cover_image_url} alt="" className="w-full h-full object-cover" />}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium truncate">{it.title}</span>
-                    <Badge variant="outline" className="uppercase text-[10px]">{it.content_type}</Badge>
-                    {it.published ? <Badge className="text-[10px]">Live</Badge> : <Badge variant="secondary" className="text-[10px]">Draft</Badge>}
+              <li key={it.id} className="p-4 flex flex-col lg:flex-row lg:items-center gap-4">
+                {/* Left: thumb + meta */}
+                <div className="flex items-start gap-4 min-w-0 flex-1">
+                  <div className="w-20 h-14 bg-muted rounded overflow-hidden shrink-0">
+                    {it.cover_image_url && <img src={it.cover_image_url} alt="" className="w-full h-full object-cover" />}
                   </div>
-                  <div className="text-xs text-muted-foreground mt-1 truncate">
-                    /c/{it.slug} {it.category && <>· {it.category}</>}
+                  <div className="min-w-0 flex-1">
+                    <div className="font-medium truncate">{it.title}</div>
+                    <div className="text-xs text-muted-foreground mt-1 truncate">
+                      /c/{it.slug}{it.category && <> · {it.category}</>}
+                    </div>
+                    <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+                      <Badge variant="outline" className="uppercase text-[10px]">{it.content_type}</Badge>
+                      {it.published
+                        ? <Badge className="text-[10px]">Live</Badge>
+                        : <Badge variant="secondary" className="text-[10px]">Draft</Badge>}
+                    </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  {it.published && <a href={`/c/${it.slug}`} target="_blank" rel="noreferrer"><Button size="sm" variant="ghost">View</Button></a>}
-                  <Button size="sm" variant="ghost" onClick={() => togglePublish(it)}>
+
+                {/* Right: actions */}
+                <div className="flex items-center gap-2 flex-wrap lg:flex-nowrap lg:justify-end lg:shrink-0">
+                  {it.published && (
+                    <a href={`/c/${it.slug}`} target="_blank" rel="noreferrer">
+                      <Button size="sm" variant="outline" className="h-10 sm:h-9 min-w-[64px]">View</Button>
+                    </a>
+                  )}
+                  <Button size="sm" variant="ghost" className="h-10 sm:h-9" onClick={() => togglePublish(it)}>
                     {it.published ? "Unpublish" : "Publish"}
                   </Button>
-                  <Link to={`/content-center/${it.id}/edit`}><Button size="sm" variant="outline">Edit</Button></Link>
-                  <Button size="sm" variant="ghost" onClick={() => remove(it)}>Delete</Button>
+                  <Link to={`/content-center/${it.id}/edit`}>
+                    <Button size="sm" variant="outline" className="h-10 sm:h-9">Edit</Button>
+                  </Link>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-10 sm:h-9 text-destructive hover:text-destructive hover:bg-destructive/10"
+                    onClick={() => remove(it)}
+                  >
+                    Delete
+                  </Button>
                 </div>
               </li>
             ))}
