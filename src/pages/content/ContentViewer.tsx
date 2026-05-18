@@ -371,7 +371,7 @@ function PdfExperience({ item, assets }: { item: ContentItem; assets: ContentAss
                 return (
                   <div
                     key={p.id}
-                    onClick={() => setZoom(pages.indexOf(p))}
+                    onClick={() => { setZoom(pages.indexOf(p)); dismissZoomHint(); }}
                     className="relative bg-[#f6f3ee] cursor-zoom-in overflow-hidden shadow-[0_30px_60px_-20px_rgba(0,0,0,0.7),0_18px_36px_-18px_rgba(0,0,0,0.4)]"
                     style={{
                       aspectRatio: aspect,
