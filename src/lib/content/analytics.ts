@@ -29,7 +29,7 @@ export async function track(event: {
       session_id: getSessionId(),
       user_agent: navigator.userAgent.slice(0, 255),
       referrer: document.referrer.slice(0, 255) || null,
-      metadata: event.metadata ?? null,
+      metadata: (event.metadata ?? null) as any,
     });
   } catch {
     // silent
