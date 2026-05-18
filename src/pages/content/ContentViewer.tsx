@@ -192,6 +192,14 @@ function PdfExperience({ item, assets }: { item: ContentItem; assets: ContentAss
   const [spread, setSpread] = useState(0); // index of left page of current spread
   const [zoom, setZoom] = useState<number | null>(null);
   const [chromeHidden, setChromeHidden] = useState(false);
+  const [showZoomHint, setShowZoomHint] = useState(() => {
+    if (typeof window === "undefined") return false;
+    try { return !window.localStorage.getItem("sula:pdf:zoomhint"); } catch { return true; }
+  });
+  const dismissZoomHint = useCallback(() => {
+    setShowZoomHint(false);
+    try { window.localStorage.setItem("sula:pdf:zoomhint", "1"); } catch {}
+  }, []);
   const { share, fullscreen, ctaClick } = useViewerActions(item);
 
   const isMobile = typeof window !== "undefined" && window.matchMedia("(max-width: 767px)").matches;
