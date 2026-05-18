@@ -50,6 +50,7 @@ export default function ContentCenter() {
             <p className="text-xs text-muted-foreground mt-1">Sula editorial experiences</p>
           </div>
           <div className="flex items-center gap-2">
+            <Link to="/content-center/homepage"><Button size="sm" variant="outline">Edit homepage</Button></Link>
             <Link to="/content-center/new"><Button size="sm">New content</Button></Link>
             <Button size="sm" variant="ghost" onClick={signOut}>Sign out</Button>
           </div>
