@@ -14,16 +14,216 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      content_analytics: {
+        Row: {
+          content_item_id: string | null
+          created_at: string
+          event_type: string
+          id: string
+          metadata: Json | null
+          page_index: number | null
+          page_slug: string | null
+          referrer: string | null
+          session_id: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          content_item_id?: string | null
+          created_at?: string
+          event_type: string
+          id?: string
+          metadata?: Json | null
+          page_index?: number | null
+          page_slug?: string | null
+          referrer?: string | null
+          session_id?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          content_item_id?: string | null
+          created_at?: string
+          event_type?: string
+          id?: string
+          metadata?: Json | null
+          page_index?: number | null
+          page_slug?: string | null
+          referrer?: string | null
+          session_id?: string | null
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_analytics_content_item_id_fkey"
+            columns: ["content_item_id"]
+            isOneToOne: false
+            referencedRelation: "content_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      content_assets: {
+        Row: {
+          alt_text: string | null
+          asset_type: Database["public"]["Enums"]["asset_type"]
+          caption: string | null
+          content_item_id: string
+          created_at: string
+          file_url: string
+          height: number | null
+          id: string
+          sort_order: number
+          thumbnail_url: string | null
+          width: number | null
+        }
+        Insert: {
+          alt_text?: string | null
+          asset_type: Database["public"]["Enums"]["asset_type"]
+          caption?: string | null
+          content_item_id: string
+          created_at?: string
+          file_url: string
+          height?: number | null
+          id?: string
+          sort_order?: number
+          thumbnail_url?: string | null
+          width?: number | null
+        }
+        Update: {
+          alt_text?: string | null
+          asset_type?: Database["public"]["Enums"]["asset_type"]
+          caption?: string | null
+          content_item_id?: string
+          created_at?: string
+          file_url?: string
+          height?: number | null
+          id?: string
+          sort_order?: number
+          thumbnail_url?: string | null
+          width?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_assets_content_item_id_fkey"
+            columns: ["content_item_id"]
+            isOneToOne: false
+            referencedRelation: "content_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      content_items: {
+        Row: {
+          category: string | null
+          content_type: Database["public"]["Enums"]["content_type"]
+          cover_image_url: string | null
+          created_at: string
+          created_by: string | null
+          cta_label: string | null
+          cta_url: string | null
+          description: string | null
+          featured: boolean
+          id: string
+          og_image_url: string | null
+          page_count: number
+          primary_file_url: string | null
+          published: boolean
+          seo_description: string | null
+          seo_title: string | null
+          slug: string
+          sort_order: number
+          title: string
+          updated_at: string
+          video_provider: string | null
+          video_url: string | null
+        }
+        Insert: {
+          category?: string | null
+          content_type: Database["public"]["Enums"]["content_type"]
+          cover_image_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          cta_label?: string | null
+          cta_url?: string | null
+          description?: string | null
+          featured?: boolean
+          id?: string
+          og_image_url?: string | null
+          page_count?: number
+          primary_file_url?: string | null
+          published?: boolean
+          seo_description?: string | null
+          seo_title?: string | null
+          slug: string
+          sort_order?: number
+          title: string
+          updated_at?: string
+          video_provider?: string | null
+          video_url?: string | null
+        }
+        Update: {
+          category?: string | null
+          content_type?: Database["public"]["Enums"]["content_type"]
+          cover_image_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          cta_label?: string | null
+          cta_url?: string | null
+          description?: string | null
+          featured?: boolean
+          id?: string
+          og_image_url?: string | null
+          page_count?: number
+          primary_file_url?: string | null
+          published?: boolean
+          seo_description?: string | null
+          seo_title?: string | null
+          slug?: string
+          sort_order?: number
+          title?: string
+          updated_at?: string
+          video_provider?: string | null
+          video_url?: string | null
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin"
+      asset_type: "page_image" | "gallery_image" | "thumbnail" | "download"
+      content_type: "pdf" | "video" | "gallery"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +350,10 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin"],
+      asset_type: ["page_image", "gallery_image", "thumbnail", "download"],
+      content_type: ["pdf", "video", "gallery"],
+    },
   },
 } as const
