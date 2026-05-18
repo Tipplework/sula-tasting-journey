@@ -305,7 +305,7 @@ function PdfExperience({ item, assets }: { item: ContentItem; assets: ContentAss
         className={`fixed top-0 left-0 right-0 z-40 transition-all duration-500 ${chromeHidden ? "opacity-0 -translate-y-2 pointer-events-none" : "opacity-100"}`}
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-8 h-14 flex items-center justify-between">
-          <Link to="/" className="text-xs sm:text-sm tracking-[0.2em] uppercase text-white/60 hover:text-white transition-colors">
+          <Link to={getLibraryHref()} className="text-xs sm:text-sm tracking-[0.2em] uppercase text-white/60 hover:text-white transition-colors">
             ← Library
           </Link>
           <div className="hidden sm:block text-xs tracking-[0.25em] uppercase text-white/40 truncate max-w-md">
