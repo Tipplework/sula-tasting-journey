@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { listContentItems } from "@/lib/content/api";
+import { getContentHref } from "@/lib/content/library-href";
 import type { ContentItem } from "@/lib/content/types";
 
 export default function LibraryPage() {
