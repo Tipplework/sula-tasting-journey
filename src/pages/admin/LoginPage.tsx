@@ -53,8 +53,15 @@ export default function LoginPage() {
             <Input id="password" type="password" autoComplete="current-password" required value={password} onChange={(e) => setPassword(e.target.value)} />
           </div>
           <Button type="submit" className="w-full" disabled={busy}>
-            {busy ? "Signing in…" : "Sign in"}
+            {busy ? "Working…" : mode === "in" ? "Sign in" : "Create account"}
           </Button>
+          <button
+            type="button"
+            onClick={() => setMode(mode === "in" ? "up" : "in")}
+            className="w-full text-xs text-muted-foreground hover:text-foreground"
+          >
+            {mode === "in" ? "First time? Create your admin account" : "Already have an account? Sign in"}
+          </button>
         </form>
       </Card>
     </div>
