@@ -57,6 +57,14 @@ export default function LibraryPage() {
       </Helmet>
 
       <div className="min-h-screen bg-[#f6f3ee] text-[#1a1614]">
+        {user && isAdmin && (
+          <Link
+            to="/content-center"
+            className="fixed top-4 right-4 z-50 px-4 py-2 text-[10px] tracking-[0.25em] uppercase bg-[#1a1614] text-[#f6f3ee] rounded-sm shadow-lg hover:bg-[#1a1614]/85 transition"
+          >
+            Library Admin
+          </Link>
+        )}
         {/* HERO */}
         <header className="relative overflow-hidden">
           {settings?.hero_image_url && (
