@@ -75,9 +75,10 @@ export default function ContentEditor() {
       ...rest,
       slug: item.slug || slugify(item.title || ""),
     };
-    if (!payload.title || !payload.slug) {
-      throw new Error("Title and slug are required");
+    if (!payload.title) {
+      throw new Error("Title is required");
     }
+    payload.slug = await ensureUniqueSlug(payload.slug as string, currentId);
     if (!currentId) {
       const created = await createItem(payload);
       setItem(created);
