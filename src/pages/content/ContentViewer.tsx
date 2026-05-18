@@ -41,7 +41,7 @@ export default function ContentViewer() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-3 px-6 text-center bg-[#1a1614] text-white">
         <h1 className="text-2xl font-light">Not found</h1>
-        <Link to="/" className="text-sm text-white/60 hover:text-white">← Library</Link>
+        <Link to={getLibraryHref()} className="text-sm text-white/60 hover:text-white">← Library</Link>
       </div>
     );
   }
