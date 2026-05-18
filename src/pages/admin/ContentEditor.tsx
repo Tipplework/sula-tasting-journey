@@ -30,7 +30,8 @@ import { toast } from "sonner";
 export default function ContentEditor() {
   const { id } = useParams();
   const nav = useNavigate();
-  const isNew = !id;
+  const [currentId, setCurrentId] = useState<string | undefined>(id);
+  const isNew = !currentId;
 
   const [item, setItem] = useState<Partial<ContentItem>>({
     content_type: "pdf",
@@ -41,24 +42,25 @@ export default function ContentEditor() {
     slug: "",
     title: "",
   });
-  const [loading, setLoading] = useState(!isNew);
+  const [loading, setLoading] = useState(!!id);
   const [saving, setSaving] = useState(false);
   const [progress, setProgress] = useState<string>("");
   const [assetCount, setAssetCount] = useState(0);
 
   useEffect(() => {
-    if (isNew) return;
+    if (!id) return;
+    setCurrentId(id);
     (async () => {
       try {
-        const it = await getItemById(id!);
+        const it = await getItemById(id);
         if (it) setItem(it);
-        const assets = await listAssets(id!);
+        const assets = await listAssets(id);
         setAssetCount(assets.length);
       } finally {
         setLoading(false);
       }
     })();
-  }, [id, isNew]);
+  }, [id]);
 
   const previewUrl = useMemo(() => (item.slug ? `/c/${item.slug}` : ""), [item.slug]);
 
@@ -67,20 +69,23 @@ export default function ContentEditor() {
   }
 
   async function save(): Promise<string> {
+    // Strip server-managed fields so we never send id/timestamps on insert.
+    const { id: _omitId, created_at: _omitCreated, updated_at: _omitUpdated, ...rest } = item as ContentItem;
     const payload: Partial<ContentItem> = {
-      ...item,
+      ...rest,
       slug: item.slug || slugify(item.title || ""),
     };
     if (!payload.title || !payload.slug) {
       throw new Error("Title and slug are required");
     }
-    if (isNew) {
+    if (!currentId) {
       const created = await createItem(payload);
       setItem(created);
+      setCurrentId(created.id);
       window.history.replaceState(null, "", `/content-center/${created.id}/edit`);
       return created.id;
     }
-    const updated = await updateItem(id!, payload);
+    const updated = await updateItem(currentId, payload);
     setItem(updated);
     return updated.id;
   }
