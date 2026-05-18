@@ -179,7 +179,14 @@ function PdfExperience({ item, assets }: { item: ContentItem; assets: ContentAss
     () => assets.filter((a) => a.asset_type === "page_image").sort((a, b) => a.sort_order - b.sort_order),
     [assets],
   );
-  const [mode, setMode] = useState<ViewMode>("book");
+  const [mode, setMode] = useState<ViewMode>(() => {
+    if (typeof window === "undefined") return "book";
+    const saved = window.localStorage.getItem(MODE_STORAGE_KEY);
+    return saved === "scroll" ? "scroll" : "book";
+  });
+  useEffect(() => {
+    try { window.localStorage.setItem(MODE_STORAGE_KEY, mode); } catch {}
+  }, [mode]);
   const [spread, setSpread] = useState(0); // index of left page of current spread
   const [zoom, setZoom] = useState<number | null>(null);
   const [chromeHidden, setChromeHidden] = useState(false);
