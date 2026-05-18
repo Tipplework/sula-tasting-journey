@@ -130,7 +130,7 @@ function NonPdfShell({ item, children }: { item: ContentItem; children: React.Re
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-40 backdrop-blur bg-background/80 border-b">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-3">
-          <Link to={getLibraryHref()} className="text-sm text-white/60 hover:text-white">← Library</Link>
+          <Link to={getLibraryHref()} className="text-sm text-muted-foreground hover:text-foreground shrink-0">← Library</Link>
           <div className="text-xs sm:text-sm font-light truncate">{item.title}</div>
           <div className="flex items-center gap-1 shrink-0">
             <Button size="sm" variant="ghost" onClick={share}>Share</Button>
