@@ -182,7 +182,9 @@ function PdfExperience({ item, assets }: { item: ContentItem; assets: ContentAss
   const [mode, setMode] = useState<ViewMode>(() => {
     if (typeof window === "undefined") return "book";
     const saved = window.localStorage.getItem(MODE_STORAGE_KEY);
-    return saved === "scroll" ? "scroll" : "book";
+    if (saved === "scroll" || saved === "book") return saved;
+    // Default: mobile → scroll (vertical editorial reading); desktop → book (spread)
+    return window.matchMedia("(max-width: 767px)").matches ? "scroll" : "book";
   });
   useEffect(() => {
     try { window.localStorage.setItem(MODE_STORAGE_KEY, mode); } catch {}
