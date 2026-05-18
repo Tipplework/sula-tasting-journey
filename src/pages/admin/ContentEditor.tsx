@@ -324,6 +324,39 @@ export default function ContentEditor() {
               <Input value={item.cta_url ?? ""} onChange={(e) => patch("cta_url", e.target.value)} placeholder="https://…" />
             </div>
           </div>
+
+          {/* Social preview */}
+          {(() => {
+            const ogTitle = item.seo_title || item.title || "Sula — Library";
+            const ogDesc =
+              item.seo_description ||
+              item.description ||
+              "Brochures, films and editorial collections from Sula.";
+            const ogImg = item.og_image_url || item.cover_image_url || "";
+            const liveUrl = `https://pdfs.discoversula.com/c/${item.slug || ""}`;
+            return (
+              <div className="space-y-2 pt-2">
+                <Label className="text-xs uppercase tracking-wider text-muted-foreground">
+                  Social preview
+                </Label>
+                <div className="border rounded-md overflow-hidden max-w-md bg-card">
+                  <div className="aspect-[1.91/1] bg-muted">
+                    {ogImg && <img src={ogImg} alt="" className="w-full h-full object-cover" />}
+                  </div>
+                  <div className="p-3 border-t">
+                    <div className="text-[10px] uppercase text-muted-foreground tracking-wider truncate">
+                      pdfs.discoversula.com
+                    </div>
+                    <div className="text-sm font-medium mt-0.5 line-clamp-2">{ogTitle}</div>
+                    <div className="text-xs text-muted-foreground mt-1 line-clamp-2">{ogDesc}</div>
+                  </div>
+                </div>
+                <div className="text-[10px] text-muted-foreground font-mono break-all">
+                  {liveUrl}
+                </div>
+              </div>
+            );
+          })()}
         </Card>
 
         <Card className="p-6 space-y-4">
