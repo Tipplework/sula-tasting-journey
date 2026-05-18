@@ -41,6 +41,18 @@ export default function ContentCenter() {
     nav("/login");
   }
 
+  const LIVE_BASE = "https://pdfs.discoversula.com";
+  const previewBase = typeof window !== "undefined" ? window.location.origin : "";
+
+  async function copy(text: string, label: string) {
+    try {
+      await navigator.clipboard.writeText(text);
+      toast.success(`${label} copied`);
+    } catch {
+      toast.error("Copy failed");
+    }
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b">
