@@ -5,9 +5,12 @@ import { getItemBySlug, listAssets } from "@/lib/content/api";
 import type { ContentAsset, ContentItem } from "@/lib/content/types";
 import { detectVideoProvider, youtubePoster } from "@/lib/content/slug";
 import { track } from "@/lib/content/analytics";
+import { getLibraryHref } from "@/lib/content/library-href";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { ChevronLeft, ChevronRight, Maximize2, Share2, Download, BookOpen, ScrollText, X } from "lucide-react";
+
+const MODE_STORAGE_KEY = "sula:pdf:viewmode";
 
 export default function ContentViewer() {
   const { slug = "" } = useParams();
@@ -38,7 +41,7 @@ export default function ContentViewer() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-3 px-6 text-center bg-[#1a1614] text-white">
         <h1 className="text-2xl font-light">Not found</h1>
-        <Link to="/" className="text-sm text-white/60 hover:text-white">← Library</Link>
+        <Link to={getLibraryHref()} className="text-sm text-white/60 hover:text-white">← Library</Link>
       </div>
     );
   }
@@ -127,7 +130,7 @@ function NonPdfShell({ item, children }: { item: ContentItem; children: React.Re
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-40 backdrop-blur bg-background/80 border-b">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-3">
-          <Link to="/" className="text-sm text-muted-foreground hover:text-foreground shrink-0">← Library</Link>
+          <Link to={getLibraryHref()} className="text-sm text-muted-foreground hover:text-foreground shrink-0">← Library</Link>
           <div className="text-xs sm:text-sm font-light truncate">{item.title}</div>
           <div className="flex items-center gap-1 shrink-0">
             <Button size="sm" variant="ghost" onClick={share}>Share</Button>
@@ -176,7 +179,14 @@ function PdfExperience({ item, assets }: { item: ContentItem; assets: ContentAss
     () => assets.filter((a) => a.asset_type === "page_image").sort((a, b) => a.sort_order - b.sort_order),
     [assets],
   );
-  const [mode, setMode] = useState<ViewMode>("book");
+  const [mode, setMode] = useState<ViewMode>(() => {
+    if (typeof window === "undefined") return "book";
+    const saved = window.localStorage.getItem(MODE_STORAGE_KEY);
+    return saved === "scroll" ? "scroll" : "book";
+  });
+  useEffect(() => {
+    try { window.localStorage.setItem(MODE_STORAGE_KEY, mode); } catch {}
+  }, [mode]);
   const [spread, setSpread] = useState(0); // index of left page of current spread
   const [zoom, setZoom] = useState<number | null>(null);
   const [chromeHidden, setChromeHidden] = useState(false);
@@ -302,7 +312,7 @@ function PdfExperience({ item, assets }: { item: ContentItem; assets: ContentAss
         className={`fixed top-0 left-0 right-0 z-40 transition-all duration-500 ${chromeHidden ? "opacity-0 -translate-y-2 pointer-events-none" : "opacity-100"}`}
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-8 h-14 flex items-center justify-between">
-          <Link to="/" className="text-xs sm:text-sm tracking-[0.2em] uppercase text-white/60 hover:text-white transition-colors">
+          <Link to={getLibraryHref()} className="text-xs sm:text-sm tracking-[0.2em] uppercase text-white/60 hover:text-white transition-colors">
             ← Library
           </Link>
           <div className="hidden sm:block text-xs tracking-[0.25em] uppercase text-white/40 truncate max-w-md">
@@ -326,7 +336,8 @@ function PdfExperience({ item, assets }: { item: ContentItem; assets: ContentAss
       {/* Stage */}
       {mode === "book" ? (
         <div
-          className="min-h-screen flex items-center justify-center px-4 sm:px-10 py-16 sm:py-20 select-none"
+          className="flex items-center justify-center px-3 sm:px-10 select-none overscroll-contain"
+          style={{ minHeight: "100dvh", paddingTop: "calc(env(safe-area-inset-top) + 64px)", paddingBottom: "calc(env(safe-area-inset-bottom) + 96px)" }}
           onTouchStart={onTouchStart}
           onTouchEnd={onTouchEnd}
         >
@@ -342,9 +353,11 @@ function PdfExperience({ item, assets }: { item: ContentItem; assets: ContentAss
             </button>
 
             {/* Spread */}
-            <div className="flex items-stretch gap-1 sm:gap-2 max-h-[78vh]">
+            <div className="flex items-stretch justify-center gap-1 sm:gap-2 w-full" style={{ maxHeight: mobile ? "calc(100dvh - 180px)" : "78vh" }}>
               {currentSpread.map((p, i) => {
                 const aspect = p.width && p.height ? `${p.width}/${p.height}` : "1/1.414";
+                const maxH = mobile ? "calc(100dvh - 180px)" : "78vh";
+                const maxW = mobile ? "calc(100vw - 24px)" : undefined;
                 return (
                   <div
                     key={p.id}
@@ -352,7 +365,8 @@ function PdfExperience({ item, assets }: { item: ContentItem; assets: ContentAss
                     className="relative bg-[#f6f3ee] cursor-zoom-in overflow-hidden shadow-[0_30px_60px_-20px_rgba(0,0,0,0.7),0_18px_36px_-18px_rgba(0,0,0,0.4)]"
                     style={{
                       aspectRatio: aspect,
-                      maxHeight: "78vh",
+                      maxHeight: maxH,
+                      maxWidth: maxW,
                       borderTopLeftRadius: pagesPerView === 2 && i === 0 ? 2 : 1,
                       borderBottomLeftRadius: pagesPerView === 2 && i === 0 ? 2 : 1,
                       borderTopRightRadius: pagesPerView === 2 && i === 1 ? 2 : 1,
@@ -362,7 +376,7 @@ function PdfExperience({ item, assets }: { item: ContentItem; assets: ContentAss
                     <img
                       src={p.file_url}
                       alt={`Page ${pages.indexOf(p) + 1}`}
-                      className="w-auto h-full max-h-[78vh] object-contain block"
+                      className="w-full h-full object-contain block"
                       draggable={false}
                     />
                     {/* Inner gutter shadow on 2-up */}
