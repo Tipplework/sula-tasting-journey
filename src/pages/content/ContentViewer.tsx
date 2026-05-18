@@ -5,9 +5,12 @@ import { getItemBySlug, listAssets } from "@/lib/content/api";
 import type { ContentAsset, ContentItem } from "@/lib/content/types";
 import { detectVideoProvider, youtubePoster } from "@/lib/content/slug";
 import { track } from "@/lib/content/analytics";
+import { getLibraryHref } from "@/lib/content/library-href";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { ChevronLeft, ChevronRight, Maximize2, Share2, Download, BookOpen, ScrollText, X } from "lucide-react";
+
+const MODE_STORAGE_KEY = "sula:pdf:viewmode";
 
 export default function ContentViewer() {
   const { slug = "" } = useParams();
