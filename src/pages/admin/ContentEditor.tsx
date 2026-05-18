@@ -9,7 +9,7 @@ import {
   updateItem,
 } from "@/lib/content/api";
 import type { ContentItem, ContentType } from "@/lib/content/types";
-import { detectVideoProvider, slugify } from "@/lib/content/slug";
+import { detectVideoProvider, ensureUniqueSlug, slugify } from "@/lib/content/slug";
 import { uploadImage, uploadVideo } from "@/lib/content/upload";
 import { processPdf } from "@/lib/content/pdf-processor";
 import { Button } from "@/components/ui/button";
