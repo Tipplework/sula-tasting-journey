@@ -14,6 +14,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
+  const [mode, setMode] = useState<"in" | "up">("in");
 
   useEffect(() => {
     if (!loading && user && isAdmin) nav("/content-center", { replace: true });
@@ -22,13 +23,20 @@ export default function LoginPage() {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { error } =
+      mode === "in"
+        ? await supabase.auth.signInWithPassword({ email, password })
+        : await supabase.auth.signUp({
+            email,
+            password,
+            options: { emailRedirectTo: window.location.origin + "/content-center" },
+          });
     setBusy(false);
     if (error) {
       toast.error(error.message);
       return;
     }
-    toast.success("Signed in");
+    toast.success(mode === "in" ? "Signed in" : "Account created");
   }
 
   return (
