@@ -6,6 +6,7 @@ import type { Wine } from "@/data/wines";
 import { StarRating } from "./StarRating";
 import { SommelierQuote } from "./SommelierQuote";
 import { TastingRitual } from "./TastingRitual";
+import { BottleBackdrop } from "./BottleBackdrop";
 import { useTastingStore } from "@/store/tasting-store";
 import { logToSheets } from "@/lib/sheets-logger";
 import { useSwipeNav } from "@/hooks/use-swipe-nav";
@@ -137,19 +138,22 @@ export function WineCard({
       className="flex flex-col min-h-0 w-full max-w-full"
     >
       {/* Hero Image — bottle, contained, no clipping */}
-      <div className="relative w-full max-w-full aspect-[4/3] overflow-hidden rounded-t-2xl bg-secondary flex items-center justify-center">
+      <div className="relative w-full max-w-full aspect-[4/3] overflow-hidden rounded-t-2xl bg-[hsl(40_35%_94%)] flex items-center justify-center">
+        <BottleBackdrop flightId={session.selectedFlightId} />
         <img
           src={wine.image}
           alt={wine.name}
-          className="w-full h-full object-contain p-4"
+          className="relative z-[1] w-full h-full object-contain p-4 mix-blend-multiply drop-shadow-[0_18px_18px_rgba(60,30,20,0.18)]"
           loading={currentIndex === 0 ? undefined : "lazy"}
         />
-        <div className="absolute bottom-0 inset-x-0 h-20 bg-gradient-to-t from-background/80 via-background/20 to-transparent pointer-events-none" />
-        <div className="absolute top-4 left-4">
+        {/* Grounding shelf line */}
+        <div className="absolute left-1/2 -translate-x-1/2 bottom-5 z-[1] w-[55%] h-px bg-gradient-to-r from-transparent via-wine-gold/40 to-transparent pointer-events-none" />
+        <div className="absolute bottom-0 inset-x-0 h-20 bg-gradient-to-t from-background/80 via-background/20 to-transparent pointer-events-none z-[2]" />
+        <div className="absolute top-4 left-4 z-[3]">
           <span className="wine-badge">Wine {currentIndex + 1} • {wine.journeyTag}</span>
         </div>
         {wine.awards && wine.awards.length > 0 && (
-          <div className="absolute top-4 right-4 flex flex-col items-end gap-1">
+          <div className="absolute top-4 right-4 flex flex-col items-end gap-1 z-[3]">
             {wine.awards.slice(0, 2).map((a, i) => (
               <span
                 key={i}
