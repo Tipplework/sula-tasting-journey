@@ -397,7 +397,7 @@ export const wines: Wine[] = [
     subtitle: "Sparkling Rosé",
     journeyTag: "Fresh",
     description:
-      "The happiest sparkling rosé — pure bliss, full of tropical notes. Gold at International Wine Challenge.",
+      "Experience Sula's Tropicale Rosé, India's first and only Gold winner at the International Wine Challenge. A refreshing burst of tropical fruit and berry flavours, perfect for any celebration.",
     notes: ["Tropical fruit", "Berries", "Citrus zest"],
     awards: [{ medal: "Gold", competition: "International Wine Challenge" }],
     tastingNotes: "The happiest sparkling rosé — pure bliss, full of tropical notes.",
