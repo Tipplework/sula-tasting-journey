@@ -8,6 +8,7 @@ export interface WineResponse {
   rating: number;
   quizAnswer: string[];
   upsellClicked: string | null;
+  ritualStep?: 0 | 1 | 2 | 3;
 }
 
 export interface CookiePrefs {
