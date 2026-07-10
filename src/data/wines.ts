@@ -287,7 +287,7 @@ export const wines: Wine[] = [
     subtitle: "Provence-style Rosé",
     journeyTag: "Lively",
     description:
-      "A Provence-inspired rosé with fresh strawberry, red cherry, raspberry and a whisper of soft spice.",
+      "This is a vibrant and easy-drinking expression of this classic varietal, it delights with juicy notes of fresh strawberry, red cherry, and raspberry, layered with a subtle hint of spice and a silky smooth finish.",
     notes: ["Fresh strawberry", "Red cherry", "Raspberry", "Soft spice"],
     awards: [],
     tastingNotes:
