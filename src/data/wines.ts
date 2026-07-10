@@ -13,6 +13,8 @@ import grenacheRoseImg from "@/assets/bottles/The_Source_Grenache_Rose_2023.png.
 import sourceMoscatoImg from "@/assets/bottles/The_Source_Moscato.png.asset.json";
 import sourceCabImg from "@/assets/bottles/The_Source_Cabernet_Sauvignon_2022.png.asset.json";
 import sparklingShirazImg from "@/assets/bottles/Sula_Sparkling_Shiraz.png.asset.json";
+import sulaBrutImg from "@/assets/bottles/Sula_Brut.png.asset.json";
+import tropicaleImg from "@/assets/bottles/Sula_Brut_Tropicale.png.asset.json";
 
 export interface Award {
   medal: string;
