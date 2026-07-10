@@ -10,6 +10,9 @@ import rasaZinImg from "@/assets/bottles/Rasa_Zinfandel_2022.png.asset.json";
 import rasaSyrahImg from "@/assets/bottles/Rasa_Syrah_2022.png.asset.json";
 import rasaCabImg from "@/assets/bottles/Rasa_Cabernet_Sauvignon_2021.png.asset.json";
 import grenacheRoseImg from "@/assets/bottles/The_Source_Grenache_Rose_2023.png.asset.json";
+import sourceMoscatoImg from "@/assets/bottles/The_Source_Moscato.png.asset.json";
+import sourceCabImg from "@/assets/bottles/The_Source_Cabernet_Sauvignon_2022.png.asset.json";
+import sparklingShirazImg from "@/assets/bottles/Sula_Sparkling_Shiraz.png.asset.json";
 
 export interface Award {
   medal: string;
@@ -313,7 +316,7 @@ export const wines: Wine[] = [
     usp: "An estate Cabernet crafted for refined, everyday elegance.",
     personality: "Smooth, poised and quietly elegant.",
     personalityLabel: "Refined",
-    image: "https://thesourcevineyards.com/images/vines/source-cabernet-sauvignon.jpg",
+    image: sourceCabImg.url,
     question: "How did it feel?",
     options: ["Rich", "Smooth", "Elegant"],
     sommelierNote: "Refined and rounded — an easy, elegant red.",
@@ -340,7 +343,7 @@ export const wines: Wine[] = [
     usp: "India's first Moscato — Gold at Asian Sparkling Masters.",
     personality: "Playful, indulgent and full of vibes.",
     personalityLabel: "Playful",
-    image: "https://thesourcevineyards.com/images/vines/source-moscato.jpg",
+    image: sourceMoscatoImg.url,
     question: "Which note shines through?",
     options: ["Peach", "Apricot", "Lychee"],
     sommelierNote: "Gentle bubbles, fruit and balance — a joyful sip.",
@@ -421,7 +424,7 @@ export const wines: Wine[] = [
     usp: "Gold at India Wine Awards — a rare Indian sparkling red.",
     personality: "Playful, celebratory and delightfully bold.",
     personalityLabel: "Playful",
-    image: "https://sulavineyards.com/images/media2/home-page/sula-sparkling-shiraz-home.webp",
+    image: sparklingShirazImg.url,
     question: "What did you notice?",
     options: ["Dark berry", "Spice", "Bubbles"],
     sommelierNote: "A sparkling red — celebratory, unusual, unforgettable.",
