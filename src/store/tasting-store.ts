@@ -214,6 +214,7 @@ export function useTastingStore() {
     setWineRating,
     setQuizAnswer,
     setUpsellClick,
+    setRitualStep,
     setVibeCheck,
     setContactInfo,
     setEmail,
