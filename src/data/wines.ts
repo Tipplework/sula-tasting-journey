@@ -423,7 +423,7 @@ export const wines: Wine[] = [
     subtitle: "Sparkling Red",
     journeyTag: "Bold",
     description:
-      "India's first and only sparkling red wine — Gold at India Wine Awards. Bold, celebratory and bursting with rich berry flavours.",
+      "Uncork Sula's Sparkling Shiraz, India's first and only sparkling red wine and a Gold Medal winner at the India Wine Awards. Bold and bursting with rich berry flavours—you won't want to miss it.",
     notes: ["Dark berry", "Spice", "Fine bubbles"],
     awards: [{ medal: "Gold", competition: "India Wine Awards" }],
     tastingNotes: "Blackberry, plum and warm spice with a lift of fine bubbles.",
