@@ -314,7 +314,8 @@ export const wines: Wine[] = [
     name: "The Source Cabernet Sauvignon",
     subtitle: "Estate Cabernet",
     journeyTag: "Elegant",
-    description: "Rich, smooth and elegant — a poised expression of Nashik Cabernet.",
+    description:
+      "Enjoy The Source Cabernet Sauvignon, a delightful wine bursting with rich flavours. Its smooth finish makes it a wonderful choice for any occasion.",
     notes: ["Rich", "Smooth", "Elegant"],
     awards: [],
     tastingNotes: "Ripe plum, cocoa and gentle spice with a smooth, refined finish.",
