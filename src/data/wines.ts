@@ -68,7 +68,7 @@ export const wines: Wine[] = [
     subtitle: "Reserve White",
     journeyTag: "Crisp",
     description:
-      "Indulge in The Source Chenin Blanc Reserve, the only Indian wine to win Silver at the Concours Mondial de Bruxelles. Crisp, vibrant, with notes of ripe pear and honey.",
+      "Indulge in The Source Chenin Blanc Reserve, the only Indian wine to win Silver at the Concours Mondial de Bruxelles. Crisp, vibrant, with notes of ripe pear and honey—truly one of a kind.",
     notes: ["Pear", "Honey", "Crisp"],
     awards: [{ medal: "Silver", competition: "Concours Mondial de Bruxelles" }],
     tastingNotes: "Ripe pear, orange blossom and gentle honey on a crisp, luminous finish.",
