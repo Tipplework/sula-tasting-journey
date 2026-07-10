@@ -209,18 +209,25 @@ export function WineCard({
           <span>{wine.usp}</span>
         </div>
 
-        {/* Food Pairing */}
+        {/* Recommended Pairings */}
         <div className="space-y-2.5">
           <h3 className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-foreground/70">
-            Try this with…
+            Recommended Pairings
           </h3>
-          <div className="flex flex-wrap gap-2">
-            {wine.foodPairing.map((food) => (
-              <span key={food} className="wine-tag">
-                {food}
-              </span>
-            ))}
-          </div>
+          {wine.foodPairing.length > 0 ? (
+            <div className="flex flex-wrap gap-2">
+              {wine.foodPairing.map((food) => (
+                <span key={food} className="wine-tag">
+                  {food}
+                </span>
+              ))}
+            </div>
+          ) : (
+            <p className="text-[0.85rem] italic text-foreground/70 leading-relaxed">
+              {wine.pairingNote ||
+                "Ask our wine guide for today's pairing recommendation."}
+            </p>
+          )}
         </div>
 
         {/* Divider */}

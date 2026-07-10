@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useTastingStore, CURRENT_PRIVACY_VERSION } from "@/store/tasting-store";
@@ -8,24 +8,60 @@ import { PrivacyNoticeModal } from "@/components/PrivacyNoticeModal";
 import { CookieBanner } from "@/components/CookieBanner";
 import { logConsent } from "@/lib/consent/log";
 
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+// Indian mobile: optional +91 prefix, then a 10-digit number starting 6-9.
+const PHONE_RE = /^(?:\+91)?[6-9]\d{9}$/;
+
+function normalizePhone(raw: string): string {
+  // Strip spaces, dashes, parentheses. Keep leading + only.
+  const cleaned = raw.replace(/[\s\-()]/g, "");
+  return cleaned;
+}
+
 export default function WelcomePage() {
   const navigate = useNavigate();
-  const { session, setUserName, setSelectedFlight, setConsent } = useTastingStore();
+  const { session, setSelectedFlight, setConsent, setGuestProfile } = useTastingStore();
+
   const [name, setName] = useState(session.userName);
+  const [email, setEmail] = useState(session.email);
+  const [phone, setPhone] = useState(session.phone);
+  const [touched, setTouched] = useState<{ name?: boolean; email?: boolean; phone?: boolean }>({});
   const [privacyOpen, setPrivacyOpen] = useState(false);
 
+  const errors = useMemo(() => {
+    const e: { name?: string; email?: string; phone?: string } = {};
+    const n = name.trim();
+    if (!n) e.name = "Please enter your full name.";
+    else if (n.length < 2) e.name = "Name must be at least 2 characters.";
+
+    const em = email.trim();
+    if (!em) e.email = "Please enter your email address.";
+    else if (!EMAIL_RE.test(em)) e.email = "Enter a valid email address.";
+
+    const ph = normalizePhone(phone);
+    if (!ph) e.phone = "Please enter your mobile number.";
+    else if (!/^\+?\d+$/.test(ph)) e.phone = "Numbers only (an optional +91 prefix is allowed).";
+    else if (!PHONE_RE.test(ph)) e.phone = "Enter a 10-digit Indian mobile number.";
+
+    return e;
+  }, [name, email, phone]);
+
   const flightSelected = !!session.selectedFlightId;
-  const nameEntered = name.trim().length > 0;
   const consentGiven = session.consent.accepted;
-  const canStart = flightSelected && nameEntered && consentGiven;
+  const formValid = !errors.name && !errors.email && !errors.phone;
+  const canStart = flightSelected && formValid && consentGiven;
 
   const handleStart = () => {
+    setTouched({ name: true, email: true, phone: true });
     if (!canStart) return;
-    const clean = name.trim();
-    setUserName(clean);
-    // Fire-and-forget consent log
+
+    const clean = { name: name.trim(), email: email.trim(), phone: normalizePhone(phone) };
+    setGuestProfile({ name: clean.name, email: clean.email, phone: clean.phone, city: session.city });
+
     void logConsent({
-      guestName: clean,
+      guestName: clean.name,
+      guestEmail: clean.email,
+      guestPhone: clean.phone,
       flightId: session.selectedFlightId,
       consentVersion: CURRENT_PRIVACY_VERSION,
       privacyVersion: CURRENT_PRIVACY_VERSION,
@@ -83,25 +119,71 @@ export default function WelcomePage() {
             onSelect={(id) => setSelectedFlight(id)}
           />
 
-          {/* Name input */}
+          {/* Guest details */}
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15, duration: 0.4 }}
-            className="space-y-3"
+            className="space-y-3 text-left"
           >
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="What should we call you?"
-              maxLength={60}
-              className="w-full text-center px-5 py-3.5 rounded-full bg-card border border-border text-foreground placeholder:text-muted-foreground/50 text-sm focus:outline-none focus:ring-2 focus:ring-wine-gold/40 transition-all"
-              onKeyDown={(e) => e.key === "Enter" && handleStart()}
-            />
+            <div className="space-y-1">
+              <input
+                type="text"
+                autoFocus
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                onBlur={() => setTouched((t) => ({ ...t, name: true }))}
+                placeholder="Full name"
+                autoComplete="name"
+                maxLength={80}
+                aria-invalid={!!(touched.name && errors.name)}
+                className="w-full text-center px-5 py-3.5 rounded-full bg-card border border-border text-foreground placeholder:text-muted-foreground/50 text-sm focus:outline-none focus:ring-2 focus:ring-wine-gold/40 transition-all"
+              />
+              {touched.name && errors.name && (
+                <p className="text-[0.7rem] text-destructive px-4">{errors.name}</p>
+              )}
+            </div>
+
+            <div className="space-y-1">
+              <input
+                type="email"
+                inputMode="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                onBlur={() => setTouched((t) => ({ ...t, email: true }))}
+                placeholder="Email address"
+                autoComplete="email"
+                maxLength={120}
+                aria-invalid={!!(touched.email && errors.email)}
+                className="w-full text-center px-5 py-3.5 rounded-full bg-card border border-border text-foreground placeholder:text-muted-foreground/50 text-sm focus:outline-none focus:ring-2 focus:ring-wine-gold/40 transition-all"
+              />
+              {touched.email && errors.email && (
+                <p className="text-[0.7rem] text-destructive px-4">{errors.email}</p>
+              )}
+            </div>
+
+            <div className="space-y-1">
+              <input
+                type="tel"
+                inputMode="tel"
+                pattern="[0-9+]*"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                onBlur={() => setTouched((t) => ({ ...t, phone: true }))}
+                placeholder="Mobile number (10 digits)"
+                autoComplete="tel"
+                maxLength={14}
+                aria-invalid={!!(touched.phone && errors.phone)}
+                className="w-full text-center px-5 py-3.5 rounded-full bg-card border border-border text-foreground placeholder:text-muted-foreground/50 text-sm focus:outline-none focus:ring-2 focus:ring-wine-gold/40 transition-all"
+                onKeyDown={(e) => e.key === "Enter" && handleStart()}
+              />
+              {touched.phone && errors.phone && (
+                <p className="text-[0.7rem] text-destructive px-4">{errors.phone}</p>
+              )}
+            </div>
 
             {/* DPDP Consent */}
-            <label className="flex items-start gap-2.5 text-left px-1 cursor-pointer">
+            <label className="flex items-start gap-2.5 px-1 cursor-pointer pt-1">
               <input
                 type="checkbox"
                 checked={consentGiven}
