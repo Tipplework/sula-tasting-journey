@@ -421,7 +421,7 @@ export const wines: Wine[] = [
     subtitle: "Sparkling Red",
     journeyTag: "Bold",
     description:
-      "A bold, celebratory sparkling red — Gold at India Wine Awards. Rare, playful and unforgettable.",
+      "India's first and only sparkling red wine — Gold at India Wine Awards. Bold, celebratory and bursting with rich berry flavours.",
     notes: ["Dark berry", "Spice", "Fine bubbles"],
     awards: [{ medal: "Gold", competition: "India Wine Awards" }],
     tastingNotes: "Blackberry, plum and warm spice with a lift of fine bubbles.",
