@@ -169,7 +169,7 @@ export async function fetchCatalogue(includeInactive = false): Promise<Catalogue
 // ─── Admin CRUD ───────────────────────────────────────────
 
 export async function upsertWine(w: Wine, sortOrder: number): Promise<void> {
-  const { error } = await supabase.from("wines").upsert(wineToRow(w, sortOrder));
+  const { error } = await supabase.from("wines").upsert(wineToRow(w, sortOrder) as never);
   if (error) throw error;
 }
 
