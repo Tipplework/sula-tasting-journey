@@ -261,7 +261,7 @@ export const wines: Wine[] = [
     subtitle: "Flagship Cabernet",
     journeyTag: "Flagship",
     description:
-      "Our flagship — the first Indian Gold winner at the Global Cabernet Sauvignon Masters 2024.",
+      "Luxuriate in Rasa Cabernet Sauvignon, our flagship red wine and the first Indian wine to win a Gold Medal at the Global Cabernet Sauvignon Masters 2024. With its deep flavours, it's a must-have for any wine enthusiast.",
     notes: ["Blackcurrant", "Cedar", "Structured"],
     awards: [{ medal: "Gold", competition: "Global Cabernet Sauvignon Masters 2024" }],
     tastingNotes: "Blackcurrant, tobacco and cedar with fine, silken tannins.",
