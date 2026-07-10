@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import type { Wine } from "@/data/wines";
 import { StarRating } from "./StarRating";
 import { SommelierQuote } from "./SommelierQuote";
+import { TastingRitual } from "./TastingRitual";
 import { useTastingStore } from "@/store/tasting-store";
 import { logToSheets } from "@/lib/sheets-logger";
 import { useSwipeNav } from "@/hooks/use-swipe-nav";
