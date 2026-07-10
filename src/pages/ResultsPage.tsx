@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Camera, ExternalLink, Star, Wine as WineIcon } from "lucide-react";
 import { toast } from "sonner";
-import { wines, personalityResults } from "@/data/wines";
+import { personalityResults } from "@/data/wines";
+import { useCatalogue } from "@/lib/catalogue/useCatalogue";
 import { useTastingStore } from "@/store/tasting-store";
 import { SommelierQuote } from "@/components/SommelierQuote";
 import { logToSheets } from "@/lib/sheets-logger";
@@ -12,6 +13,7 @@ const SULA_GOOGLE_REVIEW = "https://www.google.com/search?q=sula+vineyards+nashi
 
 export default function ResultsPage() {
   const { session, getPersonality, setGuestProfile } = useTastingStore();
+  const { wines } = useCatalogue();
   const [phone, setPhone] = useState(session.phone || "");
   const [city, setCity] = useState(session.city || "");
   const [name, setName] = useState(session.userName || "");
