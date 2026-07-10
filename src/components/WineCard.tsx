@@ -229,7 +229,7 @@ export function WineCard({
 
         {/* Quiz */}
         <div className="space-y-3">
-          <p className="font-heading text-lg font-semibold">
+          <p className="font-heading text-xl font-semibold text-foreground leading-snug">
             {wine.question}
           </p>
           <div className="flex flex-wrap gap-2">
@@ -253,7 +253,7 @@ export function WineCard({
 
         {/* Star Rating */}
         <div className="space-y-2">
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm font-medium text-foreground/80">
             Rate this wine
           </p>
           <StarRating
