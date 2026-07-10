@@ -149,7 +149,7 @@ export function WineCard({
         {/* Grounding shelf line */}
         <div className="absolute left-1/2 -translate-x-1/2 bottom-5 z-[1] w-[55%] h-px bg-gradient-to-r from-transparent via-wine-gold/40 to-transparent pointer-events-none" />
         <div className="absolute bottom-0 inset-x-0 h-20 bg-gradient-to-t from-background/80 via-background/20 to-transparent pointer-events-none z-[2]" />
-        <div className="absolute top-4 left-4">
+        <div className="absolute top-4 left-4 z-[3]">
           <span className="wine-badge">Wine {currentIndex + 1} • {wine.journeyTag}</span>
         </div>
         {wine.awards && wine.awards.length > 0 && (
