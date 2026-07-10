@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import type { Wine } from "@/data/wines";
 import { StarRating } from "./StarRating";
 import { SommelierQuote } from "./SommelierQuote";
+import { TastingRitual } from "./TastingRitual";
 import { useTastingStore } from "@/store/tasting-store";
 import { logToSheets } from "@/lib/sheets-logger";
 import { useSwipeNav } from "@/hooks/use-swipe-nav";
@@ -179,22 +180,18 @@ export function WineCard({
           <SommelierQuote quote={wine.sommelierNote} />
         </div>
 
-        {/* Guided Tasting Steps */}
-        <div className="space-y-2.5">
-          <h3 className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-foreground/70">
-            How to taste
-          </h3>
-          <ol className="space-y-2">
-            {wine.tastingSteps.map((step, i) => (
-              <li key={step} className="flex items-start gap-2.5 text-[0.95rem] leading-relaxed text-foreground">
-                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-wine-gold-light text-foreground text-xs font-semibold inline-flex items-center justify-center mt-0.5">
-                  {i + 1}
-                </span>
-                <span>{step}</span>
-              </li>
-            ))}
-          </ol>
-        </div>
+        {/* Guided Tasting Ritual — interactive */}
+        <TastingRitual
+          wineId={wine.id}
+          onComplete={() => {
+            // Gentle scroll to the quiz once the ritual completes
+            requestAnimationFrame(() => {
+              document
+                .getElementById(`wine-quiz-${wine.id}`)
+                ?.scrollIntoView({ behavior: "smooth", block: "center" });
+            });
+          }}
+        />
 
         {/* Tasting Notes */}
         <div className="space-y-2">
@@ -228,7 +225,7 @@ export function WineCard({
         <div className="border-t border-border/60" />
 
         {/* Quiz */}
-        <div className="space-y-3">
+        <div id={`wine-quiz-${wine.id}`} className="space-y-3 scroll-mt-24">
           <p className="font-heading text-xl font-semibold text-foreground leading-snug">
             {wine.question}
           </p>
