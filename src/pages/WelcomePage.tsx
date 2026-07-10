@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { useTastingStore } from "@/store/tasting-store";
+import { useTastingStore, CURRENT_PRIVACY_VERSION } from "@/store/tasting-store";
 import { SommelierQuote } from "@/components/SommelierQuote";
 import { FlightSelector } from "@/components/FlightSelector";
 import { PrivacyNoticeModal } from "@/components/PrivacyNoticeModal";
 import { CookieBanner } from "@/components/CookieBanner";
+import { logConsent } from "@/lib/consent/log";
 
 export default function WelcomePage() {
   const navigate = useNavigate();
@@ -20,7 +21,15 @@ export default function WelcomePage() {
 
   const handleStart = () => {
     if (!canStart) return;
-    setUserName(name.trim());
+    const clean = name.trim();
+    setUserName(clean);
+    // Fire-and-forget consent log
+    void logConsent({
+      guestName: clean,
+      flightId: session.selectedFlightId,
+      consentVersion: CURRENT_PRIVACY_VERSION,
+      privacyVersion: CURRENT_PRIVACY_VERSION,
+    });
     navigate("/how-to-enjoy");
   };
 
