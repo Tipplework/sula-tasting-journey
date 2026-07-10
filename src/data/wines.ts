@@ -339,11 +339,11 @@ export const wines: Wine[] = [
     subtitle: "Sparkling Sweet",
     journeyTag: "Indulgent",
     description:
-      "Lightly sparkling with peach, apricot and lychee. Gold at Asian Sparkling Masters.",
-    notes: ["Peach", "Apricot", "Lychee"],
+      "India's first Moscato — sweet notes of peach and apricot with a refreshing, bubbly finish. Gold at Asian Sparkling Masters.",
+    notes: ["Peach", "Apricot", "Bubbly"],
     awards: [{ medal: "Gold", competition: "Asian Sparkling Masters" }],
     tastingNotes:
-      "Lightly sparkling with expressive notes of citrus, lychee and peach — a perfect balance of acidity and sweetness.",
+      "Sweet notes of peach and apricot, complemented by a refreshing, bubbly finish.",
     foodPairing: ["Cheese Platter", "Kanda Bhaji", "Fruit Dessert"],
     vivino: "https://www.vivino.com/US/en/sula-vineyards-the-source-moscato-nashik/w/12872619",
     usp: "India's first Moscato — Gold at Asian Sparkling Masters.",
@@ -351,7 +351,7 @@ export const wines: Wine[] = [
     personalityLabel: "Playful",
     image: sourceMoscatoImg.url,
     question: "Which note shines through?",
-    options: ["Peach", "Apricot", "Lychee"],
+    options: ["Peach", "Apricot", "Bubbly finish"],
     sommelierNote: "Gentle bubbles, fruit and balance — a joyful sip.",
     tastingSteps: defaultSteps,
     nextPour: "Sparkling Shiraz",
