@@ -2,6 +2,8 @@ import { supabase } from "@/integrations/supabase/client";
 
 export interface LogConsentInput {
   guestName: string;
+  guestEmail?: string;
+  guestPhone?: string;
   flightId: string | null;
   consentVersion: string;
   privacyVersion: string;
@@ -45,7 +47,11 @@ export async function logConsent(input: LogConsentInput): Promise<void> {
     sessionId: sessionId(),
     userAgent: navigator.userAgent || null,
     source: "web",
-    metadata: {},
+    metadata: {
+      email: input.guestEmail || null,
+      phone: input.guestPhone || null,
+      capturedAt: new Date().toISOString(),
+    },
   };
 
   try {
