@@ -63,6 +63,7 @@ function seedImageFor(id: number): string {
 
 export function rowToWine(row: WineRow): Wine {
   const seed = seedWines.find((w) => w.id === row.id);
+  const foodPairing = arr<string>(row.food_pairing);
   return {
     id: row.id,
     slug: row.slug,
@@ -70,7 +71,8 @@ export function rowToWine(row: WineRow): Wine {
     subtitle: row.subtitle,
     journeyTag: row.journey_tag,
     tastingNotes: row.tasting_notes,
-    foodPairing: arr<string>(row.food_pairing),
+    foodPairing,
+    pairingNote: foodPairing.length === 0 ? seed?.pairingNote : undefined,
     vivino: row.vivino,
     usp: row.usp,
     personality: row.personality,
