@@ -65,6 +65,8 @@ export default function ContentCenter() {
             </p>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
+            <Link to="/content-center/wines"><Button size="sm" variant="outline" className="h-10 sm:h-9">Wines &amp; Flights</Button></Link>
+            <Link to="/content-center/privacy"><Button size="sm" variant="outline" className="h-10 sm:h-9">Privacy</Button></Link>
             <Link to="/content-center/homepage"><Button size="sm" variant="outline" className="h-10 sm:h-9">Edit homepage</Button></Link>
             <Link to="/content-center/new"><Button size="sm" className="h-10 sm:h-9">New content</Button></Link>
             <Button size="sm" variant="ghost" className="h-10 sm:h-9" onClick={signOut}>Sign out</Button>

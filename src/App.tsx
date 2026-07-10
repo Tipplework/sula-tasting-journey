@@ -11,6 +11,8 @@ import AdminGate from "./pages/admin/AdminGate";
 import ContentCenter from "./pages/admin/ContentCenter";
 import ContentEditor from "./pages/admin/ContentEditor";
 import HomepageEditor from "./pages/admin/HomepageEditor";
+import PrivacyCenter from "./pages/admin/PrivacyCenter";
+import WinesFlightsCenter from "./pages/admin/WinesFlightsCenter";
 import ContentViewer from "./pages/content/ContentViewer";
 
 export default function App() {
@@ -30,6 +32,8 @@ export default function App() {
         <Route path="/content-center/homepage" element={<AdminGate><HomepageEditor /></AdminGate>} />
         <Route path="/content-center/new" element={<AdminGate><ContentEditor /></AdminGate>} />
         <Route path="/content-center/:id/edit" element={<AdminGate><ContentEditor /></AdminGate>} />
+        <Route path="/content-center/privacy" element={<AdminGate><PrivacyCenter /></AdminGate>} />
+        <Route path="/content-center/wines" element={<AdminGate><WinesFlightsCenter /></AdminGate>} />
         <Route path="/c/:slug" element={<ContentViewer />} />
       </Routes>
       <Toaster position="top-center" />

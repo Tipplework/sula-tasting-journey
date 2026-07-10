@@ -13,6 +13,8 @@ import grenacheRoseImg from "@/assets/bottles/The_Source_Grenache_Rose_2023.png.
 import sourceMoscatoImg from "@/assets/bottles/The_Source_Moscato.png.asset.json";
 import sourceCabImg from "@/assets/bottles/The_Source_Cabernet_Sauvignon_2022.png.asset.json";
 import sparklingShirazImg from "@/assets/bottles/Sula_Sparkling_Shiraz.png.asset.json";
+import sulaBrutImg from "@/assets/bottles/Sula_Brut.png.asset.json";
+import tropicaleImg from "@/assets/bottles/Sula_Brut_Tropicale.png.asset.json";
 
 export interface Award {
   medal: string;
@@ -372,7 +374,7 @@ export const wines: Wine[] = [
     usp: "India's benchmark traditional-method sparkling.",
     personality: "Crisp, bright and celebratory.",
     personalityLabel: "Cheerful",
-    image: "https://sulavineyards.com/images/media2/home-page/sula-brut-home.webp",
+    image: sulaBrutImg.url,
     question: "What did you feel?",
     options: ["Citrus", "Green apple", "Brioche"],
     sommelierNote: "Bright and mineral — a classic start to a celebration.",
@@ -398,7 +400,7 @@ export const wines: Wine[] = [
     usp: "India's favourite sparkling — Gold at International Wine Challenge.",
     personality: "Cheerful & vibrant — perfect for celebrations.",
     personalityLabel: "Cheerful",
-    image: "https://sulavineyards.com/images/media2/home-page/sula-brut-tropicale-home.webp",
+    image: tropicaleImg.url,
     question: "What did you feel?",
     options: ["Tropical fruit", "Berries", "Citrus zest"],
     sommelierNote: "Light and joyful — a sparkling rosé to wake up your palate.",
