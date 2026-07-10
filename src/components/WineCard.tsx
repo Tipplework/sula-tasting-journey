@@ -6,6 +6,7 @@ import type { Wine } from "@/data/wines";
 import { StarRating } from "./StarRating";
 import { SommelierQuote } from "./SommelierQuote";
 import { TastingRitual } from "./TastingRitual";
+import { BottleBackdrop } from "./BottleBackdrop";
 import { useTastingStore } from "@/store/tasting-store";
 import { logToSheets } from "@/lib/sheets-logger";
 import { useSwipeNav } from "@/hooks/use-swipe-nav";
