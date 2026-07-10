@@ -270,6 +270,81 @@ export type Database = {
         }
         Relationships: []
       }
+      flight_wines: {
+        Row: {
+          created_at: string
+          flight_id: string
+          position: number
+          wine_id: number
+        }
+        Insert: {
+          created_at?: string
+          flight_id: string
+          position: number
+          wine_id: number
+        }
+        Update: {
+          created_at?: string
+          flight_id?: string
+          position?: number
+          wine_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "flight_wines_flight_id_fkey"
+            columns: ["flight_id"]
+            isOneToOne: false
+            referencedRelation: "flights"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "flight_wines_wine_id_fkey"
+            columns: ["wine_id"]
+            isOneToOne: false
+            referencedRelation: "wines"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      flights: {
+        Row: {
+          active: boolean
+          code: string
+          created_at: string
+          description: string
+          glyph: string
+          id: string
+          name: string
+          sort_order: number
+          subtitle: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          code: string
+          created_at?: string
+          description?: string
+          glyph?: string
+          id: string
+          name: string
+          sort_order?: number
+          subtitle?: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          code?: string
+          created_at?: string
+          description?: string
+          glyph?: string
+          id?: string
+          name?: string
+          sort_order?: number
+          subtitle?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       homepage_sections: {
         Row: {
           created_at: string
@@ -405,6 +480,90 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
+        }
+        Relationships: []
+      }
+      wines: {
+        Row: {
+          active: boolean
+          awards: Json
+          created_at: string
+          description: string
+          food_pairing: Json
+          id: number
+          image: string
+          journey_tag: string
+          name: string
+          next_pour: string
+          next_pour_reason: string
+          notes: Json
+          options: Json
+          personality: string
+          personality_label: string
+          question: string
+          slug: string
+          sommelier_note: string
+          sort_order: number
+          subtitle: string
+          tasting_notes: string
+          tasting_steps: Json
+          updated_at: string
+          usp: string
+          vivino: string
+        }
+        Insert: {
+          active?: boolean
+          awards?: Json
+          created_at?: string
+          description?: string
+          food_pairing?: Json
+          id: number
+          image?: string
+          journey_tag?: string
+          name: string
+          next_pour?: string
+          next_pour_reason?: string
+          notes?: Json
+          options?: Json
+          personality?: string
+          personality_label?: string
+          question?: string
+          slug: string
+          sommelier_note?: string
+          sort_order?: number
+          subtitle?: string
+          tasting_notes?: string
+          tasting_steps?: Json
+          updated_at?: string
+          usp?: string
+          vivino?: string
+        }
+        Update: {
+          active?: boolean
+          awards?: Json
+          created_at?: string
+          description?: string
+          food_pairing?: Json
+          id?: number
+          image?: string
+          journey_tag?: string
+          name?: string
+          next_pour?: string
+          next_pour_reason?: string
+          notes?: Json
+          options?: Json
+          personality?: string
+          personality_label?: string
+          question?: string
+          slug?: string
+          sommelier_note?: string
+          sort_order?: number
+          subtitle?: string
+          tasting_notes?: string
+          tasting_steps?: Json
+          updated_at?: string
+          usp?: string
+          vivino?: string
         }
         Relationships: []
       }
