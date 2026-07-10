@@ -70,12 +70,12 @@ export function TastingRitual({ wineId, onComplete }: TastingRitualProps) {
   const glyphAnim = useMemo(() => {
     if (prefersReducedMotion) return {};
     if (activeStep === 0) {
-      return { rotate: [-8, 8, -8], transition: { duration: 2.4, repeat: Infinity, ease: "easeInOut" } };
+      return { rotate: [-8, 8, -8], transition: { duration: 2.4, repeat: Infinity, ease: "easeInOut" as const } };
     }
     if (activeStep === 1) {
-      return { y: [0, -3, 0], transition: { duration: 1.6, repeat: Infinity, ease: "easeInOut" } };
+      return { y: [0, -3, 0], transition: { duration: 1.6, repeat: Infinity, ease: "easeInOut" as const } };
     }
-    return { scale: [1, 1.06, 1], transition: { duration: 1.8, repeat: Infinity, ease: "easeInOut" } };
+    return { scale: [1, 1.06, 1], transition: { duration: 1.8, repeat: Infinity, ease: "easeInOut" as const } };
   }, [activeStep, prefersReducedMotion]);
 
   return (
