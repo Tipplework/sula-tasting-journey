@@ -160,6 +160,17 @@ export function useTastingStore() {
     });
   };
 
+  const setRitualStep = (wineId: number, step: 0 | 1 | 2 | 3) => {
+    const existing = globalSession.responses[wineId] || {
+      wineId, rating: 0, quizAnswer: [], upsellClicked: null,
+    };
+    commit({
+      ...globalSession,
+      responses: { ...globalSession.responses, [wineId]: { ...existing, ritualStep: step } },
+    });
+  };
+
+
   const setVibeCheck = (vibe: string) => commit({ ...globalSession, vibeCheck: vibe });
   const setContactInfo = (info: string) => commit({ ...globalSession, contactInfo: info, completed: true });
   const setEmail = (email: string) => commit({ ...globalSession, email });
