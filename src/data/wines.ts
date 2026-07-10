@@ -341,7 +341,7 @@ export const wines: Wine[] = [
     subtitle: "Sparkling Sweet",
     journeyTag: "Indulgent",
     description:
-      "India's first Moscato — sweet notes of peach and apricot with a refreshing, bubbly finish. Gold at Asian Sparkling Masters.",
+      "Discover The Source Moscato, India's first Moscato and a Gold medal winner at the Asian Sparkling Masters. Indulge in its sweet notes of peach and apricot, complemented by a refreshing, bubbly finish.",
     notes: ["Peach", "Apricot", "Bubbly"],
     awards: [{ medal: "Gold", competition: "Asian Sparkling Masters" }],
     tastingNotes:
