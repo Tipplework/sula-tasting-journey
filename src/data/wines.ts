@@ -227,17 +227,17 @@ export const wines: Wine[] = [
     subtitle: "Premium Syrah",
     journeyTag: "Bold",
     description:
-      "A delicious Syrah, rich and opulent, with a touch of Viognier for more suppleness. Gold at Paris Wine Cup and Silver at Syrah du Monde.",
+      "Indulge in Rasa Syrah, a Gold winner at the Paris Wine Cup and Silver at Syrah Du Monde. With fragrant aromas and a hint of black pepper spice, it's simply delightful.",
     notes: ["Deep spice", "Dark fruit", "Smooth"],
     awards: [
       { medal: "Gold", competition: "Paris Wine Cup" },
-      { medal: "Silver", competition: "Syrah du Monde" },
+      { medal: "Silver", competition: "Syrah Du Monde" },
     ],
     tastingNotes:
       "Cassis, black pepper and violet with a supple, long finish — polished and full of character.",
     foodPairing: ["Tandoori Chicken", "Wine Glazed Wings", "Cheese Platter"],
     vivino: "https://www.vivino.com/US/en/sula-vineyards-rasa-syrah-nashik-red-wine/w/1176482",
-    usp: "Ranked #1 among Indian reds; Gold at Paris Wine Cup.",
+    usp: "Gold at Paris Wine Cup; Silver at Syrah Du Monde.",
     personality: "Powerful, indulgent and unforgettable.",
     personalityLabel: "Bold Explorer",
     image: rasaSyrahImg.url,
