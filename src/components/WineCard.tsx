@@ -165,11 +165,11 @@ export function WineCard({
       <div className="px-5 pt-5 pb-6 space-y-6 w-full max-w-full">
         {/* Name & Personality */}
         <div className="space-y-2">
-          <h2 className="text-2xl font-heading font-bold leading-tight tracking-tight">
+          <h2 className="text-[1.65rem] sm:text-3xl font-heading font-bold leading-[1.15] tracking-tight text-foreground">
             {wine.name}
           </h2>
           <span className="wine-badge">{wine.personalityLabel}</span>
-          <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
+          <p className="text-base text-foreground/85 mt-2 leading-relaxed">
             {wine.personality}
           </p>
         </div>
@@ -181,13 +181,13 @@ export function WineCard({
 
         {/* Guided Tasting Steps */}
         <div className="space-y-2.5">
-          <h3 className="text-[0.65rem] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
+          <h3 className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-foreground/70">
             How to taste
           </h3>
-          <ol className="space-y-1.5">
+          <ol className="space-y-2">
             {wine.tastingSteps.map((step, i) => (
-              <li key={step} className="flex items-start gap-2.5 text-sm leading-relaxed">
-                <span className="flex-shrink-0 w-5 h-5 rounded-full bg-wine-gold-light text-foreground text-[0.7rem] font-semibold inline-flex items-center justify-center mt-0.5">
+              <li key={step} className="flex items-start gap-2.5 text-[0.95rem] leading-relaxed text-foreground">
+                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-wine-gold-light text-foreground text-xs font-semibold inline-flex items-center justify-center mt-0.5">
                   {i + 1}
                 </span>
                 <span>{step}</span>
@@ -198,21 +198,21 @@ export function WineCard({
 
         {/* Tasting Notes */}
         <div className="space-y-2">
-          <h3 className="text-[0.65rem] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
+          <h3 className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-foreground/70">
             Tasting Notes
           </h3>
-          <p className="text-sm leading-[1.7] whitespace-pre-line">{wine.tastingNotes}</p>
+          <p className="text-[0.98rem] leading-[1.7] whitespace-pre-line text-foreground">{wine.tastingNotes}</p>
         </div>
 
         {/* USP */}
-        <div className="flex items-start gap-2 text-xs text-muted-foreground leading-relaxed">
-          <WineIcon size={13} className="text-wine-gold flex-shrink-0 mt-0.5" />
+        <div className="flex items-start gap-2 text-[0.8rem] text-foreground/75 leading-relaxed">
+          <WineIcon size={14} className="text-wine-gold flex-shrink-0 mt-0.5" />
           <span>{wine.usp}</span>
         </div>
 
         {/* Food Pairing */}
         <div className="space-y-2.5">
-          <h3 className="text-[0.65rem] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
+          <h3 className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-foreground/70">
             Try this with…
           </h3>
           <div className="flex flex-wrap gap-2">
