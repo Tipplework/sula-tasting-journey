@@ -153,7 +153,7 @@ export function WineCard({
           <span className="wine-badge">Wine {currentIndex + 1} • {wine.journeyTag}</span>
         </div>
         {wine.awards && wine.awards.length > 0 && (
-          <div className="absolute top-4 right-4 flex flex-col items-end gap-1">
+          <div className="absolute top-4 right-4 flex flex-col items-end gap-1 z-[3]">
             {wine.awards.slice(0, 2).map((a, i) => (
               <span
                 key={i}
