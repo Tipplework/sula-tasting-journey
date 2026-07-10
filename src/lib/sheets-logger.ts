@@ -53,7 +53,7 @@ async function send(payload: SheetsPayload): Promise<boolean> {
 /** Reads analytics consent from persisted tasting-store cookies. Default: denied. */
 function analyticsAllowed(): boolean {
   try {
-    const raw = localStorage.getItem("sulaTastingSession");
+    const raw = localStorage.getItem("sulaTastingSession/v2");
     if (!raw) return false;
     const parsed = JSON.parse(raw);
     return Boolean(parsed?.cookies?.analytics);
