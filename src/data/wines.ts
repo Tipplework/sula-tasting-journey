@@ -33,6 +33,7 @@ export interface Wine {
   journeyTag: string;
   tastingNotes: string;
   foodPairing: string[];
+  pairingNote?: string;
   vivino: string;
   usp: string;
   personality: string;
