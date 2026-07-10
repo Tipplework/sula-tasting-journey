@@ -29,25 +29,45 @@ function sessionId(): string {
 }
 
 /**
- * Records a DPDP-aligned consent event.
- * Never puts guest name in URLs or analytics; guest name is only sent
- * through the RLS-protected insert to `consent_logs`.
+ * Records a DPDP-aligned consent event via the `log-consent` edge function,
+ * which hashes the caller IP server-side before insert. Falls back to a
+ * direct client insert (no hashed_ip) if the function is unavailable.
  */
 export async function logConsent(input: LogConsentInput): Promise<void> {
   if (typeof window === "undefined") return;
+  const payload = {
+    guestName: input.guestName || null,
+    flightId: input.flightId,
+    consentVersion: input.consentVersion,
+    privacyVersion: input.privacyVersion,
+    browserLanguage: navigator.language || null,
+    deviceType: deviceType(),
+    sessionId: sessionId(),
+    userAgent: navigator.userAgent || null,
+    source: "web",
+    metadata: {},
+  };
+
+  try {
+    const { error } = await supabase.functions.invoke("log-consent", { body: payload });
+    if (!error) return;
+  } catch {
+    /* fall through to direct insert */
+  }
+
   try {
     await supabase.from("consent_logs").insert({
-      guest_name: input.guestName || null,
-      flight_id: input.flightId,
-      consent_version: input.consentVersion,
-      privacy_version: input.privacyVersion,
-      browser_language: navigator.language || null,
-      device_type: deviceType(),
-      session_id: sessionId(),
-      user_agent: navigator.userAgent || null,
-      hashed_ip: null, // captured server-side by future edge function
-      source: "web",
-      metadata: {},
+      guest_name: payload.guestName,
+      flight_id: payload.flightId,
+      consent_version: payload.consentVersion,
+      privacy_version: payload.privacyVersion,
+      browser_language: payload.browserLanguage,
+      device_type: payload.deviceType,
+      session_id: payload.sessionId,
+      user_agent: payload.userAgent,
+      hashed_ip: null,
+      source: payload.source,
+      metadata: payload.metadata,
     });
   } catch {
     // Never block the guest journey on logging failure
