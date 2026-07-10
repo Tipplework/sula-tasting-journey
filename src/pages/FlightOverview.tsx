@@ -45,11 +45,11 @@ export default function FlightOverview() {
               transition={{ delay: i * 0.08, duration: 0.35 }}
               className="wine-card flex items-center gap-4 p-3.5"
             >
-              <div className="w-14 h-16 rounded-xl overflow-hidden flex-shrink-0 bg-secondary flex items-center justify-center">
+              <div className="w-14 h-16 rounded-xl overflow-hidden flex-shrink-0 bg-white flex items-center justify-center">
                 <img
                   src={wine.image}
                   alt={wine.name}
-                  className="w-full h-full object-contain p-1"
+                  className="w-full h-full object-contain p-1 mix-blend-multiply"
                   loading="lazy"
                 />
               </div>
