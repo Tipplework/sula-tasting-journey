@@ -179,22 +179,18 @@ export function WineCard({
           <SommelierQuote quote={wine.sommelierNote} />
         </div>
 
-        {/* Guided Tasting Steps */}
-        <div className="space-y-2.5">
-          <h3 className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-foreground/70">
-            How to taste
-          </h3>
-          <ol className="space-y-2">
-            {wine.tastingSteps.map((step, i) => (
-              <li key={step} className="flex items-start gap-2.5 text-[0.95rem] leading-relaxed text-foreground">
-                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-wine-gold-light text-foreground text-xs font-semibold inline-flex items-center justify-center mt-0.5">
-                  {i + 1}
-                </span>
-                <span>{step}</span>
-              </li>
-            ))}
-          </ol>
-        </div>
+        {/* Guided Tasting Ritual — interactive */}
+        <TastingRitual
+          wineId={wine.id}
+          onComplete={() => {
+            // Gentle scroll to the quiz once the ritual completes
+            requestAnimationFrame(() => {
+              document
+                .getElementById(`wine-quiz-${wine.id}`)
+                ?.scrollIntoView({ behavior: "smooth", block: "center" });
+            });
+          }}
+        />
 
         {/* Tasting Notes */}
         <div className="space-y-2">
