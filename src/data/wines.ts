@@ -89,12 +89,12 @@ export const wines: Wine[] = [
   // 2
   {
     id: 2,
-    slug: "the-source-sauvignon-blanc",
-    name: "The Source Sauvignon Blanc",
-    subtitle: "Estate White",
+    slug: "the-source-sauvignon-blanc-reserve",
+    name: "The Source Sauvignon Blanc Reserve",
+    subtitle: "Reserve White",
     journeyTag: "Zesty",
     description:
-      "Experience the vibrant The Source Sauvignon Blanc, recognised as Best in Show at the India Wine Awards and Best Indian White Wine. Crisp, zesty with tropical fruit notes.",
+      "Experience the vibrant The Source Sauvignon Blanc Reserve, recognised as Best in Show at the India Wine Awards and Best Indian White Wine. Crisp, zesty with tropical fruit notes.",
     notes: ["Tropical", "Zesty", "Fresh"],
     awards: [{ medal: "Best in Show", competition: "India Wine Awards" }],
     tastingNotes: "Passionfruit, guava and citrus zest with a lively, mineral finish.",
@@ -150,12 +150,12 @@ export const wines: Wine[] = [
     notes: ["Honey", "Apricot", "Sweet"],
     awards: [
       { medal: "Silver", competition: "Paris Wine Cup" },
-      { medal: "Silver", competition: "Decanter" },
+      { medal: "Silver", competition: "Decanter World Wine Awards" },
     ],
     tastingNotes: "Golden honey, dried apricot and candied citrus in a silky, gently sweet finish.",
     foodPairing: ["Blue Cheese", "Fruit Tart", "Spicy Thai"],
     vivino: "https://www.vivino.com/search/wines?q=sula+late+harvest+chenin+blanc",
-    usp: "First Indian wine to win Silver at Paris Wine Cup and Decanter.",
+    usp: "First Indian wine to win Silver at Paris Wine Cup and Decanter World Wine Awards.",
     personality: "Rich, honeyed and indulgent — dessert in a glass.",
     personalityLabel: "Playful",
     image: lhCheninImg.url,
@@ -294,7 +294,7 @@ export const wines: Wine[] = [
     foodPairing: ["Watermelon & Feta Salad", "Kanda Bhaji", "Fish Fingers"],
     vivino:
       "https://www.vivino.com/US/en/the-source-grenache-rose-nashik-rose-wine-v-3yzcq/w/5922800",
-    usp: "Provence-style rosé — India's best rosé, sustainable winemaking.",
+    usp: "A Provence-style rosé bursting with fresh strawberry, red cherry and raspberry.",
     personality: "Romantic and sunlit — ideal for slow afternoons.",
     personalityLabel: "Romantic",
     image: grenacheRoseImg.url,
@@ -339,11 +339,11 @@ export const wines: Wine[] = [
     subtitle: "Sparkling Sweet",
     journeyTag: "Indulgent",
     description:
-      "Lightly sparkling with peach, apricot and lychee. Gold at Asian Sparkling Masters.",
-    notes: ["Peach", "Apricot", "Lychee"],
+      "India's first Moscato — sweet notes of peach and apricot with a refreshing, bubbly finish. Gold at Asian Sparkling Masters.",
+    notes: ["Peach", "Apricot", "Bubbly"],
     awards: [{ medal: "Gold", competition: "Asian Sparkling Masters" }],
     tastingNotes:
-      "Lightly sparkling with expressive notes of citrus, lychee and peach — a perfect balance of acidity and sweetness.",
+      "Sweet notes of peach and apricot, complemented by a refreshing, bubbly finish.",
     foodPairing: ["Cheese Platter", "Kanda Bhaji", "Fruit Dessert"],
     vivino: "https://www.vivino.com/US/en/sula-vineyards-the-source-moscato-nashik/w/12872619",
     usp: "India's first Moscato — Gold at Asian Sparkling Masters.",
@@ -351,7 +351,7 @@ export const wines: Wine[] = [
     personalityLabel: "Playful",
     image: sourceMoscatoImg.url,
     question: "Which note shines through?",
-    options: ["Peach", "Apricot", "Lychee"],
+    options: ["Peach", "Apricot", "Bubbly finish"],
     sommelierNote: "Gentle bubbles, fruit and balance — a joyful sip.",
     tastingSteps: defaultSteps,
     nextPour: "Sparkling Shiraz",
@@ -421,7 +421,7 @@ export const wines: Wine[] = [
     subtitle: "Sparkling Red",
     journeyTag: "Bold",
     description:
-      "A bold, celebratory sparkling red — Gold at India Wine Awards. Rare, playful and unforgettable.",
+      "India's first and only sparkling red wine — Gold at India Wine Awards. Bold, celebratory and bursting with rich berry flavours.",
     notes: ["Dark berry", "Spice", "Fine bubbles"],
     awards: [{ medal: "Gold", competition: "India Wine Awards" }],
     tastingNotes: "Blackberry, plum and warm spice with a lift of fine bubbles.",
