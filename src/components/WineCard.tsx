@@ -137,23 +137,16 @@ export function WineCard({
       transition={{ duration: 0.35, ease: "easeOut" }}
       className="flex flex-col min-h-0 w-full max-w-full"
     >
-      {/* Hero Image — bottle, contained, no clipping */}
+      {/* Hero Image — bottle on pure white, edge-to-edge */}
       <div
-        className="relative w-full max-w-full aspect-[4/3] overflow-hidden rounded-t-2xl flex items-center justify-center"
-        style={{
-          background:
-            "linear-gradient(180deg, #ffffff 0%, #ffffff 65%, hsl(40 20% 96%) 100%)",
-        }}
+        className="relative w-full max-w-full aspect-[4/5] flex items-center justify-center bg-white"
       >
         <img
           src={wine.image}
           alt={wine.name}
-          className="relative z-[1] w-full h-full object-contain p-4 mix-blend-multiply drop-shadow-[0_16px_16px_rgba(60,40,20,0.15)]"
+          className="relative z-[1] w-auto h-[88%] max-w-[70%] object-contain mix-blend-multiply"
           loading={currentIndex === 0 ? undefined : "lazy"}
         />
-        {/* Soft floor shadow under bottle */}
-        <div className="absolute left-1/2 -translate-x-1/2 bottom-4 z-[1] w-[45%] h-2 rounded-[50%] bg-black/10 blur-md pointer-events-none" />
-        <div className="absolute bottom-0 inset-x-0 h-16 bg-gradient-to-t from-background/70 via-background/10 to-transparent pointer-events-none z-[2]" />
         <div className="absolute top-4 left-4 z-[3]">
           <span className="wine-badge">Wine {currentIndex + 1} • {wine.journeyTag}</span>
         </div>
