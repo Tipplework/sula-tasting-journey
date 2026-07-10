@@ -1,13 +1,14 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { getFlight, getFlightWines } from "@/data/wines";
+import { useCatalogue } from "@/lib/catalogue/useCatalogue";
 import { useTastingStore } from "@/store/tasting-store";
 
 export default function FlightOverview() {
   const navigate = useNavigate();
   const { session } = useTastingStore();
-  const flight = getFlight(session.selectedFlightId);
+  const { flights, getFlightWines } = useCatalogue();
+  const flight = flights.find((f) => f.id === session.selectedFlightId) || null;
   const flightWines = getFlightWines(session.selectedFlightId);
 
   useEffect(() => {
