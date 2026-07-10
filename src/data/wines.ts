@@ -175,7 +175,7 @@ export const wines: Wine[] = [
     subtitle: "Oak-aged Shiraz",
     journeyTag: "Bold",
     description:
-      "India's most loved wine — a plush, spice-driven Shiraz with a Silver at Paris Wine Cup.",
+      "Taste India's most loved wine, Dindori Reserve Shiraz, a Silver medal winner at the Paris Wine Cup. With its rich, bold flavours, it promises an unforgettable experience for every wine lover.",
     notes: ["Black pepper", "Dark berry", "Spice"],
     awards: [{ medal: "Silver", competition: "Paris Wine Cup" }],
     tastingNotes: "Blackberry, cracked pepper and a lift of vanilla oak in a warm, layered finish.",
