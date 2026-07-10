@@ -14,6 +14,54 @@ export type Database = {
   }
   public: {
     Tables: {
+      consent_logs: {
+        Row: {
+          browser_language: string | null
+          consent_version: string
+          created_at: string
+          device_type: string | null
+          flight_id: string | null
+          guest_name: string | null
+          hashed_ip: string | null
+          id: string
+          metadata: Json
+          privacy_version: string
+          session_id: string | null
+          source: string
+          user_agent: string | null
+        }
+        Insert: {
+          browser_language?: string | null
+          consent_version: string
+          created_at?: string
+          device_type?: string | null
+          flight_id?: string | null
+          guest_name?: string | null
+          hashed_ip?: string | null
+          id?: string
+          metadata?: Json
+          privacy_version: string
+          session_id?: string | null
+          source?: string
+          user_agent?: string | null
+        }
+        Update: {
+          browser_language?: string | null
+          consent_version?: string
+          created_at?: string
+          device_type?: string | null
+          flight_id?: string | null
+          guest_name?: string | null
+          hashed_ip?: string | null
+          id?: string
+          metadata?: Json
+          privacy_version?: string
+          session_id?: string | null
+          source?: string
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       content_analytics: {
         Row: {
           content_item_id: string | null
@@ -186,6 +234,42 @@ export type Database = {
         }
         Relationships: []
       }
+      deletion_requests: {
+        Row: {
+          contact: string
+          created_at: string
+          guest_name: string | null
+          id: string
+          notes: string | null
+          processed_at: string | null
+          request_type: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          contact: string
+          created_at?: string
+          guest_name?: string | null
+          id?: string
+          notes?: string | null
+          processed_at?: string | null
+          request_type?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          contact?: string
+          created_at?: string
+          guest_name?: string | null
+          id?: string
+          notes?: string | null
+          processed_at?: string | null
+          request_type?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       homepage_sections: {
         Row: {
           created_at: string
@@ -228,6 +312,33 @@ export type Database = {
           subtitle?: string | null
           title?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      privacy_notice_versions: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: string
+          sections: Json
+          updated_at: string
+          version: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          sections?: Json
+          updated_at?: string
+          version: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          sections?: Json
+          updated_at?: string
+          version?: string
         }
         Relationships: []
       }

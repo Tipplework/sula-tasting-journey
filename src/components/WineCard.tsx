@@ -145,8 +145,20 @@ export function WineCard({
         />
         <div className="absolute bottom-0 inset-x-0 h-20 bg-gradient-to-t from-background/80 via-background/20 to-transparent pointer-events-none" />
         <div className="absolute top-4 left-4">
-          <span className="wine-badge">Wine {wine.id} • {wine.journeyTag}</span>
+          <span className="wine-badge">Wine {currentIndex + 1} • {wine.journeyTag}</span>
         </div>
+        {wine.awards && wine.awards.length > 0 && (
+          <div className="absolute top-4 right-4 flex flex-col items-end gap-1">
+            {wine.awards.slice(0, 2).map((a, i) => (
+              <span
+                key={i}
+                className="wine-badge !bg-wine-gold/90 !text-foreground text-[0.6rem] tracking-wide shadow-sm"
+              >
+                {a.medal} · {a.competition}
+              </span>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Content */}
