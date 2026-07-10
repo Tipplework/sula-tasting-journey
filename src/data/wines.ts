@@ -120,7 +120,7 @@ export const wines: Wine[] = [
     subtitle: "Oak-aged Chardonnay",
     journeyTag: "Elegant",
     description:
-      "India's first Gold winner at the Paris Wine Cup. A rich creamy palate with vanilla and tropical fruit.",
+      "Discover the exquisite Dindori Reserve Chardonnay, India's first Gold winner at the Paris Wine Cup. With its rich, creamy texture and notes of tropical fruit and vanilla, it's a must-try for wine lovers.",
     notes: ["Vanilla", "Tropical fruit", "Creamy"],
     awards: [{ medal: "Gold", competition: "Paris Wine Cup" }],
     tastingNotes: "Silky vanilla, ripe pineapple and toasted oak in a long, layered finish.",
