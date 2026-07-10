@@ -200,7 +200,8 @@ export const wines: Wine[] = [
     name: "Rasa Zinfandel",
     subtitle: "Premium Zinfandel",
     journeyTag: "Rich",
-    description: "A supple, jammy Zinfandel with Silver at the India Wine Awards.",
+    description:
+      "Savor Rasa Zinfandel, a Silver medal winner at the India Wine Awards. A bold yet smooth wine, aged to perfection, it promises vibrant fruit flavours, making it a memorable choice.",
     notes: ["Ripe berry", "Sweet spice", "Smooth"],
     awards: [{ medal: "Silver", competition: "India Wine Awards" }],
     tastingNotes: "Ripe raspberry, black cherry and clove in a smooth, opulent finish.",
