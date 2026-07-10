@@ -146,7 +146,7 @@ export const wines: Wine[] = [
     subtitle: "Dessert White",
     journeyTag: "Indulgent",
     description:
-      "The first Indian wine to win Silver at Paris Wine Cup and Decanter. Sweet honey flavours with luscious balance.",
+      "Bask in Sula's Late Harvest Chenin Blanc, the first Indian wine to win Silver at the Paris Wine Cup and Decanter World Wine Awards. Sweet and rich, with notes of honey, this wine is a true delight for the palate.",
     notes: ["Honey", "Apricot", "Sweet"],
     awards: [
       { medal: "Silver", competition: "Paris Wine Cup" },
