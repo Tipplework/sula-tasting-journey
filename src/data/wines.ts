@@ -89,12 +89,12 @@ export const wines: Wine[] = [
   // 2
   {
     id: 2,
-    slug: "the-source-sauvignon-blanc",
-    name: "The Source Sauvignon Blanc",
-    subtitle: "Estate White",
+    slug: "the-source-sauvignon-blanc-reserve",
+    name: "The Source Sauvignon Blanc Reserve",
+    subtitle: "Reserve White",
     journeyTag: "Zesty",
     description:
-      "Experience the vibrant The Source Sauvignon Blanc, recognised as Best in Show at the India Wine Awards and Best Indian White Wine. Crisp, zesty with tropical fruit notes.",
+      "Experience the vibrant The Source Sauvignon Blanc Reserve, recognised as Best in Show at the India Wine Awards and Best Indian White Wine. Crisp, zesty with tropical fruit notes.",
     notes: ["Tropical", "Zesty", "Fresh"],
     awards: [{ medal: "Best in Show", competition: "India Wine Awards" }],
     tastingNotes: "Passionfruit, guava and citrus zest with a lively, mineral finish.",
