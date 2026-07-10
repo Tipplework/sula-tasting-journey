@@ -1,119 +1,78 @@
-## Sula Content Experience Platform — Phase 1
+# Sula Multi-Flight Tasting + DPDP Compliance
 
-A standalone content system grafted onto the existing app. The current tasting flow (`/`, `/tasting`, `/results`, `/admin`) stays untouched. Everything new lives under `/c/*` and `/content-center/*`.
+## Scope
+Extend the existing Sula Tasting Journey with (1) a 4-flight selection experience with 16 wines total, (2) DPDP-aligned consent + privacy infrastructure, and (3) admin surfaces to manage both. Preserve all locked functionality (branding, CMS, SEO, SSR, routing, auth, sharing, analytics, tasting engine, admin, mobile).
 
-### Scope (this phase)
+## Homepage (WelcomePage)
+- Headline → "Choose Your Wine Flight"; sub-copy "Four journeys. Sixteen exceptional pours. Choose the experience that speaks to you."
+- Replace Rajeev Samant image + name with **Sula Sun** as the guide (new asset, same guide-card layout, copy unchanged otherwise).
+- Insert **Flight Selection Grid** (4 cards) between guide card and guest name:
+  Crisp & Classic (Whites), Bold & Beautiful (Reds), Sula Signature (Best of Sula), Bubbles & Bliss (Sparkling). Each card: name, subtitle, description, "4 Wines", subtle wine glyph, hover + selected states in existing palette.
+- Guest name input unchanged in style.
+- **New**: DPDP consent checkbox with link opening Privacy Notice modal.
+- "Begin My Tasting" disabled until flight + name + consent. Sub-label: "4 wines • curated journey" (removes "5 wines").
 
-In: PDF (hybrid viewer), Video, Image Gallery. Admin CMS. Public viewer with SEO, share, fullscreen, analytics. Email+password admin auth.
+## Wine Catalogue (shared records, flight assignments)
+- New `src/data/wines-catalog.ts` with 16 wine records + `flights` map (A/B/C/D). Wines that appear in multiple flights (Dindori Chardonnay, The Source Moscato) are single records referenced by both flights — no duplication.
+- Bottle images: use uploaded transparent PNGs (uploaded via Lovable Assets) plus existing URLs where already correct. Never cropped/distorted (object-contain, generous padding).
+- Fields per wine: id, slug, name, subtitle, description, tastingNotes[], awards[{medal, competition}], type, image, active, sortOrder.
 
-Out (later phases): Editorial story builder, campaign landing pages, multilingual, lead forms, gated content, offline, AI search.
+## Tasting Flow
+- Selected flight persisted in tasting store (localStorage) alongside guest name + consent record.
+- `TastingPage` loads the 4 wines from the selected flight only. Progress "Wine N of 4". Allow returning to homepage to change flights (progress preserved per-flight).
+- `WineCard` layout: large bottle hero, name, flight chip, award badge, description, notes chips, Prev/Next, progress. Whitespace generous; presentation-only edits.
+- `FlightOverview` + `ResultsPage` updated for 4 wines and flight context.
 
-### Architecture
+## DPDP Compliance
+- **Consent checkbox** on homepage; Begin disabled until accepted.
+- **Privacy Notice modal** (`PrivacyNoticeModal`) with sections: About this tasting, Information collected, Purpose, Storage, Retention, Guest Rights, Contact, Future integrations. Content served from CMS (`site_settings` or new `privacy_notice` row) with sensible defaults; version string tracked.
+- **Consent logging** table `consent_logs`: guest_name, flight_id, consent_ts, consent_version, privacy_version, browser_lang, device_type, session_id, user_agent, hashed_ip (edge fn hashes), source. RLS: insert by anon, select admin-only. Insert via a server function `logConsent` (edge-safe) that hashes IP server-side.
+- **Cookie banner** (`CookieBanner`) shown first visit only (localStorage flag): Accept / Reject Optional / Manage Preferences with categories Essential (locked on), Analytics (default off), Marketing (default off). Analytics gate applied to existing analytics calls.
+- **Data minimisation**: only name + flight + consent required; no PII in URLs, no name in analytics payloads (already the case — verify).
+- **Guest rights**: Privacy Notice includes contact + "Request access/deletion" mailto link; admin can process via consent search UI.
 
-```
-Existing (untouched):           New (this phase):
-/                               /c/:slug                  → public viewer (any type)
-/tasting                        /content-center           → admin list
-/results                        /content-center/new       → create
-/admin                          /content-center/:id/edit  → edit + preview
-                                /login                    → admin auth
-```
+## Admin — Privacy & Compliance
+- New route `/content-center/privacy` with tabs:
+  - Privacy Notice Editor (rich text per section, version bump)
+  - Consent Versioning (list versions + activate)
+  - Retention Policy (numeric days field)
+  - Privacy Contacts (email, phone)
+  - Consent Search (by name/date/flight) + CSV Export
+  - Audit Log (consent + deletion actions)
+  - Deletion Requests (list, mark processed)
+- Link in Content Center header.
 
-`/c/:slug` is one route that switches viewer by `content_type`. Subdomain split (`pdfs.discoversula.com`) is a DNS-only concern handled at publish time — same code serves both.
+## Admin — Wine & Flight CMS
+- New route `/content-center/wines` — list all 16 wines: edit description, image URL, award, notes, sort order, active toggle.
+- New route `/content-center/flights` — 4 flight rows: intro copy, active toggle, wine order within flight.
+- Wines/flights tables (new): `wines`, `flights`, `flight_wines` (join, sort_order). RLS: public read active, admin write.
 
-### 1. Lovable Cloud setup
+## Database (migrations)
+- `wines` (id uuid, slug text unique, name, subtitle, description, image_url, type, notes jsonb, awards jsonb, active bool, created_at)
+- `flights` (id uuid, code text unique [A/B/C/D], name, subtitle, description, intro text, active bool, sort_order)
+- `flight_wines` (flight_id, wine_id, position) — enables shared wines
+- `consent_logs` (as above)
+- `privacy_notice_versions` (id, version, sections jsonb, active, created_at)
+- `deletion_requests` (id, guest_name, contact, requested_at, status, notes)
+- All with GRANTs + RLS scoped to authenticated admin (via `has_role`) except public read on wines/flights/active privacy notice, and anon insert on consent_logs.
+- Seed wines + flight_wines from the catalogue in the migration.
 
-Enable Lovable Cloud. Create:
+## Future-ready hooks
+- Consent log includes `source` + free-form `metadata` jsonb so HOST CRM / Sula CRM / WhatsApp / loyalty integrations can attach without schema change.
+- Server function `logConsent` is the single write path — future webhooks call from here.
 
-**Tables**
-- `content_items` — id, slug (unique), title, content_type (pdf|video|gallery), category, description, cover_image_url, primary_file_url, video_url, video_provider (youtube|vimeo|file), cta_label, cta_url, seo_title, seo_description, og_image_url, published, featured, sort_order, page_count, created_by, created_at, updated_at
-- `content_assets` — id, content_item_id, asset_type (page_image|gallery_image|thumbnail|download), file_url, thumbnail_url, caption, alt_text, sort_order, width, height
-- `content_analytics` — id, content_item_id, event_type (view|page_view|complete|share|download|cta_click|fullscreen), page_index, session_id, user_agent, referrer, metadata, created_at
-- `user_roles` — id, user_id, role (admin) — separate table, `has_role()` SECURITY DEFINER fn (per security rules)
+## Assets
+Upload the 9 provided bottle PNGs via `lovable-assets` into `src/assets/bottles/`. Placeholder-safe fallbacks for the 7 bottles the user will send in the next prompt (uses name + existing URL where possible; catalogue notes "awaiting image").
 
-**RLS**
-- `content_items`, `content_assets`: public SELECT when `published = true`; admin full access via `has_role(auth.uid(),'admin')`
-- `content_analytics`: public INSERT only; admin SELECT
-- `user_roles`: admin-managed
+## Files (planned)
+**Modified**: `src/pages/WelcomePage.tsx`, `src/pages/TastingPage.tsx`, `src/pages/FlightOverview.tsx`, `src/pages/ResultsPage.tsx`, `src/components/WineCard.tsx`, `src/components/SommelierQuote.tsx` (rename usage → SulaSunGuide), `src/store/tasting-store.ts`, `src/App.tsx`, `src/pages/admin/ContentCenter.tsx`, `src/lib/content/analytics.ts` (gate on marketing/analytics consent), `src/data/wines.ts` (kept as re-export for back-compat).
+**Created**: `src/data/wines-catalog.ts`, `src/data/flights.ts`, `src/components/FlightSelector.tsx`, `src/components/FlightCard.tsx`, `src/components/PrivacyNoticeModal.tsx`, `src/components/CookieBanner.tsx`, `src/components/SulaSunGuide.tsx`, `src/lib/consent/api.ts`, `src/lib/consent/log.ts`, `src/pages/admin/PrivacyCenter.tsx`, `src/pages/admin/WineCatalog.tsx`, `src/pages/admin/FlightsEditor.tsx`, `supabase/migrations/<ts>_wines_flights_dpdp.sql`, 9 bottle asset pointers under `src/assets/bottles/`.
 
-**Storage buckets** (public read, admin write)
-- `content-pdfs`, `content-videos`, `content-images`, `content-thumbnails`, `content-og-images`
+## Locked / untouched
+Auth, SEO, SSR meta, `api/c.ts`, `/c/:slug` viewer, ContentCenter/ContentEditor for library items, homepage OG, mobile PDF viewer, share links, existing analytics events (only gated behind consent).
 
-### 2. Admin auth
+## Validation
+Manual walk-through: pick each of 4 flights → complete tasting → results; consent required to start; privacy modal opens; cookie banner appears once; admin can edit wine + privacy; migration passes; no PII in URLs/analytics.
 
-Email + password via Lovable Cloud. New users get no role by default; first admin seeded manually via SQL. `/content-center/*` wrapped in `_authenticated` layout that also checks `has_role`. Non-admins → `/login`.
-
-### 3. Admin CMS (`/content-center`)
-
-Minimal, editorial-toned UI (uses existing Playfair + Inter, neutral palette, no shadcn dashboard chrome). Three screens:
-
-- **List** — table of all items: cover thumb, title, type, category, published toggle, featured toggle, sort handle, edit/duplicate/archive.
-- **Create / Edit** — single form with:
-  - Common: title, slug (auto from title, editable), content_type, category, description, cover image, CTA label/url, SEO title/desc, OG image, published, featured.
-  - Type-specific:
-    - **PDF**: upload .pdf → server fn processes (see §4) → shows generated page count + cover preview.
-    - **Video**: upload file OR paste YouTube/Vimeo URL → auto-detect provider, fetch poster.
-    - **Gallery**: multi-upload → reorderable grid with caption + alt per image.
-  - Live "Preview" button opens `/c/:slug?preview=1` (admin-only bypass of published flag).
-
-### 4. PDF processing pipeline
-
-On PDF upload (admin-side, in browser):
-1. Upload original to `content-pdfs/{id}/source.pdf`.
-2. Use `pdfjs-dist` in the browser to render each page to canvas → WebP @ 1600px wide, thumbnail @ 320px.
-3. Upload page images to `content-thumbnails/{id}/page-{n}.webp` + `thumb-{n}.webp`.
-4. Insert one `content_assets` row per page (`asset_type='page_image'`, ordered).
-5. Set `page_count`, derive `cover_image_url` from page 1, generate `og_image_url` (page 1 @ 1200×630 letterbox).
-
-Doing this client-side avoids Worker runtime limits on `sharp`/`canvas` (see server-runtime constraints) and keeps it free.
-
-### 5. Public viewer (`/c/:slug`)
-
-Server function `getPublishedContent(slug)` returns item + assets (admin-bypass via auth check + `?preview=1`). Loader-fetched, SSR'd, full SEO head (title, description, og:*, twitter:*, canonical, JSON-LD `CreativeWork`).
-
-Shell (shared across types):
-- Edge-to-edge cover with title + category overlay, fade-in.
-- Sticky top bar (auto-hides on scroll down): back, share, fullscreen, progress %.
-- Bottom CTA strip when `cta_url` set.
-- Analytics: fire `view` on mount, `page_view` on visible-page change (IntersectionObserver), `complete` at >90%, `share`/`fullscreen`/`cta_click` on action. Session ID in sessionStorage.
-
-Per-type rendering:
-- **PDF (hybrid)**: vertical scroll of pre-rendered WebP page images, lazy via IntersectionObserver. Tap a page → modal with PDF.js canvas + pinch zoom. Desktop: arrow keys page-jump, optional 2-up spread.
-- **Video**: native `<video>` for file, lite YouTube/Vimeo facade (load iframe only on play) — keeps mobile fast.
-- **Gallery**: vertical editorial layout, full-bleed images with captions, lightbox on tap, swipe between.
-
-### 6. Routing & SEO
-
-- New file routes only — `src/routes/c.$slug.tsx`, `src/routes/_admin.tsx` layout, `src/routes/_admin.content-center.*`, `src/routes/login.tsx`.
-- Each `/c/:slug` gets per-route `head()` from loader data.
-- Sitemap route `src/routes/api/sitemap[.]xml.ts` enumerates published items.
-- Robots: published items indexable; admin routes `noindex`.
-
-### 7. Performance
-
-- Pre-rendered WebP page images = no PDF.js cost on first paint.
-- `loading="lazy"` + IntersectionObserver virtualization (only ~3 pages decoded around viewport).
-- Cloudflare CDN handles Supabase Storage URLs.
-- LCP image (cover) preloaded via `head().links`.
-
-### 8. Strict isolation from existing app
-
-- Zero edits to `src/pages/*`, `src/components/WineCard.tsx`, `src/store/tasting-store.ts`, tasting routes, or `src/styles.css` tokens.
-- New components under `src/components/content/*`. New lib under `src/lib/content/*`. New tables/buckets only.
-- Existing `/admin` (tasting analytics) untouched; new CMS is `/content-center`.
-
-### Out-of-scope guard rails
-
-If a request later asks for editorial story builder, landing pages, gated PDFs, lead forms, multilingual, or AI search — those are Phase 2+. This plan ships PDF + Video + Gallery only.
-
-### Deliverable order (single build)
-
-1. Enable Cloud, migrations (tables + RLS + buckets + storage policies), seed first admin SQL note.
-2. Auth: `/login`, `_admin` layout with role gate.
-3. Admin CMS shell + list + create/edit form (no uploads yet).
-4. Upload pipelines: gallery → video → PDF (most complex last).
-5. Public `/c/:slug` viewer with all three renderers.
-6. SEO head, sitemap, analytics events.
-7. Smoke test: create one of each type, publish, verify public URL + share + fullscreen + analytics row.
-
-After approval I'll execute top-to-bottom and ping you when seeded admin SQL is ready to run.
+## Deferred to next prompt
+7 remaining bottle images (Sula Brut, Tropicale Rosé, Sparkling Shiraz, The Source Cabernet Sauvignon, plus any additional). Catalogue leaves these with current URLs (from existing `wines.ts`) and admin can swap.

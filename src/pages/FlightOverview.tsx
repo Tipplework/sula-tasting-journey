@@ -1,9 +1,20 @@
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { wines, journeyLabels } from "@/data/wines";
+import { getFlight, getFlightWines } from "@/data/wines";
+import { useTastingStore } from "@/store/tasting-store";
 
 export default function FlightOverview() {
   const navigate = useNavigate();
+  const { session } = useTastingStore();
+  const flight = getFlight(session.selectedFlightId);
+  const flightWines = getFlightWines(session.selectedFlightId);
+
+  useEffect(() => {
+    if (!flight) navigate("/", { replace: true });
+  }, [flight, navigate]);
+
+  if (!flight) return null;
 
   return (
     <div className="min-h-screen w-full max-w-[480px] mx-auto px-5 py-8">
@@ -13,23 +24,19 @@ export default function FlightOverview() {
         transition={{ duration: 0.4 }}
         className="space-y-6"
       >
-        {/* Header */}
         <div className="text-center space-y-2">
-          <p className="text-xs tracking-[0.2em] uppercase text-muted-foreground">
-            Your Flight
+          <p className="text-[0.65rem] tracking-[0.25em] uppercase text-wine-gold">
+            {flight.subtitle}
           </p>
-          <h1 className="font-heading text-2xl font-bold">Five Wines, One Journey</h1>
-          <p className="text-sm text-muted-foreground">
-            {journeyLabels.join(" → ")}
-          </p>
+          <h1 className="font-heading text-3xl font-bold">{flight.name}</h1>
+          <p className="text-sm text-muted-foreground leading-relaxed">{flight.description}</p>
           <p className="text-xs text-muted-foreground/80 italic pt-1">
-            Your wines are numbered 1–5 on the stand. Let's begin.
+            Four wines, curated for this journey.
           </p>
         </div>
 
-        {/* Wine List */}
         <div className="space-y-3">
-          {wines.map((wine, i) => (
+          {flightWines.map((wine, i) => (
             <motion.div
               key={wine.id}
               initial={{ opacity: 0, y: 16 }}
@@ -37,7 +44,7 @@ export default function FlightOverview() {
               transition={{ delay: i * 0.08, duration: 0.35 }}
               className="wine-card flex items-center gap-4 p-3.5"
             >
-              <div className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 bg-secondary flex items-center justify-center">
+              <div className="w-14 h-16 rounded-xl overflow-hidden flex-shrink-0 bg-secondary flex items-center justify-center">
                 <img
                   src={wine.image}
                   alt={wine.name}
@@ -47,38 +54,27 @@ export default function FlightOverview() {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-[0.65rem] text-muted-foreground font-medium tracking-wider">
-                  WINE {wine.id}
+                  WINE {i + 1}
                 </p>
-                <p className="font-heading font-semibold text-sm truncate">
-                  {wine.name}
-                </p>
-                <p className="text-xs text-muted-foreground mt-0.5 truncate">
-                  {wine.subtitle}
-                </p>
+                <p className="font-heading font-semibold text-sm truncate">{wine.name}</p>
+                <p className="text-xs text-muted-foreground mt-0.5 truncate">{wine.subtitle}</p>
               </div>
-              <span className="wine-badge text-[0.65rem]">
-                {wine.journeyTag}
-              </span>
+              <span className="wine-badge text-[0.65rem]">{wine.journeyTag}</span>
             </motion.div>
           ))}
         </div>
 
-        {/* Progress indicator */}
         <div className="flex justify-center gap-1.5">
-          {wines.map((_, i) => (
-            <div
-              key={i}
-              className="w-2 h-2 rounded-full bg-border"
-            />
+          {flightWines.map((_, i) => (
+            <div key={i} className="w-2 h-2 rounded-full bg-border" />
           ))}
         </div>
 
-        {/* CTA */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5 }}
-          className="pt-2"
+          className="pt-2 space-y-2"
         >
           <button
             type="button"
@@ -86,6 +82,13 @@ export default function FlightOverview() {
             className="btn-primary w-full"
           >
             Begin Tasting
+          </button>
+          <button
+            type="button"
+            onClick={() => navigate("/")}
+            className="btn-secondary w-full !text-xs"
+          >
+            ← Change flight
           </button>
         </motion.div>
       </motion.div>
