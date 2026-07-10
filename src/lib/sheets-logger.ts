@@ -50,8 +50,22 @@ async function send(payload: SheetsPayload): Promise<boolean> {
   }
 }
 
-/** Fire-and-forget. Never blocks UI, never throws. */
+/** Reads analytics consent from persisted tasting-store cookies. Default: denied. */
+function analyticsAllowed(): boolean {
+  try {
+    const raw = localStorage.getItem("sulaTastingSession");
+    if (!raw) return false;
+    const parsed = JSON.parse(raw);
+    return Boolean(parsed?.cookies?.analytics);
+  } catch {
+    return false;
+  }
+}
+
+/** Fire-and-forget. Never blocks UI, never throws. Gated on analytics consent (DPDP). */
 export function logToSheets(payload: SheetsPayload) {
+  if (!analyticsAllowed()) return;
+
   const enriched: SheetsPayload = {
     ts: new Date().toISOString(),
     ...payload,
