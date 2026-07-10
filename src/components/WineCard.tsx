@@ -225,7 +225,7 @@ export function WineCard({
         <div className="border-t border-border/60" />
 
         {/* Quiz */}
-        <div className="space-y-3">
+        <div id={`wine-quiz-${wine.id}`} className="space-y-3 scroll-mt-24">
           <p className="font-heading text-xl font-semibold text-foreground leading-snug">
             {wine.question}
           </p>
