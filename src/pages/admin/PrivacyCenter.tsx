@@ -142,7 +142,7 @@ export default function PrivacyCenter() {
   }
 
   async function updateDeletion(id: string, status: string) {
-    const patch: Record<string, unknown> = { status };
+    const patch: { status: string; processed_at?: string } = { status };
     if (status === "completed") patch.processed_at = new Date().toISOString();
     const { error } = await supabase.from("deletion_requests").update(patch).eq("id", id);
     if (error) return toast.error(error.message);
@@ -152,7 +152,7 @@ export default function PrivacyCenter() {
 
   async function saveNotice() {
     if (!draftVersion.trim()) return toast.error("Version required (e.g. 1.1.0)");
-    let sections: unknown = {};
+    let sections: Record<string, unknown> = {};
     try {
       sections = draftSections.trim() ? JSON.parse(draftSections) : {};
     } catch {
@@ -160,7 +160,7 @@ export default function PrivacyCenter() {
     }
     const { error } = await supabase.from("privacy_notice_versions").insert({
       version: draftVersion.trim(),
-      sections,
+      sections: sections as never,
       active: false,
     });
     if (error) return toast.error(error.message);
