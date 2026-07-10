@@ -1,5 +1,7 @@
 import { motion } from "framer-motion";
-import sulaSun from "@/assets/sula-sun.png.asset.json";
+const sulaSun = {
+  url: "https://iotmypnapdhruaeecghw.supabase.co/storage/v1/object/public/content-images/bottles/sula-sun.png",
+};
 
 interface SommelierQuoteProps {
   quote: string;

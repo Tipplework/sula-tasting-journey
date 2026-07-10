@@ -1,20 +1,24 @@
 // Sula Tasting Journey — Wine Catalogue & Flights
 // 14 unique wines; 16 flight slots (2 shared: Dindori Chardonnay, The Source Moscato)
+// Bottle images served from Supabase Storage (absolute URLs work on any domain).
 
-import cheninBlancImg from "@/assets/bottles/The_Source_Chenin_Blanc_2023.png.asset.json";
-import sauvBlancImg from "@/assets/bottles/The_Source_Sauvignon_Blanc_2023.png.asset.json";
-import dindoriChardImg from "@/assets/bottles/Dindori_Chardonnay_2023.png.asset.json";
-import lhCheninImg from "@/assets/bottles/Sula_late_harvest_2023.png.asset.json";
-import dindoriShirazImg from "@/assets/bottles/Dindori_Shiraz_2022.png.asset.json";
-import rasaZinImg from "@/assets/bottles/Rasa_Zinfandel_2022.png.asset.json";
-import rasaSyrahImg from "@/assets/bottles/Rasa_Syrah_2022.png.asset.json";
-import rasaCabImg from "@/assets/bottles/Rasa_Cabernet_Sauvignon_2021.png.asset.json";
-import grenacheRoseImg from "@/assets/bottles/The_Source_Grenache_Rose_2023.png.asset.json";
-import sourceMoscatoImg from "@/assets/bottles/The_Source_Moscato.png.asset.json";
-import sourceCabImg from "@/assets/bottles/The_Source_Cabernet_Sauvignon_2022.png.asset.json";
-import sparklingShirazImg from "@/assets/bottles/Sula_Sparkling_Shiraz.png.asset.json";
-import sulaBrutImg from "@/assets/bottles/Sula_Brut.png.asset.json";
-import tropicaleImg from "@/assets/bottles/Sula_Brut_Tropicale.png.asset.json";
+const BOTTLE_CDN =
+  "https://iotmypnapdhruaeecghw.supabase.co/storage/v1/object/public/content-images/bottles";
+
+const cheninBlancImg = { url: `${BOTTLE_CDN}/The_Source_Chenin_Blanc_2023.png` };
+const sauvBlancImg = { url: `${BOTTLE_CDN}/The_Source_Sauvignon_Blanc_2023.png` };
+const dindoriChardImg = { url: `${BOTTLE_CDN}/Dindori_Chardonnay_2023.png` };
+const lhCheninImg = { url: `${BOTTLE_CDN}/Sula_late_harvest_2023.png` };
+const dindoriShirazImg = { url: `${BOTTLE_CDN}/Dindori_Shiraz_2022.png` };
+const rasaZinImg = { url: `${BOTTLE_CDN}/Rasa_Zinfandel_2022.png` };
+const rasaSyrahImg = { url: `${BOTTLE_CDN}/Rasa_Syrah_2022.png` };
+const rasaCabImg = { url: `${BOTTLE_CDN}/Rasa_Cabernet_Sauvignon_2021.png` };
+const grenacheRoseImg = { url: `${BOTTLE_CDN}/The_Source_Grenache_Rose_2023.png` };
+const sourceMoscatoImg = { url: `${BOTTLE_CDN}/The_Source_Moscato.png` };
+const sourceCabImg = { url: `${BOTTLE_CDN}/The_Source_Cabernet_Sauvignon_2022.png` };
+const sparklingShirazImg = { url: `${BOTTLE_CDN}/Sula_Sparkling_Shiraz.png` };
+const sulaBrutImg = { url: `${BOTTLE_CDN}/Sula_Brut.png` };
+const tropicaleImg = { url: `${BOTTLE_CDN}/Sula_Brut_Tropicale.png` };
 
 export interface Award {
   medal: string;
