@@ -294,7 +294,7 @@ export const wines: Wine[] = [
     foodPairing: ["Watermelon & Feta Salad", "Kanda Bhaji", "Fish Fingers"],
     vivino:
       "https://www.vivino.com/US/en/the-source-grenache-rose-nashik-rose-wine-v-3yzcq/w/5922800",
-    usp: "Provence-style rosé — India's best rosé, sustainable winemaking.",
+    usp: "A Provence-style rosé bursting with fresh strawberry, red cherry and raspberry.",
     personality: "Romantic and sunlit — ideal for slow afternoons.",
     personalityLabel: "Romantic",
     image: grenacheRoseImg.url,
