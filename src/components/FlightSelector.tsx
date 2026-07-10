@@ -1,4 +1,4 @@
-import { flights } from "@/data/wines";
+import { useCatalogue } from "@/lib/catalogue/useCatalogue";
 import { FlightCard } from "./FlightCard";
 
 interface FlightSelectorProps {
@@ -7,6 +7,7 @@ interface FlightSelectorProps {
 }
 
 export function FlightSelector({ selectedId, onSelect }: FlightSelectorProps) {
+  const { flights } = useCatalogue();
   return (
     <div className="space-y-2.5">
       <div className="text-center">

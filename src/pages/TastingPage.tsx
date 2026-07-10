@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
-import { getFlightWines } from "@/data/wines";
+import { useCatalogue } from "@/lib/catalogue/useCatalogue";
 import { useTastingStore } from "@/store/tasting-store";
 import { WineCard } from "@/components/WineCard";
 import { ProgressBar } from "@/components/ProgressBar";
@@ -15,6 +15,7 @@ const COMPARE_AFTER: Record<number, string> = {
 export default function TastingPage() {
   const navigate = useNavigate();
   const { session } = useTastingStore();
+  const { getFlightWines } = useCatalogue();
   const flightWines = getFlightWines(session.selectedFlightId);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showCompare, setShowCompare] = useState(false);
