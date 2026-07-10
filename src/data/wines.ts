@@ -94,7 +94,7 @@ export const wines: Wine[] = [
     subtitle: "Reserve White",
     journeyTag: "Zesty",
     description:
-      "Experience the vibrant The Source Sauvignon Blanc Reserve, recognised as Best in Show at the India Wine Awards and Best Indian White Wine. Crisp, zesty with tropical fruit notes.",
+      "Experience the vibrant The Source Sauvignon Blanc Reserve, recognized as Best in Show at the India Wine Awards and Best Indian White Wine. Crisp, zesty, with tropical notes—an award-winning delight in every glass.",
     notes: ["Tropical", "Zesty", "Fresh"],
     awards: [{ medal: "Best in Show", competition: "India Wine Awards" }],
     tastingNotes: "Passionfruit, guava and citrus zest with a lively, mineral finish.",
