@@ -1,8 +1,8 @@
-// Silent, non-blocking data capture to Google Sheets.
+// Silent, non-blocking data capture to Google Sheets via a server-side proxy.
+// The raw webhook URL is never exposed to the browser; the `log-sheets`
+// edge function validates and rate-limits input before forwarding.
 // Failures are queued in localStorage and retried on next call.
-
-const ENDPOINT =
-  "https://script.google.com/macros/s/AKfycbybryQtmhHaX9W08ZCnIUC9uLCoXWpb8FDHzwRIp6rRCH3lhoiCoNFdO2KNAq1CaBB0/exec";
+import { supabase } from "@/integrations/supabase/client";
 
 const QUEUE_KEY = "sula_sheets_queue_v1";
 
@@ -38,17 +38,13 @@ function writeQueue(items: SheetsPayload[]) {
 
 async function send(payload: SheetsPayload): Promise<boolean> {
   try {
-    await fetch(ENDPOINT, {
-      method: "POST",
-      mode: "no-cors",
-      body: JSON.stringify(payload),
-    });
-    // no-cors → opaque response; assume delivered
-    return true;
+    const { error } = await supabase.functions.invoke("log-sheets", { body: payload });
+    return !error;
   } catch {
     return false;
   }
 }
+
 
 /** Reads analytics consent from persisted tasting-store cookies. Default: denied. */
 function analyticsAllowed(): boolean {
