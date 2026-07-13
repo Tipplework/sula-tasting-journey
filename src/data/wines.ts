@@ -135,8 +135,8 @@ export const wines: Wine[] = [
     options: ["Sophisticated", "Warm & cozy", "Curious"],
     sommelierNote: "Now we slow down — oak, lemon and silk. Sip gently, let it bloom.",
     tastingSteps: defaultSteps,
-    nextPour: "Late Harvest Chenin Blanc",
-    nextPourReason: "If this elegance moved you, we'd finish with our honeyed Late Harvest Chenin.",
+    nextPour: "The Source Moscato",
+    nextPourReason: "If this elegance moved you, we'd finish on a sweet sparkle with our Moscato.",
     active: true,
   },
   // 4
