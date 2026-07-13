@@ -277,8 +277,8 @@ export const wines: Wine[] = [
     options: ["Blackcurrant", "Cedar", "Silky tannin"],
     sommelierNote: "Our flagship — a slow, contemplative red. Sip and let it unfold.",
     tastingSteps: defaultSteps,
-    nextPour: "Dindori Reserve Shiraz",
-    nextPourReason: "For more spice next, we'd move back to Dindori Reserve Shiraz.",
+    nextPour: "Sparkling Shiraz",
+    nextPourReason: "To finish on a celebratory note, we'd pour our Sparkling Shiraz next.",
     active: true,
   },
   // 9
