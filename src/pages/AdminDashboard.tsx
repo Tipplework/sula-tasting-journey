@@ -659,7 +659,7 @@ export default function AdminDashboard() {
           <>
             {/* Headline tiles */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <Tile icon={Users} label="Guests" value={filtered.consent.length} sub={`${totals.guests} total`} onClick={() => setDrawer({ kind: "guests" })} />
+              <Tile icon={Users} label="Guests" value={guestGroups.length} sub={`${filtered.consent.length} visits · ${totals.guests} total rows`} onClick={() => setDrawer({ kind: "guests" })} />
               <Tile icon={CheckCircle2} label="Completion" value={`${stats.completionRate}%`} sub={`${stats.complete}/${stats.journeyStarts} finished`} onClick={() => setDrawer({ kind: "funnel" })} />
               <Tile icon={Clock} label="Avg session" value={`${stats.avgMin.toFixed(1)}m`} sub="tap for buckets" onClick={() => setDrawer({ kind: "sessionLength" })} />
               <Tile icon={MousePointerClick} label="Vivino" value={stats.vivinoTotal} sub={stats.vivinoRows[0]?.[0] ? `top: ${stats.vivinoRows[0][0]}` : "no clicks"} onClick={() => setDrawer({ kind: "vivino" })} />
