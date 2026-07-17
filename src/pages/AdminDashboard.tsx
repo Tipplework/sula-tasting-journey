@@ -472,6 +472,10 @@ export default function AdminDashboard() {
   // Latest guest
   const latestGuest = filtered.consent[0];
 
+  // Grouped guest identities (dedupe repeated visits by email/phone)
+  const guestGroups = useMemo(() => groupGuests(filtered.consent), [filtered.consent]);
+
+
   // ── Exports (paginated full pull) ────────────────────────────────────
   const exportAllGuests = async () => {
     toast.info("Preparing full guest export…");
