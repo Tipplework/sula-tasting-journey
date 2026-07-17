@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 import RootGate from "./pages/RootGate";
 import HowToEnjoyPage from "./pages/HowToEnjoyPage";
 import FlightOverview from "./pages/FlightOverview";
@@ -59,16 +60,17 @@ function AuthHashRouter() {
 
   useEffect(() => {
     const hash = window.location.hash || "";
-    if (!hash || hash.length < 2) return;
-    const params = new URLSearchParams(hash.replace(/^#/, ""));
-    const type = params.get("type");
-    const errorCode = params.get("error_code");
-    const errorDesc = params.get("error_description");
+    const hashParams = new URLSearchParams(hash.replace(/^#/, ""));
+    const searchParams = new URLSearchParams(window.location.search);
+    const param = (key: string) => hashParams.get(key) || searchParams.get(key);
+    const type = param("type");
+    const errorCode = param("error_code");
+    const errorDesc = param("error_description");
 
     // Recovery link — send them to /reset-password with the tokens preserved
-    if (type === "recovery" || params.get("access_token")) {
+    if (type === "recovery" || hashParams.get("access_token")) {
       if (loc.pathname !== "/reset-password") {
-        nav(`/reset-password${window.location.hash}`, { replace: true });
+        nav(`/reset-password${window.location.search}${window.location.hash}`, { replace: true });
       }
       return;
     }
@@ -85,6 +87,16 @@ function AuthHashRouter() {
       nav("/login", { replace: true });
     }
   }, [loc.pathname, nav]);
+
+  useEffect(() => {
+    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "PASSWORD_RECOVERY") {
+        nav("/reset-password", { replace: true });
+      }
+    });
+
+    return () => sub.subscription.unsubscribe();
+  }, [nav]);
 
   return null;
 }
