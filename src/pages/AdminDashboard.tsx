@@ -494,15 +494,27 @@ export default function AdminDashboard() {
         <div className="flex items-start justify-between gap-3 flex-wrap">
           <div>
             <h1 className="font-heading text-2xl font-bold">Dashboard</h1>
-            <p className="text-sm text-muted-foreground">Tasting Room Analytics · Admin only</p>
+            <p className="text-sm text-muted-foreground">
+              Tasting Room Analytics · Admin only
+              {lastUpdated && (
+                <span className="ml-2 text-[0.65rem]">
+                  · Updated {lastUpdated.toLocaleTimeString()}
+                </span>
+              )}
+            </p>
           </div>
           <div className="flex items-center gap-2">
             <label className="flex items-center gap-1.5 text-xs text-muted-foreground cursor-pointer">
               <input type="checkbox" checked={autoRefresh} onChange={(e) => setAutoRefresh(e.target.checked)} />
               Auto-refresh
             </label>
-            <button onClick={() => void load()} className="btn-secondary !py-2 !px-3 text-xs flex items-center gap-1">
-              <RefreshCw size={12} /> Refresh
+            <button
+              onClick={() => void load({ showToast: true })}
+              disabled={refreshing}
+              className="btn-secondary !py-2 !px-3 text-xs flex items-center gap-1 disabled:opacity-60"
+            >
+              <RefreshCw size={12} className={refreshing ? "animate-spin" : ""} />
+              {refreshing ? "Refreshing…" : "Refresh"}
             </button>
             <button onClick={signOut} className="btn-secondary !py-2 !px-3 text-xs">Sign out</button>
           </div>
