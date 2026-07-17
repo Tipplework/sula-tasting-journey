@@ -575,17 +575,18 @@ export default function AdminDashboard() {
     download(`sula-tasting-events-${new Date().toISOString().slice(0, 10)}.csv`, csv);
   };
 
-  const deleteGuest = async (row: ConsentRow) => {
-    if (!window.confirm(`Delete all records for ${row.guest_name || row.metadata?.email || "this guest"}? This cannot be undone.`)) return;
-    const email = row.metadata?.email as string | undefined;
-    const phone = row.metadata?.phone as string | undefined;
-    const del1 = await supabase.from("consent_logs").delete().eq("id", row.id);
+  const deleteGuestGroup = async (g: GuestGroup) => {
+    const label = g.name || g.email || g.phone || "this guest";
+    if (!window.confirm(`Delete ${label} and all ${g.visits.length} visit${g.visits.length === 1 ? "" : "s"}? This cannot be undone.`)) return;
+    const ids = g.visits.map((v) => v.id);
+    const del1 = await supabase.from("consent_logs").delete().in("id", ids);
     if (del1.error) return toast.error(del1.error.message);
-    if (email) await supabase.from("tasting_events").delete().eq("guest_email", email);
-    if (phone) await supabase.from("tasting_events").delete().eq("guest_phone", phone);
-    toast.success("Guest records deleted");
+    if (g.email) await supabase.from("tasting_events").delete().eq("guest_email", g.email);
+    if (g.phone) await supabase.from("tasting_events").delete().eq("guest_phone", g.phone);
+    toast.success(`${label} deleted`);
     void load();
   };
+
 
   const signOut = async () => {
     await supabase.auth.signOut();
