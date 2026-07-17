@@ -92,6 +92,68 @@ function detectDevice(m: TastingEventRow["metadata"]): string {
   return (m?.device as string) || "unknown";
 }
 
+// ─── Guest identity grouping ──────────────────────────────────────────
+interface GuestGroup {
+  key: string;
+  name: string;
+  email: string;
+  phone: string;
+  visits: ConsentRow[];         // sorted newest → oldest
+  flights: string[];            // unique flight ids
+  devices: string[];            // unique devices
+  latestAt: number;             // ms
+}
+
+function normEmail(e: string | null | undefined): string {
+  return (e || "").trim().toLowerCase();
+}
+function normPhone(p: string | null | undefined): string {
+  return (p || "").replace(/\D+/g, "");
+}
+function identityKey(c: ConsentRow): string {
+  const email = normEmail(c.metadata?.email as string | undefined);
+  if (email) return `e:${email}`;
+  const phone = normPhone(c.metadata?.phone as string | undefined);
+  if (phone) return `p:${phone}`;
+  const name = (c.guest_name || "").trim().toLowerCase();
+  return `n:${name}|d:${c.device_type || "unknown"}`;
+}
+
+function groupGuests(rows: ConsentRow[]): GuestGroup[] {
+  const map = new Map<string, GuestGroup>();
+  for (const c of rows) {
+    const key = identityKey(c);
+    let g = map.get(key);
+    if (!g) {
+      g = {
+        key,
+        name: c.guest_name || "Guest",
+        email: (c.metadata?.email as string) || "",
+        phone: (c.metadata?.phone as string) || "",
+        visits: [],
+        flights: [],
+        devices: [],
+        latestAt: 0,
+      };
+      map.set(key, g);
+    }
+    g.visits.push(c);
+    if (!g.name || g.name === "Guest") g.name = c.guest_name || g.name;
+    if (!g.email && c.metadata?.email) g.email = c.metadata.email as string;
+    if (!g.phone && c.metadata?.phone) g.phone = c.metadata.phone as string;
+    if (c.flight_id && !g.flights.includes(c.flight_id)) g.flights.push(c.flight_id);
+    const d = c.device_type || "unknown";
+    if (!g.devices.includes(d)) g.devices.push(d);
+    const t = new Date(c.created_at).getTime();
+    if (t > g.latestAt) g.latestAt = t;
+  }
+  const groups = Array.from(map.values());
+  groups.forEach((g) => g.visits.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));
+  groups.sort((a, b) => b.latestAt - a.latestAt);
+  return groups;
+}
+
+
 function toCsv(rows: Record<string, unknown>[]): string {
   if (!rows.length) return "";
   const headers = Object.keys(rows[0]);
@@ -407,12 +469,13 @@ export default function AdminDashboard() {
     };
   }, [filtered, consent, events]);
 
-  // Latest guest
-  const latestGuest = filtered.consent[0];
+  // Grouped guest identities (dedupe repeated visits by email/phone)
+  const guestGroups = useMemo(() => groupGuests(filtered.consent), [filtered.consent]);
+
+
 
   // ── Exports (paginated full pull) ────────────────────────────────────
-  const exportAllGuests = async () => {
-    toast.info("Preparing full guest export…");
+  const fetchAllConsent = async (): Promise<ConsentRow[]> => {
     const startIso = rangeStartIso(range);
     const rows: ConsentRow[] = [];
     let from = 0;
@@ -424,12 +487,38 @@ export default function AdminDashboard() {
         .range(from, from + 499);
       if (startIso) q = q.gte("created_at", startIso);
       const { data, error } = await q;
-      if (error) return toast.error(error.message);
+      if (error) { toast.error(error.message); return rows; }
       if (!data?.length) break;
       rows.push(...(data as ConsentRow[]));
       if (data.length < 500) break;
       from += 500;
     }
+    return rows;
+  };
+
+  // Grouped export — one row per unique guest
+  const exportAllGuests = async () => {
+    toast.info("Preparing guest export…");
+    const rows = await fetchAllConsent();
+    const groups = groupGuests(rows);
+    const csv = toCsv(
+      groups.map((g) => ({
+        latest_visit: new Date(g.latestAt).toISOString(),
+        name: g.name,
+        email: g.email,
+        phone: g.phone,
+        visits: g.visits.length,
+        flights: g.flights.join("|"),
+        devices: g.devices.join("|"),
+      }))
+    );
+    download(`sula-guests-${new Date().toISOString().slice(0, 10)}.csv`, csv);
+  };
+
+  // Raw one-row-per-visit export
+  const exportAllVisits = async () => {
+    toast.info("Preparing raw visits export…");
+    const rows = await fetchAllConsent();
     const csv = toCsv(
       rows.map((c) => ({
         created_at: c.created_at,
@@ -440,8 +529,9 @@ export default function AdminDashboard() {
         device: c.device_type || "",
       }))
     );
-    download(`sula-guests-${new Date().toISOString().slice(0, 10)}.csv`, csv);
+    download(`sula-guest-visits-${new Date().toISOString().slice(0, 10)}.csv`, csv);
   };
+
 
   const exportAllEvents = async () => {
     toast.info("Preparing full event export…");
@@ -483,17 +573,18 @@ export default function AdminDashboard() {
     download(`sula-tasting-events-${new Date().toISOString().slice(0, 10)}.csv`, csv);
   };
 
-  const deleteGuest = async (row: ConsentRow) => {
-    if (!window.confirm(`Delete all records for ${row.guest_name || row.metadata?.email || "this guest"}? This cannot be undone.`)) return;
-    const email = row.metadata?.email as string | undefined;
-    const phone = row.metadata?.phone as string | undefined;
-    const del1 = await supabase.from("consent_logs").delete().eq("id", row.id);
+  const deleteGuestGroup = async (g: GuestGroup) => {
+    const label = g.name || g.email || g.phone || "this guest";
+    if (!window.confirm(`Delete ${label} and all ${g.visits.length} visit${g.visits.length === 1 ? "" : "s"}? This cannot be undone.`)) return;
+    const ids = g.visits.map((v) => v.id);
+    const del1 = await supabase.from("consent_logs").delete().in("id", ids);
     if (del1.error) return toast.error(del1.error.message);
-    if (email) await supabase.from("tasting_events").delete().eq("guest_email", email);
-    if (phone) await supabase.from("tasting_events").delete().eq("guest_phone", phone);
-    toast.success("Guest records deleted");
+    if (g.email) await supabase.from("tasting_events").delete().eq("guest_email", g.email);
+    if (g.phone) await supabase.from("tasting_events").delete().eq("guest_phone", g.phone);
+    toast.success(`${label} deleted`);
     void load();
   };
+
 
   const signOut = async () => {
     await supabase.auth.signOut();
@@ -566,7 +657,7 @@ export default function AdminDashboard() {
           <>
             {/* Headline tiles */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <Tile icon={Users} label="Guests" value={filtered.consent.length} sub={`${totals.guests} total`} onClick={() => setDrawer({ kind: "guests" })} />
+              <Tile icon={Users} label="Guests" value={guestGroups.length} sub={`${filtered.consent.length} visits · ${totals.guests} total rows`} onClick={() => setDrawer({ kind: "guests" })} />
               <Tile icon={CheckCircle2} label="Completion" value={`${stats.completionRate}%`} sub={`${stats.complete}/${stats.journeyStarts} finished`} onClick={() => setDrawer({ kind: "funnel" })} />
               <Tile icon={Clock} label="Avg session" value={`${stats.avgMin.toFixed(1)}m`} sub="tap for buckets" onClick={() => setDrawer({ kind: "sessionLength" })} />
               <Tile icon={MousePointerClick} label="Vivino" value={stats.vivinoTotal} sub={stats.vivinoRows[0]?.[0] ? `top: ${stats.vivinoRows[0][0]}` : "no clicks"} onClick={() => setDrawer({ kind: "vivino" })} />
@@ -624,10 +715,11 @@ export default function AdminDashboard() {
               <Tile
                 icon={Users}
                 label="Guest log"
-                value={filtered.consent.length}
-                sub={latestGuest ? `latest: ${latestGuest.guest_name || (latestGuest.metadata?.email as string) || "Guest"}` : "no guests yet"}
+                value={guestGroups.length}
+                sub={guestGroups[0] ? `latest: ${guestGroups[0].name}${guestGroups[0].visits.length > 1 ? ` · ${guestGroups[0].visits.length} visits` : ""}` : "no guests yet"}
                 onClick={() => setDrawer({ kind: "guests" })}
               />
+
               <Tile
                 icon={Activity}
                 label="Recent events"
@@ -648,14 +740,17 @@ export default function AdminDashboard() {
               drawer={drawer}
               stats={stats}
               filtered={filtered}
+              guestGroups={guestGroups}
               events={events}
               onOpenSession={(sid) => setDrawer({ kind: "session", sessionId: sid })}
               onOpenWine={(name) => setDrawer({ kind: "wine", wineName: name })}
               onExportGuests={exportAllGuests}
+              onExportVisits={exportAllVisits}
               onExportEvents={exportAllEvents}
-              onDeleteGuest={deleteGuest}
+              onDeleteGuestGroup={deleteGuestGroup}
               range={range}
             />
+
           )}
         </SheetContent>
       </Sheet>
@@ -668,50 +763,69 @@ function DrawerBody({
   drawer,
   stats,
   filtered,
+  guestGroups,
   events,
   onOpenSession,
   onOpenWine,
   onExportGuests,
+  onExportVisits,
   onExportEvents,
-  onDeleteGuest,
+  onDeleteGuestGroup,
   range,
 }: {
   drawer: DrawerKind;
   stats: ReturnType<typeof useMemo> extends infer T ? any : any;
   filtered: { events: TastingEventRow[]; consent: ConsentRow[] };
+  guestGroups: GuestGroup[];
   events: TastingEventRow[];
   onOpenSession: (sid: string) => void;
   onOpenWine: (name: string) => void;
   onExportGuests: () => void;
+  onExportVisits: () => void;
   onExportEvents: () => void;
-  onDeleteGuest: (row: ConsentRow) => void;
+  onDeleteGuestGroup: (g: GuestGroup) => void;
   range: DateRange;
 }) {
-  // Guest log drawer with search + pagination
   const [q, setQ] = useState("");
   const [page, setPage] = useState(0);
-  const pageSize = 50;
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const pageSize = 25;
+
+  const toggleExpand = (key: string) => {
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  };
 
   if (drawer.kind === "guests") {
-    const rows = filtered.consent.filter((c) => {
-      if (!q) return true;
-      const s = q.toLowerCase();
-      return (
-        (c.guest_name || "").toLowerCase().includes(s) ||
-        ((c.metadata?.email as string) || "").toLowerCase().includes(s) ||
-        ((c.metadata?.phone as string) || "").toLowerCase().includes(s) ||
-        (c.flight_id || "").toLowerCase().includes(s)
-      );
+    const s = q.trim().toLowerCase();
+    const groups = guestGroups.filter((g) => {
+      if (!s) return true;
+      if (g.name.toLowerCase().includes(s)) return true;
+      if (g.email.toLowerCase().includes(s)) return true;
+      if (g.phone.toLowerCase().includes(s)) return true;
+      if (g.flights.some((f) => f.toLowerCase().includes(s))) return true;
+      return g.visits.some((v) => (v.guest_name || "").toLowerCase().includes(s));
     });
-    const pageRows = rows.slice(page * pageSize, page * pageSize + pageSize);
+    const visitsTotal = groups.reduce((a, g) => a + g.visits.length, 0);
+    const pageGroups = groups.slice(page * pageSize, page * pageSize + pageSize);
+
     return (
       <>
         <SheetHeader>
           <SheetTitle className="flex items-center justify-between gap-2">
-            <span>Guest log · {rows.length}</span>
-            <button onClick={onExportGuests} className="btn-secondary !py-1 !px-2 text-xs flex items-center gap-1">
-              <Download size={11} /> CSV (all)
-            </button>
+            <span>Guest log · {groups.length} guests <span className="text-muted-foreground font-normal text-xs">({visitsTotal} visits)</span></span>
+            <div className="flex items-center gap-1">
+              <button onClick={onExportGuests} className="btn-secondary !py-1 !px-2 text-xs flex items-center gap-1" title="One row per unique guest">
+                <Download size={11} /> CSV
+              </button>
+              <button onClick={onExportVisits} className="btn-secondary !py-1 !px-2 text-[10px] flex items-center gap-1" title="One row per visit">
+                Raw
+              </button>
+            </div>
           </SheetTitle>
         </SheetHeader>
         <div className="mt-3 space-y-3">
@@ -725,43 +839,95 @@ function DrawerBody({
             />
           </div>
           <ul className="space-y-1.5">
-            {pageRows.map((c) => {
-              const email = c.metadata?.email as string | undefined;
-              const related = email ? events.find((e) => e.guest_email === email)?.session_id : undefined;
+            {pageGroups.map((g) => {
+              const isOpen = expanded.has(g.key);
+              const first = g.visits[0];
+              const related = g.email
+                ? events.find((e) => e.guest_email === g.email)?.session_id
+                : g.phone
+                ? events.find((e) => e.guest_phone === g.phone)?.session_id
+                : undefined;
+              const multi = g.visits.length > 1;
               return (
-                <li key={c.id} className="border border-border rounded-lg p-2.5 text-xs space-y-1">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="font-medium truncate">{c.guest_name || "—"}</span>
-                    <span className="text-muted-foreground text-[10px] whitespace-nowrap">{new Date(c.created_at).toLocaleString()}</span>
-                  </div>
-                  <div className="text-muted-foreground truncate">{email || "—"} · {(c.metadata?.phone as string) || "—"}</div>
+                <li key={g.key} className="border border-border rounded-lg p-2.5 text-xs space-y-1">
+                  <button
+                    onClick={() => multi && toggleExpand(g.key)}
+                    className={`w-full flex items-center justify-between gap-2 text-left ${multi ? "cursor-pointer" : "cursor-default"}`}
+                  >
+                    <span className="font-medium truncate flex items-center gap-1.5">
+                      {multi && <ChevronRight size={11} className={`transition-transform ${isOpen ? "rotate-90" : ""}`} />}
+                      {g.name || "—"}
+                      {multi && <span className="text-[10px] font-normal text-wine-gold">×{g.visits.length}</span>}
+                    </span>
+                    <span className="text-muted-foreground text-[10px] whitespace-nowrap">{new Date(g.latestAt).toLocaleString()}</span>
+                  </button>
+                  <div className="text-muted-foreground truncate">{g.email || "—"} · {g.phone || "—"}</div>
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] text-muted-foreground">Flight {c.flight_id || "—"} · {c.device_type || "—"}</span>
+                    <span className="text-[10px] text-muted-foreground">
+                      {g.visits.length} visit{multi ? "s" : ""} · Flight{g.flights.length > 1 ? "s" : ""} {g.flights.join(", ") || "—"} · {g.devices.join(", ")}
+                    </span>
                     <div className="flex items-center gap-2">
-                      {related && (
+                      {!multi && related && (
                         <button onClick={() => onOpenSession(related)} className="text-wine-gold hover:underline text-[11px]">Journey</button>
                       )}
-                      <button onClick={() => onDeleteGuest(c)} className="text-muted-foreground hover:text-destructive" title="Delete">
+                      <button onClick={() => onDeleteGuestGroup(g)} className="text-muted-foreground hover:text-destructive" title={`Delete ${g.name}`}>
                         <Trash2 size={11} />
                       </button>
                     </div>
                   </div>
+                  {isOpen && multi && (
+                    <ul className="pt-2 mt-1 border-t border-border/50 space-y-1">
+                      {g.visits.map((v) => {
+                        const vRelated = events.find(
+                          (e) =>
+                            (v.metadata?.email && e.guest_email === v.metadata.email) ||
+                            (v.metadata?.phone && e.guest_phone === v.metadata.phone),
+                        )?.session_id;
+                        // Prefer a session that started within a few minutes of this visit
+                        const vStart = new Date(v.created_at).getTime();
+                        const closerSession = events
+                          .filter(
+                            (e) =>
+                              (v.metadata?.email && e.guest_email === v.metadata.email) ||
+                              (v.metadata?.phone && e.guest_phone === v.metadata.phone),
+                          )
+                          .sort(
+                            (a, b) =>
+                              Math.abs(new Date(a.created_at).getTime() - vStart) -
+                              Math.abs(new Date(b.created_at).getTime() - vStart),
+                          )[0]?.session_id || vRelated;
+                        return (
+                          <li key={v.id} className="flex items-center justify-between gap-2 text-[11px]">
+                            <span className="text-muted-foreground">
+                              {new Date(v.created_at).toLocaleString()} · Flight {v.flight_id || "—"} · {v.device_type || "—"}
+                            </span>
+                            {closerSession && (
+                              <button onClick={() => onOpenSession(closerSession)} className="text-wine-gold hover:underline">
+                                Journey
+                              </button>
+                            )}
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  )}
                 </li>
               );
             })}
-            {pageRows.length === 0 && <li className="text-xs text-muted-foreground py-6 text-center">No matching guests.</li>}
+            {pageGroups.length === 0 && <li className="text-xs text-muted-foreground py-6 text-center">No matching guests.</li>}
           </ul>
-          {rows.length > pageSize && (
+          {groups.length > pageSize && (
             <div className="flex items-center justify-between text-xs">
               <button disabled={page === 0} onClick={() => setPage(page - 1)} className="btn-secondary !py-1 !px-2 disabled:opacity-40">Prev</button>
-              <span className="text-muted-foreground">Page {page + 1} / {Math.ceil(rows.length / pageSize)}</span>
-              <button disabled={(page + 1) * pageSize >= rows.length} onClick={() => setPage(page + 1)} className="btn-secondary !py-1 !px-2 disabled:opacity-40">Next</button>
+              <span className="text-muted-foreground">Page {page + 1} / {Math.ceil(groups.length / pageSize)}</span>
+              <button disabled={(page + 1) * pageSize >= groups.length} onClick={() => setPage(page + 1)} className="btn-secondary !py-1 !px-2 disabled:opacity-40">Next</button>
             </div>
           )}
         </div>
       </>
     );
   }
+
 
   if (drawer.kind === "events") {
     const types = Array.from(new Set(filtered.events.map((e) => e.event_type)));
