@@ -469,11 +469,9 @@ export default function AdminDashboard() {
     };
   }, [filtered, consent, events]);
 
-  // Latest guest
-  const latestGuest = filtered.consent[0];
-
   // Grouped guest identities (dedupe repeated visits by email/phone)
   const guestGroups = useMemo(() => groupGuests(filtered.consent), [filtered.consent]);
+
 
 
   // ── Exports (paginated full pull) ────────────────────────────────────
