@@ -61,11 +61,41 @@ export function tastingSessionId(): string {
   return getSessionId();
 }
 
+// In-memory dedupe caches (per page session)
+const recentViews = new Map<string, number>(); // key: session|wine → ts
+const doneRitual = new Set<string>(); // key: session|wine|step
+
 export function logTastingEvent(input: TastingEventInput): void {
   try {
-    const meta = { ...(input.metadata || {}), device: detectDevice() };
+    const sid = input.sessionId || getSessionId();
+
+    // Storage-smart guards — drop no-signal events
+    if (input.eventType === "wine_dwell" && (input.durationMs ?? 0) < 500) return;
+    if (input.eventType === "wine_view") {
+      const k = `${sid}|${input.wineId ?? input.wineName ?? ""}`;
+      const last = recentViews.get(k) || 0;
+      const now = Date.now();
+      if (now - last < 2000) return;
+      recentViews.set(k, now);
+    }
+    if (input.eventType === "ritual_step_complete") {
+      const k = `${sid}|${input.wineId ?? input.wineName ?? ""}|${input.stepIndex ?? -1}`;
+      if (doneRitual.has(k)) return;
+      doneRitual.add(k);
+    }
+
+    // Trim metadata to keys the dashboard reads
+    const meta: Record<string, unknown> = { device: detectDevice() };
+    if (input.metadata && typeof input.metadata === "object") {
+      for (const [k, v] of Object.entries(input.metadata)) {
+        if (v == null) continue;
+        const s = typeof v === "string" ? v : JSON.stringify(v);
+        if (s.length <= 120) meta[k] = v;
+      }
+    }
+
     const row = {
-      session_id: input.sessionId || getSessionId(),
+      session_id: sid,
       guest_name: input.guestName ?? null,
       guest_email: input.guestEmail ?? null,
       guest_phone: input.guestPhone ?? null,
@@ -85,3 +115,4 @@ export function logTastingEvent(input: TastingEventInput): void {
     /* ignore */
   }
 }
+
