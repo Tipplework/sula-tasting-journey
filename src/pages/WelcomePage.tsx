@@ -66,11 +66,11 @@ export default function WelcomePage() {
   };
 
   const handleStart = () => {
-    setTouched({ name: true, email: true, phone: true });
+    setTouched({ name: true, email: true, phone: true, city: true });
     if (!canStart) return;
 
-    const clean = { name: name.trim(), email: email.trim(), phone: normalizePhone(phone) };
-    setGuestProfile({ name: clean.name, email: clean.email, phone: clean.phone, city: session.city });
+    const clean = { name: name.trim(), email: email.trim(), phone: normalizePhone(phone), city: city.trim() };
+    setGuestProfile({ name: clean.name, email: clean.email, phone: clean.phone, city: clean.city });
 
     void logConsent({
       guestName: clean.name,
