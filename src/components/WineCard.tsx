@@ -100,7 +100,7 @@ export function WineCard({
 
     // Mandatory: at least one feeling
     if (!selectedOptions.length) {
-      toast("Tell us what you felt before moving ahead");
+      toast("Please pick a tasting note under \"Which note stood out?\" to continue");
       return;
     }
     const rating = response?.rating || 0;
