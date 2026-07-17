@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   BarChart3,
   Users,
@@ -14,6 +14,11 @@ import {
   TrendingUp,
   TrendingDown,
   Minus,
+  ChevronRight,
+  Search,
+  Smartphone,
+  ListOrdered,
+  Activity,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -21,6 +26,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { useAuth } from "@/hooks/useAuth";
 import AccessRequestsPanel from "@/components/admin/AccessRequestsPanel";
 
+// ─── Types ─────────────────────────────────────────────────────────────
 interface TastingEventRow {
   id: string;
   session_id: string;
@@ -50,50 +56,47 @@ interface ConsentRow {
 }
 
 type DateRange = "today" | "7d" | "30d" | "all";
+type DrawerKind =
+  | { kind: "guests" }
+  | { kind: "events" }
+  | { kind: "funnel" }
+  | { kind: "wines" }
+  | { kind: "ratings" }
+  | { kind: "vivino" }
+  | { kind: "ritual" }
+  | { kind: "sessionLength" }
+  | { kind: "flights" }
+  | { kind: "devices" }
+  | { kind: "session"; sessionId: string }
+  | { kind: "wine"; wineName: string };
 
-function StatCard({
-  icon: Icon,
-  label,
-  value,
-  delta,
-}: {
-  icon: typeof Users;
-  label: string;
-  value: string | number;
-  delta?: { pct: number; sign: "up" | "down" | "flat" } | null;
-}) {
-  return (
-    <div className="wine-card p-4 space-y-1">
-      <div className="flex items-center gap-2 text-muted-foreground">
-        <Icon size={14} />
-        <p className="text-xs font-medium">{label}</p>
-      </div>
-      <div className="flex items-baseline gap-2">
-        <p className="font-heading text-2xl font-bold">{value}</p>
-        {delta && (
-          <span
-            className={`text-[0.65rem] font-medium flex items-center gap-0.5 ${
-              delta.sign === "up"
-                ? "text-emerald-600"
-                : delta.sign === "down"
-                ? "text-destructive"
-                : "text-muted-foreground"
-            }`}
-          >
-            {delta.sign === "up" ? <TrendingUp size={10} /> : delta.sign === "down" ? <TrendingDown size={10} /> : <Minus size={10} />}
-            {Math.abs(delta.pct).toFixed(0)}%
-          </span>
-        )}
-      </div>
-    </div>
-  );
+// ─── Helpers ───────────────────────────────────────────────────────────
+function rangeStartIso(range: DateRange): string | null {
+  const day = 24 * 60 * 60 * 1000;
+  const now = Date.now();
+  if (range === "today") return new Date(now - day).toISOString();
+  if (range === "7d") return new Date(now - 7 * day).toISOString();
+  if (range === "30d") return new Date(now - 30 * day).toISOString();
+  return null;
+}
+
+function fmtMs(ms: number | null | undefined): string {
+  if (!ms || ms < 0) return "—";
+  const s = ms / 1000;
+  if (s < 60) return `${s.toFixed(1)}s`;
+  const m = Math.floor(s / 60);
+  return `${m}m ${Math.round(s - m * 60)}s`;
+}
+
+function detectDevice(m: TastingEventRow["metadata"]): string {
+  return (m?.device as string) || "unknown";
 }
 
 function toCsv(rows: Record<string, unknown>[]): string {
   if (!rows.length) return "";
   const headers = Object.keys(rows[0]);
   const escape = (v: unknown) => {
-    if (v === null || v === undefined) return "";
+    if (v == null) return "";
     const s = typeof v === "string" ? v : JSON.stringify(v);
     return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
   };
@@ -110,375 +113,385 @@ function download(name: string, content: string) {
   URL.revokeObjectURL(url);
 }
 
-function fmtMs(ms: number | null | undefined): string {
-  if (!ms || ms < 0) return "—";
-  const s = ms / 1000;
-  if (s < 60) return `${s.toFixed(1)}s`;
-  const m = Math.floor(s / 60);
-  const rem = Math.round(s - m * 60);
-  return `${m}m ${rem}s`;
+// ─── Tile ──────────────────────────────────────────────────────────────
+function Tile({
+  icon: Icon,
+  label,
+  value,
+  sub,
+  delta,
+  onClick,
+  accent,
+}: {
+  icon: typeof Users;
+  label: string;
+  value: string | number;
+  sub?: string;
+  delta?: { pct: number; sign: "up" | "down" | "flat" } | null;
+  onClick?: () => void;
+  accent?: boolean;
+}) {
+  const clickable = !!onClick;
+  return (
+    <button
+      onClick={onClick}
+      disabled={!clickable}
+      className={`wine-card p-4 text-left w-full space-y-1 transition-all ${
+        clickable ? "hover:border-wine-gold hover:shadow-md cursor-pointer" : "cursor-default"
+      } ${accent ? "border-wine-gold/50" : ""}`}
+    >
+      <div className="flex items-center justify-between text-muted-foreground">
+        <div className="flex items-center gap-1.5">
+          <Icon size={13} />
+          <p className="text-[0.7rem] font-medium uppercase tracking-wide">{label}</p>
+        </div>
+        {clickable && <ChevronRight size={13} className="opacity-40" />}
+      </div>
+      <div className="flex items-baseline gap-2">
+        <p className="font-heading text-2xl font-bold leading-none">{value}</p>
+        {delta && (
+          <span
+            className={`text-[0.65rem] font-medium flex items-center gap-0.5 ${
+              delta.sign === "up"
+                ? "text-emerald-600"
+                : delta.sign === "down"
+                ? "text-destructive"
+                : "text-muted-foreground"
+            }`}
+          >
+            {delta.sign === "up" ? <TrendingUp size={10} /> : delta.sign === "down" ? <TrendingDown size={10} /> : <Minus size={10} />}
+            {Math.abs(delta.pct).toFixed(0)}%
+          </span>
+        )}
+      </div>
+      {sub && <p className="text-[0.7rem] text-muted-foreground truncate">{sub}</p>}
+    </button>
+  );
 }
 
-function rangeStartMs(range: DateRange): number {
-  const day = 24 * 60 * 60 * 1000;
-  const now = Date.now();
-  if (range === "today") return now - day;
-  if (range === "7d") return now - 7 * day;
-  if (range === "30d") return now - 30 * day;
-  return 0;
-}
-
-function detectDevice(m: TastingEventRow["metadata"]): string {
-  return (m?.device as string) || "unknown";
-}
-
+// ─── Component ─────────────────────────────────────────────────────────
 export default function AdminDashboard() {
   const { isSuperAdmin } = useAuth();
+
+  // Overview data (lightweight)
   const [events, setEvents] = useState<TastingEventRow[]>([]);
   const [consent, setConsent] = useState<ConsentRow[]>([]);
+  const [totals, setTotals] = useState<{ guests: number; events: number }>({ guests: 0, events: 0 });
+
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+
   const [range, setRange] = useState<DateRange>("7d");
   const [flightFilter, setFlightFilter] = useState<string>("all");
   const [deviceFilter, setDeviceFilter] = useState<string>("all");
   const [autoRefresh, setAutoRefresh] = useState(true);
-  const [sessionDrawer, setSessionDrawer] = useState<string | null>(null);
-  const [wineDrawer, setWineDrawer] = useState<string | null>(null);
-  const [refreshing, setRefreshing] = useState(false);
-  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
-  const load = async (opts?: { showToast?: boolean }) => {
-    setRefreshing(true);
-    const [evtRes, consentRes] = await Promise.all([
-      supabase.from("tasting_events").select("*").order("created_at", { ascending: false }).limit(10000),
-      supabase.from("consent_logs").select("id,guest_name,flight_id,device_type,created_at,metadata").order("created_at", { ascending: false }).limit(5000),
-    ]);
-    if (evtRes.error) toast.error(evtRes.error.message);
-    if (consentRes.error) toast.error(consentRes.error.message);
-    setEvents((evtRes.data as TastingEventRow[]) || []);
-    setConsent((consentRes.data as ConsentRow[]) || []);
-    setLoading(false);
-    setRefreshing(false);
-    setLastUpdated(new Date());
-    if (opts?.showToast && !evtRes.error && !consentRes.error) {
-      toast.success("Dashboard refreshed");
-    }
-  };
+  const [drawer, setDrawer] = useState<DrawerKind | null>(null);
+  const lastRefetchRef = useRef(0);
+
+  // ── Overview fetch (lean) ────────────────────────────────────────────
+  const load = useCallback(
+    async (opts?: { showToast?: boolean }) => {
+      setRefreshing(true);
+      const startIso = rangeStartIso(range);
+
+      let evtQ = supabase
+        .from("tasting_events")
+        .select(
+          "id,session_id,guest_name,guest_email,guest_phone,flight_id,wine_id,wine_name,event_type,rating,quiz_answer,personality,duration_ms,step_index,metadata,created_at"
+        )
+        .order("created_at", { ascending: false })
+        .limit(2000);
+      let consQ = supabase
+        .from("consent_logs")
+        .select("id,guest_name,flight_id,device_type,created_at,metadata")
+        .order("created_at", { ascending: false })
+        .limit(200);
+      let evtCountQ = supabase.from("tasting_events").select("id", { count: "exact", head: true });
+      let consCountQ = supabase.from("consent_logs").select("id", { count: "exact", head: true });
+      if (startIso) {
+        evtQ = evtQ.gte("created_at", startIso);
+        consQ = consQ.gte("created_at", startIso);
+        evtCountQ = evtCountQ.gte("created_at", startIso);
+        consCountQ = consCountQ.gte("created_at", startIso);
+      }
+
+      const [evtRes, consRes, evtCount, consCount] = await Promise.all([evtQ, consQ, evtCountQ, consCountQ]);
+
+      if (evtRes.error) toast.error(evtRes.error.message);
+      if (consRes.error) toast.error(consRes.error.message);
+      setEvents((evtRes.data as TastingEventRow[]) || []);
+      setConsent((consRes.data as ConsentRow[]) || []);
+      setTotals({ guests: consCount.count ?? 0, events: evtCount.count ?? 0 });
+      setLoading(false);
+      setRefreshing(false);
+      setLastUpdated(new Date());
+      if (opts?.showToast && !evtRes.error && !consRes.error) toast.success("Dashboard refreshed");
+    },
+    [range]
+  );
 
   useEffect(() => {
     void load();
-  }, []);
+  }, [load]);
 
-  // Auto-refresh + realtime
+  // Auto-refresh + realtime with 5s debounce
   useEffect(() => {
     if (!autoRefresh) return;
-    const iv = window.setInterval(() => void load(), 30_000);
+    const trigger = () => {
+      const now = Date.now();
+      if (now - lastRefetchRef.current < 5000) return;
+      lastRefetchRef.current = now;
+      void load();
+    };
+    const iv = window.setInterval(trigger, 30_000);
     const ch = supabase
       .channel("dashboard-live")
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "tasting_events" }, () => void load())
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "consent_logs" }, () => void load())
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "tasting_events" }, trigger)
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "consent_logs" }, trigger)
       .subscribe();
     return () => {
       window.clearInterval(iv);
       void supabase.removeChannel(ch);
     };
-  }, [autoRefresh]);
+  }, [autoRefresh, load]);
 
-  // ── Filter application ────────────────────────────────
+  // ── Client-side filters (flight/device) ──────────────────────────────
   const filtered = useMemo(() => {
-    const start = rangeStartMs(range);
-    const eventsF = events.filter((e) => {
-      if (new Date(e.created_at).getTime() < start) return false;
+    const evs = events.filter((e) => {
       if (flightFilter !== "all" && e.flight_id !== flightFilter) return false;
       if (deviceFilter !== "all" && detectDevice(e.metadata) !== deviceFilter) return false;
       return true;
     });
-    const consentF = consent.filter((c) => {
-      if (new Date(c.created_at).getTime() < start) return false;
+    const cons = consent.filter((c) => {
       if (flightFilter !== "all" && c.flight_id !== flightFilter) return false;
       if (deviceFilter !== "all" && (c.device_type || "unknown") !== deviceFilter) return false;
       return true;
     });
-    return { events: eventsF, consent: consentF };
-  }, [events, consent, range, flightFilter, deviceFilter]);
+    return { events: evs, consent: cons };
+  }, [events, consent, flightFilter, deviceFilter]);
 
-  // ── Aggregations ──────────────────────────────────────
+  // ── Aggregates ───────────────────────────────────────────────────────
   const stats = useMemo(() => {
     const evs = filtered.events;
     const cons = filtered.consent;
 
-    // Funnel by session
     const sessions = new Map<string, Set<string>>();
     evs.forEach((e) => {
       let s = sessions.get(e.session_id);
-      if (!s) {
-        s = new Set();
-        sessions.set(e.session_id, s);
-      }
+      if (!s) sessions.set(e.session_id, (s = new Set()));
       s.add(e.event_type);
     });
-    const step = (name: string) => Array.from(sessions.values()).filter((s) => s.has(name)).length;
-    const welcomeCount = step("welcome_view");
-    const flightPicked = step("flight_select");
-    const journeyStart = step("journey_start");
-    const wine1 = evs.filter((e) => e.event_type === "wine_view" && (e.step_index ?? -1) === 0).map((e) => e.session_id);
-    const wine2 = evs.filter((e) => e.event_type === "wine_view" && (e.step_index ?? -1) === 1).map((e) => e.session_id);
-    const wine3 = evs.filter((e) => e.event_type === "wine_view" && (e.step_index ?? -1) === 2).map((e) => e.session_id);
-    const wine4 = evs.filter((e) => e.event_type === "wine_view" && (e.step_index ?? -1) === 3).map((e) => e.session_id);
-    const uniq = (a: string[]) => new Set(a).size;
-    const resultsView = step("results_view");
-    const complete = step("tasting_complete");
-    const vivinoClicks = evs.filter((e) => e.event_type === "vivino_click").length;
+    const step = (n: string) => Array.from(sessions.values()).filter((s) => s.has(n)).length;
+
+    const wineViewsBy = (idx: number) =>
+      new Set(evs.filter((e) => e.event_type === "wine_view" && (e.step_index ?? -1) === idx).map((e) => e.session_id)).size;
 
     const funnel = [
-      { label: "Welcome viewed", count: welcomeCount },
-      { label: "Flight picked", count: flightPicked },
-      { label: "Journey started", count: journeyStart },
-      { label: "Wine 1 opened", count: uniq(wine1) },
-      { label: "Wine 2 opened", count: uniq(wine2) },
-      { label: "Wine 3 opened", count: uniq(wine3) },
-      { label: "Wine 4 opened", count: uniq(wine4) },
-      { label: "Results viewed", count: resultsView },
-      { label: "Profile submitted", count: complete },
+      { label: "Welcome viewed", count: step("welcome_view") },
+      { label: "Flight picked", count: step("flight_select") },
+      { label: "Journey started", count: step("journey_start") },
+      { label: "Wine 1 opened", count: wineViewsBy(0) },
+      { label: "Wine 2 opened", count: wineViewsBy(1) },
+      { label: "Wine 3 opened", count: wineViewsBy(2) },
+      { label: "Wine 4 opened", count: wineViewsBy(3) },
+      { label: "Results viewed", count: step("results_view") },
+      { label: "Profile submitted", count: step("tasting_complete") },
     ];
-    const funnelTop = funnel[0].count || 1;
-    let biggestDropIdx = -1;
-    let biggestDropPct = 0;
+    const top = funnel[0].count || 1;
+    let dropIdx = -1, dropPct = 0;
     for (let i = 1; i < funnel.length; i++) {
       const prev = funnel[i - 1].count;
       if (!prev) continue;
-      const dropPct = 1 - funnel[i].count / prev;
-      if (dropPct > biggestDropPct) {
-        biggestDropPct = dropPct;
-        biggestDropIdx = i;
-      }
+      const d = 1 - funnel[i].count / prev;
+      if (d > dropPct) { dropPct = d; dropIdx = i; }
     }
     const funnelRows = funnel.map((f, i) => ({
       ...f,
-      pctOfTotal: Math.round((f.count / funnelTop) * 100),
+      pctOfTotal: Math.round((f.count / top) * 100),
       pctOfPrev: i === 0 ? 100 : Math.round((f.count / (funnel[i - 1].count || 1)) * 100),
-      biggestDrop: i === biggestDropIdx,
+      biggestDrop: i === dropIdx,
     }));
 
-    // Wine ratings
-    const ratingsByWine = new Map<string, { total: number; count: number; wineId: number | null }>();
-    evs
-      .filter((e) => e.event_type === "wine_rating" && e.rating && e.wine_name)
-      .forEach((e) => {
-        const cur = ratingsByWine.get(e.wine_name!) || { total: 0, count: 0, wineId: e.wine_id };
-        cur.total += e.rating!;
-        cur.count += 1;
-        ratingsByWine.set(e.wine_name!, cur);
-      });
-    const wineAverages = Array.from(ratingsByWine.entries())
+    // Ratings
+    const rMap = new Map<string, { total: number; count: number }>();
+    evs.filter((e) => e.event_type === "wine_rating" && e.rating && e.wine_name).forEach((e) => {
+      const c = rMap.get(e.wine_name!) || { total: 0, count: 0 };
+      c.total += e.rating!; c.count += 1;
+      rMap.set(e.wine_name!, c);
+    });
+    const wineAverages = Array.from(rMap.entries())
       .map(([name, v]) => ({ name, avg: v.total / v.count, count: v.count }))
       .sort((a, b) => b.avg - a.avg);
 
-    // Avg dwell per wine
-    const dwellByWine = new Map<string, { total: number; count: number }>();
-    evs
-      .filter((e) => e.event_type === "wine_dwell" && e.duration_ms && e.wine_name)
-      .forEach((e) => {
-        const cur = dwellByWine.get(e.wine_name!) || { total: 0, count: 0 };
-        cur.total += e.duration_ms!;
-        cur.count += 1;
-        dwellByWine.set(e.wine_name!, cur);
-      });
-    const wineDwellRows = Array.from(dwellByWine.entries())
+    // Dwell
+    const dMap = new Map<string, { total: number; count: number }>();
+    evs.filter((e) => e.event_type === "wine_dwell" && e.duration_ms && e.wine_name).forEach((e) => {
+      const c = dMap.get(e.wine_name!) || { total: 0, count: 0 };
+      c.total += e.duration_ms!; c.count += 1;
+      dMap.set(e.wine_name!, c);
+    });
+    const wineDwellRows = Array.from(dMap.entries())
       .map(([name, v]) => ({ name, avgMs: v.total / v.count, count: v.count }))
       .sort((a, b) => b.avgMs - a.avgMs);
 
-    // Ritual step time per wine
-    const ritualByWine = new Map<string, { total: number; count: number }>();
-    evs
-      .filter((e) => e.event_type === "ritual_step_complete" && e.duration_ms && e.wine_name)
-      .forEach((e) => {
-        const cur = ritualByWine.get(e.wine_name!) || { total: 0, count: 0 };
-        cur.total += e.duration_ms!;
-        cur.count += 1;
-        ritualByWine.set(e.wine_name!, cur);
-      });
-    const ritualRows = Array.from(ritualByWine.entries())
+    // Ritual
+    const rtMap = new Map<string, { total: number; count: number }>();
+    evs.filter((e) => e.event_type === "ritual_step_complete" && e.duration_ms && e.wine_name).forEach((e) => {
+      const c = rtMap.get(e.wine_name!) || { total: 0, count: 0 };
+      c.total += e.duration_ms!; c.count += 1;
+      rtMap.set(e.wine_name!, c);
+    });
+    const ritualRows = Array.from(rtMap.entries())
       .map(([name, v]) => ({ name, avgMs: v.total / v.count, count: v.count }))
       .sort((a, b) => b.avgMs - a.avgMs);
 
-    // Session length distribution: time from first to last event per session
-    const sessionSpans = new Map<string, { min: number; max: number }>();
+    // Session length
+    const spans = new Map<string, { min: number; max: number }>();
     evs.forEach((e) => {
       const t = new Date(e.created_at).getTime();
-      const cur = sessionSpans.get(e.session_id) || { min: t, max: t };
-      cur.min = Math.min(cur.min, t);
-      cur.max = Math.max(cur.max, t);
-      sessionSpans.set(e.session_id, cur);
+      const c = spans.get(e.session_id) || { min: t, max: t };
+      c.min = Math.min(c.min, t); c.max = Math.max(c.max, t);
+      spans.set(e.session_id, c);
     });
-    const buckets = { "<2m": 0, "2–5m": 0, "5–10m": 0, "10m+": 0 };
-    sessionSpans.forEach(({ min, max }) => {
+    const buckets: Record<string, number> = { "<2m": 0, "2–5m": 0, "5–10m": 0, "10m+": 0 };
+    spans.forEach(({ min, max }) => {
       const mins = (max - min) / 60000;
-      if (mins < 2) buckets["<2m"] += 1;
-      else if (mins < 5) buckets["2–5m"] += 1;
-      else if (mins < 10) buckets["5–10m"] += 1;
-      else buckets["10m+"] += 1;
+      if (mins < 2) buckets["<2m"]++;
+      else if (mins < 5) buckets["2–5m"]++;
+      else if (mins < 10) buckets["5–10m"]++;
+      else buckets["10m+"]++;
     });
-    const sessionCount = sessionSpans.size || 1;
-    const avgSessionMinutes = Array.from(sessionSpans.values()).reduce((a, b) => a + (b.max - b.min), 0) / sessionCount / 60000;
+    const sc = spans.size || 1;
+    const avgMin = Array.from(spans.values()).reduce((a, b) => a + (b.max - b.min), 0) / sc / 60000;
 
     // Vivino
-    const vivinoByWine = new Map<string, number>();
-    evs
-      .filter((e) => e.event_type === "vivino_click" && e.wine_name)
-      .forEach((e) => vivinoByWine.set(e.wine_name!, (vivinoByWine.get(e.wine_name!) || 0) + 1));
-    const vivinoRows = Array.from(vivinoByWine.entries()).sort((a, b) => b[1] - a[1]);
+    const vMap = new Map<string, number>();
+    evs.filter((e) => e.event_type === "vivino_click" && e.wine_name).forEach((e) =>
+      vMap.set(e.wine_name!, (vMap.get(e.wine_name!) || 0) + 1)
+    );
+    const vivinoRows = Array.from(vMap.entries()).sort((a, b) => b[1] - a[1]);
+    const vivinoTotal = evs.filter((e) => e.event_type === "vivino_click").length;
 
-    // Flight popularity
-    const flightCounts = new Map<string, number>();
-    cons.forEach((c) => c.flight_id && flightCounts.set(c.flight_id, (flightCounts.get(c.flight_id) || 0) + 1));
-    const flightRows = Array.from(flightCounts.entries()).sort((a, b) => b[1] - a[1]);
+    // Flights
+    const fMap = new Map<string, number>();
+    cons.forEach((c) => c.flight_id && fMap.set(c.flight_id, (fMap.get(c.flight_id) || 0) + 1));
+    const flightRows = Array.from(fMap.entries()).sort((a, b) => b[1] - a[1]);
+
+    // Devices
+    const devMap = new Map<string, number>();
+    cons.forEach((c) => {
+      const d = c.device_type || "unknown";
+      devMap.set(d, (devMap.get(d) || 0) + 1);
+    });
+    const deviceRows = Array.from(devMap.entries()).sort((a, b) => b[1] - a[1]);
 
     return {
-      funnel: funnelRows,
+      funnelRows,
       wineAverages,
       wineDwellRows,
       ritualRows,
       buckets,
-      avgSessionMinutes,
+      avgMin,
       vivinoRows,
-      vivinoTotal: vivinoClicks,
+      vivinoTotal,
       flightRows,
-      totalGuests: cons.length,
-      startsCount: journeyStart,
-      completionRate: journeyStart ? Math.round((complete / journeyStart) * 100) : 0,
-      mostLiked: wineAverages[0]?.name || "—",
-      allFlights: Array.from(new Set(consent.map((c) => c.flight_id).filter(Boolean))) as string[],
+      deviceRows,
+      completionRate: funnelRows[2].count ? Math.round((funnelRows[8].count / funnelRows[2].count) * 100) : 0,
+      journeyStarts: funnelRows[2].count,
+      complete: funnelRows[8].count,
+      biggestDropLabel: dropIdx >= 0 ? funnelRows[dropIdx].label : "—",
+      allFlights: Array.from(new Set([...consent.map((c) => c.flight_id), ...events.map((e) => e.flight_id)].filter(Boolean))) as string[],
       allDevices: Array.from(new Set([...consent.map((c) => c.device_type || "unknown"), ...events.map((e) => detectDevice(e.metadata))])),
     };
   }, [filtered, consent, events]);
 
-  // ── Cohort compare (previous period of same length) ──
-  const cohort = useMemo(() => {
-    if (range === "all") return null;
-    const day = 24 * 60 * 60 * 1000;
-    const span = range === "today" ? day : range === "7d" ? 7 * day : 30 * day;
-    const now = Date.now();
-    const prevStart = now - 2 * span;
-    const prevEnd = now - span;
+  // Latest guest
+  const latestGuest = filtered.consent[0];
 
-    const prevGuests = consent.filter((c) => {
-      const t = new Date(c.created_at).getTime();
-      return t >= prevStart && t < prevEnd;
-    }).length;
-    const prevEvents = events.filter((e) => {
-      const t = new Date(e.created_at).getTime();
-      return t >= prevStart && t < prevEnd;
-    });
-    const prevStartCount = new Set(prevEvents.filter((e) => e.event_type === "journey_start").map((e) => e.session_id)).size;
-    const prevComplete = new Set(prevEvents.filter((e) => e.event_type === "tasting_complete").map((e) => e.session_id)).size;
-    const prevVivino = prevEvents.filter((e) => e.event_type === "vivino_click").length;
-    const prevRate = prevStartCount ? (prevComplete / prevStartCount) * 100 : 0;
-
-    const delta = (curr: number, prev: number): { pct: number; sign: "up" | "down" | "flat" } | null => {
-      if (!prev && !curr) return null;
-      if (!prev) return { pct: 100, sign: "up" };
-      const pct = ((curr - prev) / prev) * 100;
-      return { pct, sign: pct > 1 ? "up" : pct < -1 ? "down" : "flat" };
-    };
-    return {
-      guests: delta(stats.totalGuests, prevGuests),
-      completion: delta(stats.completionRate, prevRate),
-      vivino: delta(stats.vivinoTotal, prevVivino),
-    };
-  }, [range, consent, events, stats]);
-
-  // ── Session drawer data ──
-  const drawerSession = useMemo(() => {
-    if (!sessionDrawer) return null;
-    const rows = events
-      .filter((e) => e.session_id === sessionDrawer)
-      .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
-    if (!rows.length) return null;
-    const first = rows[0].guest_name || rows.find((r) => r.guest_name)?.guest_name || "Guest";
-    const email = rows.find((r) => r.guest_email)?.guest_email || "";
-    const phone = rows.find((r) => r.guest_phone)?.guest_phone || "";
-    const flight = rows.find((r) => r.flight_id)?.flight_id || "—";
-    const startMs = new Date(rows[0].created_at).getTime();
-    return { rows, first, email, phone, flight, startMs };
-  }, [sessionDrawer, events]);
-
-  // ── Wine deep-dive data ──
-  const drawerWine = useMemo(() => {
-    if (!wineDrawer) return null;
-    const wineEvts = filtered.events.filter((e) => e.wine_name === wineDrawer);
-    const ratings = wineEvts.filter((e) => e.event_type === "wine_rating" && e.rating);
-    const dist = [1, 2, 3, 4, 5].map((star) => ({ star, n: ratings.filter((r) => r.rating === star).length }));
-    const quizAll: string[] = [];
-    wineEvts.filter((e) => e.event_type === "wine_quiz" && e.quiz_answer).forEach((e) => quizAll.push(...(e.quiz_answer || [])));
-    const quizCounts = new Map<string, number>();
-    quizAll.forEach((q) => quizCounts.set(q, (quizCounts.get(q) || 0) + 1));
-    const topQuiz = Array.from(quizCounts.entries()).sort((a, b) => b[1] - a[1]).slice(0, 5);
-    const vivino = wineEvts.filter((e) => e.event_type === "vivino_click").length;
-    const views = new Set(wineEvts.filter((e) => e.event_type === "wine_view").map((e) => e.session_id)).size;
-    const vivinoCtr = views ? Math.round((vivino / views) * 100) : 0;
-    const favourites = filtered.events.filter((e) => e.event_type === "tasting_complete" && e.wine_name === wineDrawer).length;
-    const dwellRows = wineEvts.filter((e) => e.event_type === "wine_dwell" && e.duration_ms);
-    const avgDwell = dwellRows.length ? dwellRows.reduce((a, b) => a + (b.duration_ms || 0), 0) / dwellRows.length : 0;
-    return { name: wineDrawer, dist, topQuiz, vivino, vivinoCtr, views, favourites, avgDwell, ratingsCount: ratings.length };
-  }, [wineDrawer, filtered.events]);
-
-  // ── Exports ──
-  const exportGuests = () => {
-    const rows = filtered.consent.map((c) => ({
-      created_at: c.created_at,
-      name: c.guest_name || "",
-      email: c.metadata?.email || "",
-      phone: c.metadata?.phone || "",
-      flight: c.flight_id || "",
-      device: c.device_type || "",
-    }));
-    download(`sula-guests-${new Date().toISOString().slice(0, 10)}.csv`, toCsv(rows));
+  // ── Exports (paginated full pull) ────────────────────────────────────
+  const exportAllGuests = async () => {
+    toast.info("Preparing full guest export…");
+    const startIso = rangeStartIso(range);
+    const rows: ConsentRow[] = [];
+    let from = 0;
+    while (true) {
+      let q = supabase
+        .from("consent_logs")
+        .select("id,guest_name,flight_id,device_type,created_at,metadata")
+        .order("created_at", { ascending: false })
+        .range(from, from + 499);
+      if (startIso) q = q.gte("created_at", startIso);
+      const { data, error } = await q;
+      if (error) return toast.error(error.message);
+      if (!data?.length) break;
+      rows.push(...(data as ConsentRow[]));
+      if (data.length < 500) break;
+      from += 500;
+    }
+    const csv = toCsv(
+      rows.map((c) => ({
+        created_at: c.created_at,
+        name: c.guest_name || "",
+        email: (c.metadata?.email as string) || "",
+        phone: (c.metadata?.phone as string) || "",
+        flight: c.flight_id || "",
+        device: c.device_type || "",
+      }))
+    );
+    download(`sula-guests-${new Date().toISOString().slice(0, 10)}.csv`, csv);
   };
 
-  const exportEvents = () => {
-    const rows = filtered.events.map((e) => ({
-      created_at: e.created_at,
-      event: e.event_type,
-      session_id: e.session_id,
-      name: e.guest_name || "",
-      email: e.guest_email || "",
-      phone: e.guest_phone || "",
-      flight: e.flight_id || "",
-      wine: e.wine_name || "",
-      step_index: e.step_index ?? "",
-      rating: e.rating ?? "",
-      quiz: e.quiz_answer ? e.quiz_answer.join(" | ") : "",
-      duration_ms: e.duration_ms ?? "",
-      personality: e.personality || "",
-      device: detectDevice(e.metadata),
-    }));
-    download(`sula-tasting-events-${new Date().toISOString().slice(0, 10)}.csv`, toCsv(rows));
+  const exportAllEvents = async () => {
+    toast.info("Preparing full event export…");
+    const startIso = rangeStartIso(range);
+    const rows: TastingEventRow[] = [];
+    let from = 0;
+    while (true) {
+      let q = supabase
+        .from("tasting_events")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .range(from, from + 999);
+      if (startIso) q = q.gte("created_at", startIso);
+      const { data, error } = await q;
+      if (error) return toast.error(error.message);
+      if (!data?.length) break;
+      rows.push(...(data as TastingEventRow[]));
+      if (data.length < 1000) break;
+      from += 1000;
+    }
+    const csv = toCsv(
+      rows.map((e) => ({
+        created_at: e.created_at,
+        event: e.event_type,
+        session_id: e.session_id,
+        name: e.guest_name || "",
+        email: e.guest_email || "",
+        phone: e.guest_phone || "",
+        flight: e.flight_id || "",
+        wine: e.wine_name || "",
+        step_index: e.step_index ?? "",
+        rating: e.rating ?? "",
+        quiz: e.quiz_answer ? e.quiz_answer.join(" | ") : "",
+        duration_ms: e.duration_ms ?? "",
+        personality: e.personality || "",
+        device: detectDevice(e.metadata),
+      }))
+    );
+    download(`sula-tasting-events-${new Date().toISOString().slice(0, 10)}.csv`, csv);
   };
 
   const deleteGuest = async (row: ConsentRow) => {
     if (!window.confirm(`Delete all records for ${row.guest_name || row.metadata?.email || "this guest"}? This cannot be undone.`)) return;
     const email = row.metadata?.email as string | undefined;
     const phone = row.metadata?.phone as string | undefined;
-    // Delete consent row + any tasting events matching email/phone
     const del1 = await supabase.from("consent_logs").delete().eq("id", row.id);
     if (del1.error) return toast.error(del1.error.message);
     if (email) await supabase.from("tasting_events").delete().eq("guest_email", email);
     if (phone) await supabase.from("tasting_events").delete().eq("guest_phone", phone);
     toast.success("Guest records deleted");
-    void load();
-  };
-
-  const wipePreLaunch = async () => {
-    const cutoff = window.prompt("Delete all guest data captured BEFORE this date (YYYY-MM-DD)?", new Date().toISOString().slice(0, 10));
-    if (!cutoff) return;
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(cutoff)) return toast.error("Use YYYY-MM-DD format");
-    const iso = `${cutoff}T00:00:00.000Z`;
-    const [a, b] = await Promise.all([
-      supabase.from("tasting_events").delete().lt("created_at", iso),
-      supabase.from("consent_logs").delete().lt("created_at", iso),
-    ]);
-    if (a.error || b.error) return toast.error((a.error || b.error)!.message);
-    toast.success(`Deleted all data before ${cutoff}`);
     void load();
   };
 
@@ -489,18 +502,14 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen px-5 py-8 max-w-5xl mx-auto">
-      <div className="space-y-6">
+      <div className="space-y-5">
         {/* Header */}
         <div className="flex items-start justify-between gap-3 flex-wrap">
           <div>
             <h1 className="font-heading text-2xl font-bold">Dashboard</h1>
             <p className="text-sm text-muted-foreground">
               Tasting Room Analytics · Admin only
-              {lastUpdated && (
-                <span className="ml-2 text-[0.65rem]">
-                  · Updated {lastUpdated.toLocaleTimeString()}
-                </span>
-              )}
+              {lastUpdated && <span className="ml-2 text-[0.65rem]">· Updated {lastUpdated.toLocaleTimeString()}</span>}
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -520,11 +529,10 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* Access Requests (super admin only) */}
         {isSuperAdmin && <AccessRequestsPanel />}
 
-        {/* Filters */}
-        <div className="wine-card p-3 flex flex-wrap items-center gap-2 text-xs">
+        {/* Sticky filter bar */}
+        <div className="wine-card p-3 flex flex-wrap items-center gap-2 text-xs sticky top-2 z-10 backdrop-blur bg-background/85">
           <Filter size={14} className="text-muted-foreground" />
           <div className="flex items-center gap-1">
             {(["today", "7d", "30d", "all"] as DateRange[]).map((r) => (
@@ -539,28 +547,16 @@ export default function AdminDashboard() {
               </button>
             ))}
           </div>
-          <select
-            value={flightFilter}
-            onChange={(e) => setFlightFilter(e.target.value)}
-            className="px-2 py-1 rounded border border-border bg-background"
-          >
+          <select value={flightFilter} onChange={(e) => setFlightFilter(e.target.value)} className="px-2 py-1 rounded border border-border bg-background">
             <option value="all">All flights</option>
-            {stats.allFlights.map((f) => (
-              <option key={f} value={f}>Flight {f}</option>
-            ))}
+            {stats.allFlights.map((f) => <option key={f} value={f}>Flight {f}</option>)}
           </select>
-          <select
-            value={deviceFilter}
-            onChange={(e) => setDeviceFilter(e.target.value)}
-            className="px-2 py-1 rounded border border-border bg-background"
-          >
+          <select value={deviceFilter} onChange={(e) => setDeviceFilter(e.target.value)} className="px-2 py-1 rounded border border-border bg-background">
             <option value="all">All devices</option>
-            {stats.allDevices.map((d) => (
-              <option key={d} value={d}>{d}</option>
-            ))}
+            {stats.allDevices.map((d) => <option key={d} value={d}>{d}</option>)}
           </select>
           <span className="ml-auto text-muted-foreground">
-            {filtered.consent.length} guests · {filtered.events.length} events
+            {filtered.consent.length} in view · {totals.guests} total guests
           </span>
         </div>
 
@@ -568,391 +564,512 @@ export default function AdminDashboard() {
           <p className="text-sm text-muted-foreground">Loading…</p>
         ) : (
           <>
-            {/* Top stats */}
+            {/* Headline tiles */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <StatCard icon={Users} label="Guests" value={stats.totalGuests} delta={cohort?.guests} />
-              <StatCard icon={CheckCircle2} label="Completion" value={`${stats.completionRate}%`} delta={cohort?.completion} />
-              <StatCard icon={Clock} label="Avg session" value={`${stats.avgSessionMinutes.toFixed(1)}m`} />
-              <StatCard icon={MousePointerClick} label="Vivino clicks" value={stats.vivinoTotal} delta={cohort?.vivino} />
+              <Tile icon={Users} label="Guests" value={filtered.consent.length} sub={`${totals.guests} total`} onClick={() => setDrawer({ kind: "guests" })} />
+              <Tile icon={CheckCircle2} label="Completion" value={`${stats.completionRate}%`} sub={`${stats.complete}/${stats.journeyStarts} finished`} onClick={() => setDrawer({ kind: "funnel" })} />
+              <Tile icon={Clock} label="Avg session" value={`${stats.avgMin.toFixed(1)}m`} sub="tap for buckets" onClick={() => setDrawer({ kind: "sessionLength" })} />
+              <Tile icon={MousePointerClick} label="Vivino" value={stats.vivinoTotal} sub={stats.vivinoRows[0]?.[0] ? `top: ${stats.vivinoRows[0][0]}` : "no clicks"} onClick={() => setDrawer({ kind: "vivino" })} />
             </div>
 
-            {/* Funnel */}
-            <div className="wine-card p-5 space-y-3">
-              <div className="flex items-center gap-2">
-                <BarChart3 size={16} className="text-muted-foreground" />
-                <h2 className="font-heading font-semibold">Guest Funnel</h2>
-              </div>
-              <div className="space-y-2">
-                {stats.funnel.map((f) => (
-                  <div key={f.label} className="space-y-1">
-                    <div className="flex justify-between text-xs">
-                      <span className={f.biggestDrop ? "text-destructive font-medium" : ""}>
-                        {f.label}
-                      </span>
-                      <span className="text-muted-foreground">
-                        {f.count} · {f.pctOfTotal}% of total · {f.pctOfPrev}% of prev
-                      </span>
-                    </div>
-                    <div className="progress-track h-2">
-                      <div
-                        className={`h-2 rounded-full transition-all ${f.biggestDrop ? "bg-destructive/70" : "bg-wine-gold"}`}
-                        style={{ width: `${f.pctOfTotal}%` }}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
+            {/* Secondary tiles */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              <Tile
+                icon={BarChart3}
+                label="Funnel"
+                value={`${stats.funnelRows.length} steps`}
+                sub={`drop: ${stats.biggestDropLabel}`}
+                onClick={() => setDrawer({ kind: "funnel" })}
+                accent
+              />
+              <Tile
+                icon={Star}
+                label="Ratings"
+                value={stats.wineAverages[0] ? `★ ${stats.wineAverages[0].avg.toFixed(2)}` : "—"}
+                sub={stats.wineAverages[0] ? `top: ${stats.wineAverages[0].name}` : "no ratings"}
+                onClick={() => setDrawer({ kind: "ratings" })}
+              />
+              <Tile
+                icon={WineIcon}
+                label="Wines"
+                value={stats.wineDwellRows.length}
+                sub={stats.wineDwellRows[0] ? `slowest: ${stats.wineDwellRows[0].name}` : "no dwell"}
+                onClick={() => setDrawer({ kind: "wines" })}
+              />
+              <Tile
+                icon={Clock}
+                label="Ritual time"
+                value={stats.ritualRows[0] ? fmtMs(stats.ritualRows[0].avgMs) : "—"}
+                sub={stats.ritualRows[0] ? `slowest: ${stats.ritualRows[0].name}` : "no ritual data"}
+                onClick={() => setDrawer({ kind: "ritual" })}
+              />
+              <Tile
+                icon={ListOrdered}
+                label="Flights"
+                value={stats.flightRows.length}
+                sub={stats.flightRows[0] ? `top: Flight ${stats.flightRows[0][0]}` : "—"}
+                onClick={() => setDrawer({ kind: "flights" })}
+              />
+              <Tile
+                icon={Smartphone}
+                label="Devices"
+                value={stats.deviceRows[0]?.[1] ? `${Math.round((stats.deviceRows[0][1] / (filtered.consent.length || 1)) * 100)}% ${stats.deviceRows[0][0]}` : "—"}
+                sub={stats.deviceRows.map((d) => `${d[0]}:${d[1]}`).join(" · ") || "—"}
+                onClick={() => setDrawer({ kind: "devices" })}
+              />
             </div>
 
-            {/* Time on wine + ritual time */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div className="wine-card p-5 space-y-3">
-                <div className="flex items-center gap-2">
-                  <Clock size={16} className="text-muted-foreground" />
-                  <h2 className="font-heading font-semibold">Avg Time per Wine</h2>
-                </div>
-                {stats.wineDwellRows.length === 0 ? (
-                  <p className="text-xs text-muted-foreground">No dwell data yet.</p>
-                ) : (
-                  stats.wineDwellRows.map((w) => (
-                    <div key={w.name} className="space-y-1">
-                      <div className="flex justify-between text-xs">
-                        <button onClick={() => setWineDrawer(w.name)} className="text-left hover:underline">{w.name}</button>
-                        <span className="text-muted-foreground">{fmtMs(w.avgMs)} · {w.count} sessions</span>
-                      </div>
-                      <div className="progress-track h-1.5">
-                        <div className="progress-fill h-1.5" style={{ width: `${Math.min(100, (w.avgMs / 120000) * 100)}%` }} />
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-
-              <div className="wine-card p-5 space-y-3">
-                <div className="flex items-center gap-2">
-                  <Clock size={16} className="text-muted-foreground" />
-                  <h2 className="font-heading font-semibold">Avg Ritual Step Time</h2>
-                </div>
-                {stats.ritualRows.length === 0 ? (
-                  <p className="text-xs text-muted-foreground">No ritual data yet.</p>
-                ) : (
-                  stats.ritualRows.map((w) => (
-                    <div key={w.name} className="flex justify-between text-xs">
-                      <span>{w.name}</span>
-                      <span className="text-muted-foreground">{fmtMs(w.avgMs)} · {w.count} steps</span>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-
-            {/* Session length distribution + Flight popularity */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div className="wine-card p-5 space-y-3">
-                <h2 className="font-heading font-semibold">Session Length</h2>
-                {(Object.keys(stats.buckets) as (keyof typeof stats.buckets)[]).map((k) => {
-                  const total = Object.values(stats.buckets).reduce((a, b) => a + b, 0) || 1;
-                  const n = stats.buckets[k];
-                  return (
-                    <div key={k} className="space-y-1">
-                      <div className="flex justify-between text-xs">
-                        <span>{k}</span>
-                        <span className="text-muted-foreground">{n} · {Math.round((n / total) * 100)}%</span>
-                      </div>
-                      <div className="progress-track h-1.5">
-                        <div className="progress-fill h-1.5" style={{ width: `${(n / total) * 100}%` }} />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              <div className="wine-card p-5 space-y-3">
-                <h2 className="font-heading font-semibold">Flight Popularity</h2>
-                {stats.flightRows.length === 0 ? (
-                  <p className="text-xs text-muted-foreground">No flights picked yet.</p>
-                ) : (
-                  stats.flightRows.map(([id, n]) => (
-                    <div key={id} className="flex justify-between text-xs">
-                      <span>Flight {id}</span>
-                      <span className="text-muted-foreground">{n}</span>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-
-            {/* Rating per wine */}
-            <div className="wine-card p-5 space-y-4">
-              <div className="flex items-center gap-2">
-                <Star size={16} className="text-muted-foreground" />
-                <h2 className="font-heading font-semibold">Average Rating per Wine · Most liked: {stats.mostLiked}</h2>
-              </div>
-              {stats.wineAverages.length === 0 ? (
-                <p className="text-xs text-muted-foreground">No ratings yet.</p>
-              ) : (
-                stats.wineAverages.map((w) => (
-                  <div key={w.name} className="space-y-1">
-                    <div className="flex justify-between text-sm">
-                      <button onClick={() => setWineDrawer(w.name)} className="text-left hover:underline">{w.name}</button>
-                      <span className="font-medium">{w.avg.toFixed(2)}/5 · {w.count}</span>
-                    </div>
-                    <div className="progress-track h-2">
-                      <div className="progress-fill h-2" style={{ width: `${(w.avg / 5) * 100}%` }} />
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-
-            {/* Vivino */}
-            <div className="wine-card p-5 space-y-3">
-              <h2 className="font-heading font-semibold">Vivino Clicks per Wine</h2>
-              {stats.vivinoRows.length === 0 ? (
-                <p className="text-xs text-muted-foreground">No Vivino clicks yet.</p>
-              ) : (
-                stats.vivinoRows.map(([name, n]) => (
-                  <div key={name} className="flex justify-between text-xs">
-                    <button onClick={() => setWineDrawer(name)} className="text-left hover:underline">{name}</button>
-                    <span className="font-medium">{n}</span>
-                  </div>
-                ))
-              )}
-            </div>
-
-            {/* Guest log */}
-            <div className="wine-card p-5 space-y-3">
-              <div className="flex items-center justify-between">
-                <h2 className="font-heading font-semibold">Guest Log</h2>
-                <button onClick={exportGuests} className="btn-secondary !py-1.5 !px-3 text-xs flex items-center gap-1">
-                  <Download size={12} /> CSV
-                </button>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full text-xs">
-                  <thead className="text-left text-muted-foreground">
-                    <tr>
-                      <th className="py-2 pr-3">When</th>
-                      <th className="py-2 pr-3">Name</th>
-                      <th className="py-2 pr-3">Email</th>
-                      <th className="py-2 pr-3">Phone</th>
-                      <th className="py-2 pr-3">Flight</th>
-                      <th className="py-2 pr-3">Device</th>
-                      <th className="py-2 pr-3"></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filtered.consent.slice(0, 50).map((c) => {
-                      // Best-effort match session_id from tasting_events using email
-                      const email = c.metadata?.email as string | undefined;
-                      const relatedSession = email ? events.find((e) => e.guest_email === email)?.session_id : undefined;
-                      return (
-                        <tr key={c.id} className="border-t border-border/50">
-                          <td className="py-2 pr-3 whitespace-nowrap">{new Date(c.created_at).toLocaleString()}</td>
-                          <td className="py-2 pr-3">{c.guest_name || "—"}</td>
-                          <td className="py-2 pr-3">{email || "—"}</td>
-                          <td className="py-2 pr-3">{(c.metadata?.phone as string) || "—"}</td>
-                          <td className="py-2 pr-3">{c.flight_id || "—"}</td>
-                          <td className="py-2 pr-3">{c.device_type || "—"}</td>
-                          <td className="py-2 pr-3 flex items-center gap-1">
-                            {relatedSession && (
-                              <button onClick={() => setSessionDrawer(relatedSession)} className="text-wine-gold hover:underline">
-                                View
-                              </button>
-                            )}
-                            <button
-                              onClick={() => void deleteGuest(c)}
-                              className="text-muted-foreground hover:text-destructive ml-1"
-                              title="Delete this guest"
-                            >
-                              <Trash2 size={12} />
-                            </button>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                    {filtered.consent.length === 0 && (
-                      <tr><td colSpan={7} className="py-4 text-center text-muted-foreground">No guests in the current filter.</td></tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-              {filtered.consent.length > 50 && (
-                <p className="text-[11px] text-muted-foreground">Showing latest 50. Export CSV for full list ({filtered.consent.length} records).</p>
-              )}
-            </div>
-
-            {/* Recent events */}
-            <div className="wine-card p-5 space-y-3">
-              <div className="flex items-center justify-between">
-                <h2 className="font-heading font-semibold">Recent Tasting Events</h2>
-                <button onClick={exportEvents} className="btn-secondary !py-1.5 !px-3 text-xs flex items-center gap-1">
-                  <Download size={12} /> CSV
-                </button>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full text-xs">
-                  <thead className="text-left text-muted-foreground">
-                    <tr>
-                      <th className="py-2 pr-3">When</th>
-                      <th className="py-2 pr-3">Event</th>
-                      <th className="py-2 pr-3">Guest</th>
-                      <th className="py-2 pr-3">Wine</th>
-                      <th className="py-2 pr-3">Rating</th>
-                      <th className="py-2 pr-3">Dwell</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filtered.events.slice(0, 60).map((e) => (
-                      <tr
-                        key={e.id}
-                        className="border-t border-border/50 hover:bg-muted/40 cursor-pointer"
-                        onClick={() => setSessionDrawer(e.session_id)}
-                      >
-                        <td className="py-2 pr-3 whitespace-nowrap">{new Date(e.created_at).toLocaleTimeString()}</td>
-                        <td className="py-2 pr-3">{e.event_type}</td>
-                        <td className="py-2 pr-3">{e.guest_name || e.guest_email || e.session_id.slice(0, 8)}</td>
-                        <td className="py-2 pr-3">{e.wine_name || "—"}</td>
-                        <td className="py-2 pr-3">{e.rating ?? "—"}</td>
-                        <td className="py-2 pr-3">{fmtMs(e.duration_ms)}</td>
-                      </tr>
-                    ))}
-                    {filtered.events.length === 0 && (
-                      <tr><td colSpan={6} className="py-4 text-center text-muted-foreground">No events in the current filter.</td></tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-              {filtered.events.length > 60 && (
-                <p className="text-[11px] text-muted-foreground">Showing latest 60. Export CSV for full list ({filtered.events.length}).</p>
-              )}
-            </div>
-
-            {/* Danger zone */}
-            <div className="wine-card p-5 space-y-3 border border-destructive/40">
-              <h2 className="font-heading font-semibold text-destructive">Danger Zone</h2>
-              <p className="text-xs text-muted-foreground">
-                Purge all guest records (tasting events + consent logs) captured before a chosen date. Wines, flights, and content are not affected.
-              </p>
-              <button onClick={wipePreLaunch} className="btn-secondary text-xs flex items-center gap-1 border-destructive/40 text-destructive hover:bg-destructive/5">
-                <Trash2 size={12} /> Purge data before a date…
-              </button>
+            {/* Wide tiles */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <Tile
+                icon={Users}
+                label="Guest log"
+                value={filtered.consent.length}
+                sub={latestGuest ? `latest: ${latestGuest.guest_name || (latestGuest.metadata?.email as string) || "Guest"}` : "no guests yet"}
+                onClick={() => setDrawer({ kind: "guests" })}
+              />
+              <Tile
+                icon={Activity}
+                label="Recent events"
+                value={filtered.events.length}
+                sub={filtered.events[0] ? `${filtered.events[0].event_type} · ${new Date(filtered.events[0].created_at).toLocaleTimeString()}` : "—"}
+                onClick={() => setDrawer({ kind: "events" })}
+              />
             </div>
           </>
         )}
       </div>
 
-      {/* Session detail drawer */}
-      <Sheet open={!!sessionDrawer} onOpenChange={(o) => !o && setSessionDrawer(null)}>
+      {/* ── Drawer host ─────────────────────────────────────────────── */}
+      <Sheet open={!!drawer} onOpenChange={(o) => !o && setDrawer(null)}>
         <SheetContent side="right" className="w-full sm:max-w-lg overflow-y-auto">
-          <SheetHeader>
-            <SheetTitle>Session timeline</SheetTitle>
-          </SheetHeader>
-          {drawerSession && (
-            <div className="space-y-3 mt-4 text-sm">
-              <div className="space-y-0.5">
-                <p className="font-heading text-lg font-semibold">{drawerSession.first}</p>
-                {drawerSession.email && <p className="text-xs text-muted-foreground">{drawerSession.email}</p>}
-                {drawerSession.phone && <p className="text-xs text-muted-foreground">{drawerSession.phone}</p>}
-                <p className="text-xs text-muted-foreground">Flight {drawerSession.flight}</p>
-              </div>
-              <div className="border-t border-border/60" />
-              <ol className="space-y-2">
-                {drawerSession.rows.map((r) => {
-                  const offsetMs = new Date(r.created_at).getTime() - drawerSession.startMs;
-                  const secs = Math.round(offsetMs / 1000);
-                  const stamp = secs < 60 ? `+${secs}s` : `+${Math.floor(secs / 60)}m ${secs % 60}s`;
-                  return (
-                    <li key={r.id} className="flex gap-3 text-xs">
-                      <span className="text-muted-foreground w-16 flex-shrink-0 tabular-nums">{stamp}</span>
-                      <div className="flex-1 min-w-0">
-                        <span className="font-medium">{r.event_type}</span>
-                        {r.wine_name && <span className="text-muted-foreground"> · {r.wine_name}</span>}
-                        {r.rating && <span> · {r.rating}★</span>}
-                        {r.quiz_answer && r.quiz_answer.length > 0 && (
-                          <span className="text-muted-foreground"> · {r.quiz_answer.join(", ")}</span>
-                        )}
-                        {r.duration_ms && <span className="text-muted-foreground"> · {fmtMs(r.duration_ms)}</span>}
-                      </div>
-                    </li>
-                  );
-                })}
-              </ol>
-            </div>
-          )}
-        </SheetContent>
-      </Sheet>
-
-      {/* Wine deep-dive drawer */}
-      <Sheet open={!!wineDrawer} onOpenChange={(o) => !o && setWineDrawer(null)}>
-        <SheetContent side="right" className="w-full sm:max-w-lg overflow-y-auto">
-          <SheetHeader>
-            <SheetTitle className="flex items-center gap-2">
-              <WineIcon size={16} /> {wineDrawer}
-            </SheetTitle>
-          </SheetHeader>
-          {drawerWine && (
-            <div className="space-y-4 mt-4 text-sm">
-              <div className="grid grid-cols-2 gap-2">
-                <div className="wine-card p-3">
-                  <p className="text-[10px] uppercase text-muted-foreground">Views</p>
-                  <p className="font-heading text-xl font-bold">{drawerWine.views}</p>
-                </div>
-                <div className="wine-card p-3">
-                  <p className="text-[10px] uppercase text-muted-foreground">Ratings</p>
-                  <p className="font-heading text-xl font-bold">{drawerWine.ratingsCount}</p>
-                </div>
-                <div className="wine-card p-3">
-                  <p className="text-[10px] uppercase text-muted-foreground">Vivino CTR</p>
-                  <p className="font-heading text-xl font-bold">{drawerWine.vivinoCtr}%</p>
-                </div>
-                <div className="wine-card p-3">
-                  <p className="text-[10px] uppercase text-muted-foreground">Avg dwell</p>
-                  <p className="font-heading text-xl font-bold">{fmtMs(drawerWine.avgDwell)}</p>
-                </div>
-                <div className="wine-card p-3">
-                  <p className="text-[10px] uppercase text-muted-foreground">Picked as favourite</p>
-                  <p className="font-heading text-xl font-bold">{drawerWine.favourites}</p>
-                </div>
-                <div className="wine-card p-3">
-                  <p className="text-[10px] uppercase text-muted-foreground">Vivino clicks</p>
-                  <p className="font-heading text-xl font-bold">{drawerWine.vivino}</p>
-                </div>
-              </div>
-
-              <div className="wine-card p-4 space-y-2">
-                <p className="text-xs font-medium">Rating distribution</p>
-                {drawerWine.dist.map((d) => {
-                  const max = Math.max(...drawerWine.dist.map((x) => x.n), 1);
-                  return (
-                    <div key={d.star} className="flex items-center gap-2 text-xs">
-                      <span className="w-6 tabular-nums">{d.star}★</span>
-                      <div className="flex-1 progress-track h-2">
-                        <div className="progress-fill h-2" style={{ width: `${(d.n / max) * 100}%` }} />
-                      </div>
-                      <span className="w-6 text-right text-muted-foreground tabular-nums">{d.n}</span>
-                    </div>
-                  );
-                })}
-              </div>
-
-              <div className="wine-card p-4 space-y-2">
-                <p className="text-xs font-medium">Top quiz answers</p>
-                {drawerWine.topQuiz.length === 0 ? (
-                  <p className="text-xs text-muted-foreground">No quiz answers yet.</p>
-                ) : (
-                  drawerWine.topQuiz.map(([q, n]) => (
-                    <div key={q} className="flex justify-between text-xs">
-                      <span>{q}</span>
-                      <span className="text-muted-foreground">{n}</span>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
+          {drawer && (
+            <DrawerBody
+              drawer={drawer}
+              stats={stats}
+              filtered={filtered}
+              events={events}
+              onOpenSession={(sid) => setDrawer({ kind: "session", sessionId: sid })}
+              onOpenWine={(name) => setDrawer({ kind: "wine", wineName: name })}
+              onExportGuests={exportAllGuests}
+              onExportEvents={exportAllEvents}
+              onDeleteGuest={deleteGuest}
+              range={range}
+            />
           )}
         </SheetContent>
       </Sheet>
     </div>
+  );
+}
+
+// ─── Drawer body ───────────────────────────────────────────────────────
+function DrawerBody({
+  drawer,
+  stats,
+  filtered,
+  events,
+  onOpenSession,
+  onOpenWine,
+  onExportGuests,
+  onExportEvents,
+  onDeleteGuest,
+  range,
+}: {
+  drawer: DrawerKind;
+  stats: ReturnType<typeof useMemo> extends infer T ? any : any;
+  filtered: { events: TastingEventRow[]; consent: ConsentRow[] };
+  events: TastingEventRow[];
+  onOpenSession: (sid: string) => void;
+  onOpenWine: (name: string) => void;
+  onExportGuests: () => void;
+  onExportEvents: () => void;
+  onDeleteGuest: (row: ConsentRow) => void;
+  range: DateRange;
+}) {
+  // Guest log drawer with search + pagination
+  const [q, setQ] = useState("");
+  const [page, setPage] = useState(0);
+  const pageSize = 50;
+
+  if (drawer.kind === "guests") {
+    const rows = filtered.consent.filter((c) => {
+      if (!q) return true;
+      const s = q.toLowerCase();
+      return (
+        (c.guest_name || "").toLowerCase().includes(s) ||
+        ((c.metadata?.email as string) || "").toLowerCase().includes(s) ||
+        ((c.metadata?.phone as string) || "").toLowerCase().includes(s) ||
+        (c.flight_id || "").toLowerCase().includes(s)
+      );
+    });
+    const pageRows = rows.slice(page * pageSize, page * pageSize + pageSize);
+    return (
+      <>
+        <SheetHeader>
+          <SheetTitle className="flex items-center justify-between gap-2">
+            <span>Guest log · {rows.length}</span>
+            <button onClick={onExportGuests} className="btn-secondary !py-1 !px-2 text-xs flex items-center gap-1">
+              <Download size={11} /> CSV (all)
+            </button>
+          </SheetTitle>
+        </SheetHeader>
+        <div className="mt-3 space-y-3">
+          <div className="relative">
+            <Search size={12} className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <input
+              value={q}
+              onChange={(e) => { setQ(e.target.value); setPage(0); }}
+              placeholder="Search name / email / phone / flight…"
+              className="w-full text-xs pl-7 pr-2 py-2 rounded border border-border bg-background"
+            />
+          </div>
+          <ul className="space-y-1.5">
+            {pageRows.map((c) => {
+              const email = c.metadata?.email as string | undefined;
+              const related = email ? events.find((e) => e.guest_email === email)?.session_id : undefined;
+              return (
+                <li key={c.id} className="border border-border rounded-lg p-2.5 text-xs space-y-1">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-medium truncate">{c.guest_name || "—"}</span>
+                    <span className="text-muted-foreground text-[10px] whitespace-nowrap">{new Date(c.created_at).toLocaleString()}</span>
+                  </div>
+                  <div className="text-muted-foreground truncate">{email || "—"} · {(c.metadata?.phone as string) || "—"}</div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] text-muted-foreground">Flight {c.flight_id || "—"} · {c.device_type || "—"}</span>
+                    <div className="flex items-center gap-2">
+                      {related && (
+                        <button onClick={() => onOpenSession(related)} className="text-wine-gold hover:underline text-[11px]">Journey</button>
+                      )}
+                      <button onClick={() => onDeleteGuest(c)} className="text-muted-foreground hover:text-destructive" title="Delete">
+                        <Trash2 size={11} />
+                      </button>
+                    </div>
+                  </div>
+                </li>
+              );
+            })}
+            {pageRows.length === 0 && <li className="text-xs text-muted-foreground py-6 text-center">No matching guests.</li>}
+          </ul>
+          {rows.length > pageSize && (
+            <div className="flex items-center justify-between text-xs">
+              <button disabled={page === 0} onClick={() => setPage(page - 1)} className="btn-secondary !py-1 !px-2 disabled:opacity-40">Prev</button>
+              <span className="text-muted-foreground">Page {page + 1} / {Math.ceil(rows.length / pageSize)}</span>
+              <button disabled={(page + 1) * pageSize >= rows.length} onClick={() => setPage(page + 1)} className="btn-secondary !py-1 !px-2 disabled:opacity-40">Next</button>
+            </div>
+          )}
+        </div>
+      </>
+    );
+  }
+
+  if (drawer.kind === "events") {
+    const types = Array.from(new Set(filtered.events.map((e) => e.event_type)));
+    const rows = filtered.events.filter((e) => (q ? e.event_type === q : true)).slice(0, 200);
+    return (
+      <>
+        <SheetHeader>
+          <SheetTitle className="flex items-center justify-between gap-2">
+            <span>Recent events</span>
+            <button onClick={onExportEvents} className="btn-secondary !py-1 !px-2 text-xs flex items-center gap-1">
+              <Download size={11} /> CSV (all)
+            </button>
+          </SheetTitle>
+        </SheetHeader>
+        <div className="mt-3 space-y-3">
+          <select value={q} onChange={(e) => setQ(e.target.value)} className="w-full text-xs px-2 py-2 rounded border border-border bg-background">
+            <option value="">All event types</option>
+            {types.map((t) => <option key={t} value={t}>{t}</option>)}
+          </select>
+          <ul className="space-y-1">
+            {rows.map((e) => (
+              <li key={e.id} className="border border-border rounded p-2 text-[11px] space-y-0.5">
+                <div className="flex justify-between">
+                  <span className="font-medium">{e.event_type}</span>
+                  <span className="text-muted-foreground">{new Date(e.created_at).toLocaleTimeString()}</span>
+                </div>
+                <div className="text-muted-foreground truncate">
+                  {e.guest_name || "—"} · {e.wine_name || "—"}
+                  {e.rating ? ` · ★${e.rating}` : ""}
+                  {e.duration_ms ? ` · ${fmtMs(e.duration_ms)}` : ""}
+                </div>
+                <button onClick={() => onOpenSession(e.session_id)} className="text-wine-gold hover:underline">Open session</button>
+              </li>
+            ))}
+            {rows.length === 0 && <li className="text-xs text-muted-foreground py-6 text-center">No events.</li>}
+          </ul>
+        </div>
+      </>
+    );
+  }
+
+  if (drawer.kind === "funnel") {
+    return (
+      <>
+        <SheetHeader><SheetTitle>Guest funnel</SheetTitle></SheetHeader>
+        <div className="mt-3 space-y-2">
+          {stats.funnelRows.map((f: any) => (
+            <div key={f.label} className="space-y-1">
+              <div className="flex justify-between text-xs">
+                <span className={f.biggestDrop ? "text-destructive font-medium" : ""}>{f.label}</span>
+                <span className="text-muted-foreground">{f.count} · {f.pctOfTotal}% · prev {f.pctOfPrev}%</span>
+              </div>
+              <div className="progress-track h-2">
+                <div className={`h-2 rounded-full ${f.biggestDrop ? "bg-destructive/70" : "bg-wine-gold"}`} style={{ width: `${f.pctOfTotal}%` }} />
+              </div>
+            </div>
+          ))}
+        </div>
+      </>
+    );
+  }
+
+  if (drawer.kind === "ratings") {
+    return (
+      <>
+        <SheetHeader><SheetTitle>Ratings per wine</SheetTitle></SheetHeader>
+        <div className="mt-3 space-y-2">
+          {stats.wineAverages.length === 0 && <p className="text-xs text-muted-foreground">No ratings yet.</p>}
+          {stats.wineAverages.map((w: any) => (
+            <div key={w.name} className="space-y-1">
+              <div className="flex justify-between text-sm">
+                <button onClick={() => onOpenWine(w.name)} className="text-left hover:underline">{w.name}</button>
+                <span className="font-medium">{w.avg.toFixed(2)}/5 · {w.count}</span>
+              </div>
+              <div className="progress-track h-2"><div className="progress-fill h-2" style={{ width: `${(w.avg / 5) * 100}%` }} /></div>
+            </div>
+          ))}
+        </div>
+      </>
+    );
+  }
+
+  if (drawer.kind === "wines") {
+    return (
+      <>
+        <SheetHeader><SheetTitle>Avg time per wine</SheetTitle></SheetHeader>
+        <div className="mt-3 space-y-2">
+          {stats.wineDwellRows.map((w: any) => (
+            <div key={w.name} className="space-y-1">
+              <div className="flex justify-between text-xs">
+                <button onClick={() => onOpenWine(w.name)} className="text-left hover:underline">{w.name}</button>
+                <span className="text-muted-foreground">{fmtMs(w.avgMs)} · {w.count}</span>
+              </div>
+              <div className="progress-track h-1.5"><div className="progress-fill h-1.5" style={{ width: `${Math.min(100, (w.avgMs / 120000) * 100)}%` }} /></div>
+            </div>
+          ))}
+        </div>
+      </>
+    );
+  }
+
+  if (drawer.kind === "ritual") {
+    return (
+      <>
+        <SheetHeader><SheetTitle>Avg ritual step time</SheetTitle></SheetHeader>
+        <div className="mt-3 space-y-1">
+          {stats.ritualRows.map((w: any) => (
+            <div key={w.name} className="flex justify-between text-xs py-1 border-b border-border/40">
+              <button onClick={() => onOpenWine(w.name)} className="hover:underline">{w.name}</button>
+              <span className="text-muted-foreground">{fmtMs(w.avgMs)} · {w.count}</span>
+            </div>
+          ))}
+        </div>
+      </>
+    );
+  }
+
+  if (drawer.kind === "vivino") {
+    return (
+      <>
+        <SheetHeader><SheetTitle>Vivino clicks · {stats.vivinoTotal}</SheetTitle></SheetHeader>
+        <div className="mt-3 space-y-1">
+          {stats.vivinoRows.map(([name, n]: [string, number]) => (
+            <div key={name} className="flex justify-between text-xs py-1 border-b border-border/40">
+              <button onClick={() => onOpenWine(name)} className="hover:underline">{name}</button>
+              <span className="font-medium">{n}</span>
+            </div>
+          ))}
+          {stats.vivinoRows.length === 0 && <p className="text-xs text-muted-foreground">No Vivino clicks.</p>}
+        </div>
+      </>
+    );
+  }
+
+  if (drawer.kind === "sessionLength") {
+    const total = Object.values(stats.buckets as Record<string, number>).reduce((a, b) => a + b, 0) || 1;
+    return (
+      <>
+        <SheetHeader><SheetTitle>Session length · avg {stats.avgMin.toFixed(1)}m</SheetTitle></SheetHeader>
+        <div className="mt-3 space-y-2">
+          {Object.entries(stats.buckets as Record<string, number>).map(([k, n]) => (
+            <div key={k} className="space-y-1">
+              <div className="flex justify-between text-xs"><span>{k}</span><span className="text-muted-foreground">{n} · {Math.round((n / total) * 100)}%</span></div>
+              <div className="progress-track h-1.5"><div className="progress-fill h-1.5" style={{ width: `${(n / total) * 100}%` }} /></div>
+            </div>
+          ))}
+        </div>
+      </>
+    );
+  }
+
+  if (drawer.kind === "flights") {
+    return (
+      <>
+        <SheetHeader><SheetTitle>Flight popularity</SheetTitle></SheetHeader>
+        <div className="mt-3 space-y-1">
+          {stats.flightRows.map(([id, n]: [string, number]) => (
+            <div key={id} className="flex justify-between text-xs py-1 border-b border-border/40">
+              <span>Flight {id}</span><span className="font-medium">{n}</span>
+            </div>
+          ))}
+          {stats.flightRows.length === 0 && <p className="text-xs text-muted-foreground">No flights picked.</p>}
+        </div>
+      </>
+    );
+  }
+
+  if (drawer.kind === "devices") {
+    const total = stats.deviceRows.reduce((a: number, [, n]: [string, number]) => a + n, 0) || 1;
+    return (
+      <>
+        <SheetHeader><SheetTitle>Devices</SheetTitle></SheetHeader>
+        <div className="mt-3 space-y-2">
+          {stats.deviceRows.map(([d, n]: [string, number]) => (
+            <div key={d} className="space-y-1">
+              <div className="flex justify-between text-xs"><span>{d}</span><span className="text-muted-foreground">{n} · {Math.round((n / total) * 100)}%</span></div>
+              <div className="progress-track h-1.5"><div className="progress-fill h-1.5" style={{ width: `${(n / total) * 100}%` }} /></div>
+            </div>
+          ))}
+        </div>
+      </>
+    );
+  }
+
+  if (drawer.kind === "session") {
+    return <SessionDrawer sessionId={drawer.sessionId} />;
+  }
+
+  if (drawer.kind === "wine") {
+    return <WineDrawer wineName={drawer.wineName} range={range} />;
+  }
+
+  return null;
+}
+
+// ─── Session drawer (on-demand fetch) ─────────────────────────────────
+function SessionDrawer({ sessionId }: { sessionId: string }) {
+  const [rows, setRows] = useState<TastingEventRow[] | null>(null);
+  useEffect(() => {
+    void (async () => {
+      const { data, error } = await supabase
+        .from("tasting_events")
+        .select("*")
+        .eq("session_id", sessionId)
+        .order("created_at", { ascending: true });
+      if (error) toast.error(error.message);
+      setRows((data as TastingEventRow[]) || []);
+    })();
+  }, [sessionId]);
+
+  if (!rows) return <p className="text-xs text-muted-foreground mt-4">Loading…</p>;
+  const first = rows[0];
+  const name = rows.find((r) => r.guest_name)?.guest_name || "Guest";
+  const email = rows.find((r) => r.guest_email)?.guest_email || "—";
+  const phone = rows.find((r) => r.guest_phone)?.guest_phone || "—";
+  const flight = rows.find((r) => r.flight_id)?.flight_id || "—";
+  return (
+    <>
+      <SheetHeader><SheetTitle>{name}'s journey</SheetTitle></SheetHeader>
+      <div className="mt-3 text-xs space-y-2">
+        <div className="text-muted-foreground">
+          {email} · {phone} · Flight {flight}
+          {first && <span> · started {new Date(first.created_at).toLocaleString()}</span>}
+        </div>
+        <ol className="space-y-1">
+          {rows.map((r) => (
+            <li key={r.id} className="border-l-2 border-wine-gold/50 pl-2 py-0.5">
+              <div className="flex justify-between">
+                <span className="font-medium">{r.event_type}</span>
+                <span className="text-muted-foreground text-[10px]">{new Date(r.created_at).toLocaleTimeString()}</span>
+              </div>
+              <div className="text-muted-foreground">
+                {r.wine_name && <>Wine: {r.wine_name} </>}
+                {r.rating ? `· ★${r.rating} ` : ""}
+                {r.duration_ms ? `· ${fmtMs(r.duration_ms)} ` : ""}
+                {r.quiz_answer?.length ? `· ${r.quiz_answer.join(", ")}` : ""}
+              </div>
+            </li>
+          ))}
+        </ol>
+      </div>
+    </>
+  );
+}
+
+// ─── Wine drawer (on-demand fetch) ────────────────────────────────────
+function WineDrawer({ wineName, range }: { wineName: string; range: DateRange }) {
+  const [rows, setRows] = useState<TastingEventRow[] | null>(null);
+  useEffect(() => {
+    void (async () => {
+      let q = supabase
+        .from("tasting_events")
+        .select("id,session_id,event_type,rating,quiz_answer,duration_ms,created_at,wine_name")
+        .eq("wine_name", wineName)
+        .order("created_at", { ascending: false })
+        .limit(2000);
+      const startIso = rangeStartIso(range);
+      if (startIso) q = q.gte("created_at", startIso);
+      const { data, error } = await q;
+      if (error) toast.error(error.message);
+      setRows((data as TastingEventRow[]) || []);
+    })();
+  }, [wineName, range]);
+
+  if (!rows) return <p className="text-xs text-muted-foreground mt-4">Loading…</p>;
+  const ratings = rows.filter((r) => r.event_type === "wine_rating" && r.rating);
+  const dist = [1, 2, 3, 4, 5].map((s) => ({ s, n: ratings.filter((r) => r.rating === s).length }));
+  const avg = ratings.length ? ratings.reduce((a, b) => a + (b.rating || 0), 0) / ratings.length : 0;
+  const dwell = rows.filter((r) => r.event_type === "wine_dwell" && r.duration_ms);
+  const avgDwell = dwell.length ? dwell.reduce((a, b) => a + (b.duration_ms || 0), 0) / dwell.length : 0;
+  const vivino = rows.filter((r) => r.event_type === "vivino_click").length;
+  const views = new Set(rows.filter((r) => r.event_type === "wine_view").map((r) => r.session_id)).size;
+  const quizCounts = new Map<string, number>();
+  rows.filter((r) => r.event_type === "wine_quiz" && r.quiz_answer).forEach((r) => (r.quiz_answer || []).forEach((q) => quizCounts.set(q, (quizCounts.get(q) || 0) + 1)));
+  const topQuiz = Array.from(quizCounts.entries()).sort((a, b) => b[1] - a[1]).slice(0, 5);
+  const maxDist = Math.max(1, ...dist.map((d) => d.n));
+
+  return (
+    <>
+      <SheetHeader><SheetTitle>{wineName}</SheetTitle></SheetHeader>
+      <div className="mt-3 space-y-4 text-xs">
+        <div className="grid grid-cols-2 gap-2">
+          <div className="wine-card p-2"><div className="text-muted-foreground text-[10px]">Avg rating</div><div className="font-heading text-lg">{avg.toFixed(2)}/5</div></div>
+          <div className="wine-card p-2"><div className="text-muted-foreground text-[10px]">Views</div><div className="font-heading text-lg">{views}</div></div>
+          <div className="wine-card p-2"><div className="text-muted-foreground text-[10px]">Avg dwell</div><div className="font-heading text-lg">{fmtMs(avgDwell)}</div></div>
+          <div className="wine-card p-2"><div className="text-muted-foreground text-[10px]">Vivino clicks</div><div className="font-heading text-lg">{vivino}</div></div>
+        </div>
+        <div>
+          <p className="text-[11px] font-medium mb-1">Rating distribution</p>
+          {dist.map((d) => (
+            <div key={d.s} className="flex items-center gap-2 mb-0.5">
+              <span className="w-6">★{d.s}</span>
+              <div className="flex-1 progress-track h-1.5"><div className="progress-fill h-1.5" style={{ width: `${(d.n / maxDist) * 100}%` }} /></div>
+              <span className="w-6 text-right text-muted-foreground">{d.n}</span>
+            </div>
+          ))}
+        </div>
+        {topQuiz.length > 0 && (
+          <div>
+            <p className="text-[11px] font-medium mb-1">Top quiz answers</p>
+            <ul className="space-y-0.5">
+              {topQuiz.map(([a, n]) => (
+                <li key={a} className="flex justify-between border-b border-border/40 py-0.5"><span>{a}</span><span className="text-muted-foreground">{n}</span></li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+    </>
   );
 }
