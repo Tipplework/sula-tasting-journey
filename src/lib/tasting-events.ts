@@ -3,17 +3,23 @@
 import { supabase } from "@/integrations/supabase/client";
 
 export type TastingEventType =
+  | "welcome_view"
+  | "flight_select"
   | "journey_start"
   | "wine_view"
+  | "wine_dwell"
   | "wine_rating"
   | "wine_quiz"
+  | "ritual_step_complete"
   | "vivino_click"
   | "next_pour_click"
+  | "results_view"
+  | "results_dwell"
   | "tasting_complete";
 
 export interface TastingEventInput {
   eventType: TastingEventType;
-  sessionId: string;
+  sessionId?: string;
   guestName?: string | null;
   guestEmail?: string | null;
   guestPhone?: string | null;
@@ -23,7 +29,17 @@ export interface TastingEventInput {
   rating?: number | null;
   quizAnswer?: string[] | null;
   personality?: string | null;
+  durationMs?: number | null;
+  stepIndex?: number | null;
   metadata?: Record<string, unknown> | null;
+}
+
+function detectDevice(): "mobile" | "tablet" | "desktop" {
+  if (typeof navigator === "undefined") return "desktop";
+  const ua = navigator.userAgent || "";
+  if (/iPad|Tablet/i.test(ua)) return "tablet";
+  if (/Mobi|Android|iPhone/i.test(ua)) return "mobile";
+  return "desktop";
 }
 
 function getSessionId(): string {
@@ -45,8 +61,9 @@ export function tastingSessionId(): string {
   return getSessionId();
 }
 
-export function logTastingEvent(input: Omit<TastingEventInput, "sessionId"> & { sessionId?: string }): void {
+export function logTastingEvent(input: TastingEventInput): void {
   try {
+    const meta = { ...(input.metadata || {}), device: detectDevice() };
     const row = {
       session_id: input.sessionId || getSessionId(),
       guest_name: input.guestName ?? null,
@@ -59,9 +76,10 @@ export function logTastingEvent(input: Omit<TastingEventInput, "sessionId"> & { 
       rating: typeof input.rating === "number" ? input.rating : null,
       quiz_answer: input.quizAnswer ?? null,
       personality: input.personality ?? null,
-      metadata: (input.metadata ?? null) as never,
+      duration_ms: typeof input.durationMs === "number" ? Math.max(0, Math.round(input.durationMs)) : null,
+      step_index: typeof input.stepIndex === "number" ? input.stepIndex : null,
+      metadata: meta as never,
     };
-    // Fire-and-forget; swallow all errors so the guest journey never breaks.
     void supabase.from("tasting_events").insert(row as never).then(() => undefined, () => undefined);
   } catch {
     /* ignore */
