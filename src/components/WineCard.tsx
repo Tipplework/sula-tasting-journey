@@ -342,6 +342,7 @@ export function WineCard({
           href={wine.vivino}
           target="_blank"
           rel="noopener noreferrer"
+          onClick={trackInlineVivino}
           className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors duration-200 opacity-80 hover:opacity-100"
         >
           <img src={vivinoLogo} alt="Vivino" className="h-4 w-auto object-contain" />
