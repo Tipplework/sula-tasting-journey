@@ -29,6 +29,7 @@ export default function App() {
 
         {/* Sula Content Experience */}
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/content-center" element={<AdminGate><ContentCenter /></AdminGate>} />
         <Route path="/content-center/homepage" element={<AdminGate><HomepageEditor /></AdminGate>} />
         <Route path="/content-center/new" element={<AdminGate><ContentEditor /></AdminGate>} />
