@@ -7,6 +7,7 @@ import TastingPage from "./pages/TastingPage";
 import ResultsPage from "./pages/ResultsPage";
 import AdminDashboard from "./pages/AdminDashboard";
 import LoginPage from "./pages/admin/LoginPage";
+import ResetPasswordPage from "./pages/admin/ResetPasswordPage";
 import AdminGate from "./pages/admin/AdminGate";
 import ContentCenter from "./pages/admin/ContentCenter";
 import ContentEditor from "./pages/admin/ContentEditor";
