@@ -133,6 +133,7 @@ function detectDevice(m: TastingEventRow["metadata"]): string {
 }
 
 export default function AdminDashboard() {
+  const { isSuperAdmin } = useAuth();
   const [events, setEvents] = useState<TastingEventRow[]>([]);
   const [consent, setConsent] = useState<ConsentRow[]>([]);
   const [loading, setLoading] = useState(true);
