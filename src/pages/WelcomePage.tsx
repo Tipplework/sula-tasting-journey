@@ -7,6 +7,8 @@ import { FlightSelector } from "@/components/FlightSelector";
 import { PrivacyNoticeModal } from "@/components/PrivacyNoticeModal";
 import { CookieBanner } from "@/components/CookieBanner";
 import { logConsent } from "@/lib/consent/log";
+import { logTastingEvent } from "@/lib/tasting-events";
+import { useDwellTimer } from "@/hooks/use-dwell-timer";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 // Indian mobile: optional +91 prefix, then a 10-digit number starting 6-9.
@@ -50,6 +52,13 @@ export default function WelcomePage() {
   const consentGiven = session.consent.accepted;
   const formValid = !errors.name && !errors.email && !errors.phone;
   const canStart = flightSelected && formValid && consentGiven;
+
+  useDwellTimer(() => ({ eventType: "welcome_view", flightId: session.selectedFlightId }), []);
+
+  const handleFlightPick = (id: string | null) => {
+    setSelectedFlight(id);
+    if (id) logTastingEvent({ eventType: "flight_select", flightId: id });
+  };
 
   const handleStart = () => {
     setTouched({ name: true, email: true, phone: true });
@@ -116,7 +125,7 @@ export default function WelcomePage() {
           {/* Flight Selection */}
           <FlightSelector
             selectedId={session.selectedFlightId}
-            onSelect={(id) => setSelectedFlight(id)}
+            onSelect={handleFlightPick}
           />
 
           {/* Guest details */}
