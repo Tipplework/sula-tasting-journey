@@ -15,6 +15,28 @@ export default function ResetPasswordPage() {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+    const isRecoveryLink =
+      searchParams.get("auth_action") === "recovery" ||
+      searchParams.get("type") === "recovery" ||
+      hashParams.get("type") === "recovery" ||
+      hashParams.has("access_token");
+
+    if (isRecoveryLink) setReady(true);
+
+    const code = searchParams.get("code");
+    if (code) {
+      supabase.auth.exchangeCodeForSession(code).then(({ error }) => {
+        if (error) {
+          toast.error(error.message);
+          return;
+        }
+        setReady(true);
+        window.history.replaceState(null, "", "/reset-password");
+      });
+    }
+
     // Supabase parses the recovery hash and fires PASSWORD_RECOVERY on load.
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
       if (event === "PASSWORD_RECOVERY" || event === "SIGNED_IN") setReady(true);
