@@ -765,50 +765,69 @@ function DrawerBody({
   drawer,
   stats,
   filtered,
+  guestGroups,
   events,
   onOpenSession,
   onOpenWine,
   onExportGuests,
+  onExportVisits,
   onExportEvents,
-  onDeleteGuest,
+  onDeleteGuestGroup,
   range,
 }: {
   drawer: DrawerKind;
   stats: ReturnType<typeof useMemo> extends infer T ? any : any;
   filtered: { events: TastingEventRow[]; consent: ConsentRow[] };
+  guestGroups: GuestGroup[];
   events: TastingEventRow[];
   onOpenSession: (sid: string) => void;
   onOpenWine: (name: string) => void;
   onExportGuests: () => void;
+  onExportVisits: () => void;
   onExportEvents: () => void;
-  onDeleteGuest: (row: ConsentRow) => void;
+  onDeleteGuestGroup: (g: GuestGroup) => void;
   range: DateRange;
 }) {
-  // Guest log drawer with search + pagination
   const [q, setQ] = useState("");
   const [page, setPage] = useState(0);
-  const pageSize = 50;
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const pageSize = 25;
+
+  const toggleExpand = (key: string) => {
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  };
 
   if (drawer.kind === "guests") {
-    const rows = filtered.consent.filter((c) => {
-      if (!q) return true;
-      const s = q.toLowerCase();
-      return (
-        (c.guest_name || "").toLowerCase().includes(s) ||
-        ((c.metadata?.email as string) || "").toLowerCase().includes(s) ||
-        ((c.metadata?.phone as string) || "").toLowerCase().includes(s) ||
-        (c.flight_id || "").toLowerCase().includes(s)
-      );
+    const s = q.trim().toLowerCase();
+    const groups = guestGroups.filter((g) => {
+      if (!s) return true;
+      if (g.name.toLowerCase().includes(s)) return true;
+      if (g.email.toLowerCase().includes(s)) return true;
+      if (g.phone.toLowerCase().includes(s)) return true;
+      if (g.flights.some((f) => f.toLowerCase().includes(s))) return true;
+      return g.visits.some((v) => (v.guest_name || "").toLowerCase().includes(s));
     });
-    const pageRows = rows.slice(page * pageSize, page * pageSize + pageSize);
+    const visitsTotal = groups.reduce((a, g) => a + g.visits.length, 0);
+    const pageGroups = groups.slice(page * pageSize, page * pageSize + pageSize);
+
     return (
       <>
         <SheetHeader>
           <SheetTitle className="flex items-center justify-between gap-2">
-            <span>Guest log · {rows.length}</span>
-            <button onClick={onExportGuests} className="btn-secondary !py-1 !px-2 text-xs flex items-center gap-1">
-              <Download size={11} /> CSV (all)
-            </button>
+            <span>Guest log · {groups.length} guests <span className="text-muted-foreground font-normal text-xs">({visitsTotal} visits)</span></span>
+            <div className="flex items-center gap-1">
+              <button onClick={onExportGuests} className="btn-secondary !py-1 !px-2 text-xs flex items-center gap-1" title="One row per unique guest">
+                <Download size={11} /> CSV
+              </button>
+              <button onClick={onExportVisits} className="btn-secondary !py-1 !px-2 text-[10px] flex items-center gap-1" title="One row per visit">
+                Raw
+              </button>
+            </div>
           </SheetTitle>
         </SheetHeader>
         <div className="mt-3 space-y-3">
@@ -822,43 +841,95 @@ function DrawerBody({
             />
           </div>
           <ul className="space-y-1.5">
-            {pageRows.map((c) => {
-              const email = c.metadata?.email as string | undefined;
-              const related = email ? events.find((e) => e.guest_email === email)?.session_id : undefined;
+            {pageGroups.map((g) => {
+              const isOpen = expanded.has(g.key);
+              const first = g.visits[0];
+              const related = g.email
+                ? events.find((e) => e.guest_email === g.email)?.session_id
+                : g.phone
+                ? events.find((e) => e.guest_phone === g.phone)?.session_id
+                : undefined;
+              const multi = g.visits.length > 1;
               return (
-                <li key={c.id} className="border border-border rounded-lg p-2.5 text-xs space-y-1">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="font-medium truncate">{c.guest_name || "—"}</span>
-                    <span className="text-muted-foreground text-[10px] whitespace-nowrap">{new Date(c.created_at).toLocaleString()}</span>
-                  </div>
-                  <div className="text-muted-foreground truncate">{email || "—"} · {(c.metadata?.phone as string) || "—"}</div>
+                <li key={g.key} className="border border-border rounded-lg p-2.5 text-xs space-y-1">
+                  <button
+                    onClick={() => multi && toggleExpand(g.key)}
+                    className={`w-full flex items-center justify-between gap-2 text-left ${multi ? "cursor-pointer" : "cursor-default"}`}
+                  >
+                    <span className="font-medium truncate flex items-center gap-1.5">
+                      {multi && <ChevronRight size={11} className={`transition-transform ${isOpen ? "rotate-90" : ""}`} />}
+                      {g.name || "—"}
+                      {multi && <span className="text-[10px] font-normal text-wine-gold">×{g.visits.length}</span>}
+                    </span>
+                    <span className="text-muted-foreground text-[10px] whitespace-nowrap">{new Date(g.latestAt).toLocaleString()}</span>
+                  </button>
+                  <div className="text-muted-foreground truncate">{g.email || "—"} · {g.phone || "—"}</div>
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] text-muted-foreground">Flight {c.flight_id || "—"} · {c.device_type || "—"}</span>
+                    <span className="text-[10px] text-muted-foreground">
+                      {g.visits.length} visit{multi ? "s" : ""} · Flight{g.flights.length > 1 ? "s" : ""} {g.flights.join(", ") || "—"} · {g.devices.join(", ")}
+                    </span>
                     <div className="flex items-center gap-2">
-                      {related && (
+                      {!multi && related && (
                         <button onClick={() => onOpenSession(related)} className="text-wine-gold hover:underline text-[11px]">Journey</button>
                       )}
-                      <button onClick={() => onDeleteGuest(c)} className="text-muted-foreground hover:text-destructive" title="Delete">
+                      <button onClick={() => onDeleteGuestGroup(g)} className="text-muted-foreground hover:text-destructive" title={`Delete ${g.name}`}>
                         <Trash2 size={11} />
                       </button>
                     </div>
                   </div>
+                  {isOpen && multi && (
+                    <ul className="pt-2 mt-1 border-t border-border/50 space-y-1">
+                      {g.visits.map((v) => {
+                        const vRelated = events.find(
+                          (e) =>
+                            (v.metadata?.email && e.guest_email === v.metadata.email) ||
+                            (v.metadata?.phone && e.guest_phone === v.metadata.phone),
+                        )?.session_id;
+                        // Prefer a session that started within a few minutes of this visit
+                        const vStart = new Date(v.created_at).getTime();
+                        const closerSession = events
+                          .filter(
+                            (e) =>
+                              (v.metadata?.email && e.guest_email === v.metadata.email) ||
+                              (v.metadata?.phone && e.guest_phone === v.metadata.phone),
+                          )
+                          .sort(
+                            (a, b) =>
+                              Math.abs(new Date(a.created_at).getTime() - vStart) -
+                              Math.abs(new Date(b.created_at).getTime() - vStart),
+                          )[0]?.session_id || vRelated;
+                        return (
+                          <li key={v.id} className="flex items-center justify-between gap-2 text-[11px]">
+                            <span className="text-muted-foreground">
+                              {new Date(v.created_at).toLocaleString()} · Flight {v.flight_id || "—"} · {v.device_type || "—"}
+                            </span>
+                            {closerSession && (
+                              <button onClick={() => onOpenSession(closerSession)} className="text-wine-gold hover:underline">
+                                Journey
+                              </button>
+                            )}
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  )}
                 </li>
               );
             })}
-            {pageRows.length === 0 && <li className="text-xs text-muted-foreground py-6 text-center">No matching guests.</li>}
+            {pageGroups.length === 0 && <li className="text-xs text-muted-foreground py-6 text-center">No matching guests.</li>}
           </ul>
-          {rows.length > pageSize && (
+          {groups.length > pageSize && (
             <div className="flex items-center justify-between text-xs">
               <button disabled={page === 0} onClick={() => setPage(page - 1)} className="btn-secondary !py-1 !px-2 disabled:opacity-40">Prev</button>
-              <span className="text-muted-foreground">Page {page + 1} / {Math.ceil(rows.length / pageSize)}</span>
-              <button disabled={(page + 1) * pageSize >= rows.length} onClick={() => setPage(page + 1)} className="btn-secondary !py-1 !px-2 disabled:opacity-40">Next</button>
+              <span className="text-muted-foreground">Page {page + 1} / {Math.ceil(groups.length / pageSize)}</span>
+              <button disabled={(page + 1) * pageSize >= groups.length} onClick={() => setPage(page + 1)} className="btn-secondary !py-1 !px-2 disabled:opacity-40">Next</button>
             </div>
           )}
         </div>
       </>
     );
   }
+
 
   if (drawer.kind === "events") {
     const types = Array.from(new Set(filtered.events.map((e) => e.event_type)));
