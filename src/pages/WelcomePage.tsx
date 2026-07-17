@@ -27,11 +27,12 @@ export default function WelcomePage() {
   const [name, setName] = useState(session.userName);
   const [email, setEmail] = useState(session.email);
   const [phone, setPhone] = useState(session.phone);
-  const [touched, setTouched] = useState<{ name?: boolean; email?: boolean; phone?: boolean }>({});
+  const [city, setCity] = useState(session.city);
+  const [touched, setTouched] = useState<{ name?: boolean; email?: boolean; phone?: boolean; city?: boolean }>({});
   const [privacyOpen, setPrivacyOpen] = useState(false);
 
   const errors = useMemo(() => {
-    const e: { name?: string; email?: string; phone?: string } = {};
+    const e: { name?: string; email?: string; phone?: string; city?: string } = {};
     const n = name.trim();
     if (!n) e.name = "Please enter your full name.";
     else if (n.length < 2) e.name = "Name must be at least 2 characters.";
@@ -45,12 +46,16 @@ export default function WelcomePage() {
     else if (!/^\+?\d+$/.test(ph)) e.phone = "Numbers only (an optional +91 prefix is allowed).";
     else if (!PHONE_RE.test(ph)) e.phone = "Enter a 10-digit Indian mobile number.";
 
+    const c = city.trim();
+    if (!c) e.city = "Please enter your city.";
+    else if (c.length < 2) e.city = "City must be at least 2 characters.";
+
     return e;
-  }, [name, email, phone]);
+  }, [name, email, phone, city]);
 
   const flightSelected = !!session.selectedFlightId;
   const consentGiven = session.consent.accepted;
-  const formValid = !errors.name && !errors.email && !errors.phone;
+  const formValid = !errors.name && !errors.email && !errors.phone && !errors.city;
   const canStart = flightSelected && formValid && consentGiven;
 
   useDwellTimer(() => ({ eventType: "welcome_view", flightId: session.selectedFlightId }), []);
@@ -61,11 +66,11 @@ export default function WelcomePage() {
   };
 
   const handleStart = () => {
-    setTouched({ name: true, email: true, phone: true });
+    setTouched({ name: true, email: true, phone: true, city: true });
     if (!canStart) return;
 
-    const clean = { name: name.trim(), email: email.trim(), phone: normalizePhone(phone) };
-    setGuestProfile({ name: clean.name, email: clean.email, phone: clean.phone, city: session.city });
+    const clean = { name: name.trim(), email: email.trim(), phone: normalizePhone(phone), city: city.trim() };
+    setGuestProfile({ name: clean.name, email: clean.email, phone: clean.phone, city: clean.city });
 
     void logConsent({
       guestName: clean.name,
@@ -190,6 +195,26 @@ export default function WelcomePage() {
                 <p className="text-[0.7rem] text-destructive px-4">{errors.phone}</p>
               )}
             </div>
+
+            <div className="space-y-1">
+              <input
+                type="text"
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                onBlur={() => setTouched((t) => ({ ...t, city: true }))}
+                placeholder="City"
+                autoComplete="address-level2"
+                maxLength={60}
+                aria-invalid={!!(touched.city && errors.city)}
+                className="w-full text-center px-5 py-3.5 rounded-full bg-card border border-border text-foreground placeholder:text-muted-foreground/50 text-sm focus:outline-none focus:ring-2 focus:ring-wine-gold/40 transition-all"
+                onKeyDown={(e) => e.key === "Enter" && handleStart()}
+              />
+              {touched.city && errors.city && (
+                <p className="text-[0.7rem] text-destructive px-4">{errors.city}</p>
+              )}
+            </div>
+
+
 
             {/* DPDP Consent */}
             <label className="flex items-start gap-2.5 px-1 cursor-pointer pt-1">
