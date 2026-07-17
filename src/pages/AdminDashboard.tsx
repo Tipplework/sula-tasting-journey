@@ -500,6 +500,9 @@ export default function AdminDashboard() {
           </div>
         </div>
 
+        {/* Access Requests (super admin only) */}
+        {isSuperAdmin && <AccessRequestsPanel />}
+
         {/* Filters */}
         <div className="wine-card p-3 flex flex-wrap items-center gap-2 text-xs">
           <Filter size={14} className="text-muted-foreground" />
