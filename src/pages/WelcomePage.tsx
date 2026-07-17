@@ -55,7 +55,7 @@ export default function WelcomePage() {
 
   const flightSelected = !!session.selectedFlightId;
   const consentGiven = session.consent.accepted;
-  const formValid = !errors.name && !errors.email && !errors.phone;
+  const formValid = !errors.name && !errors.email && !errors.phone && !errors.city;
   const canStart = flightSelected && formValid && consentGiven;
 
   useDwellTimer(() => ({ eventType: "welcome_view", flightId: session.selectedFlightId }), []);
