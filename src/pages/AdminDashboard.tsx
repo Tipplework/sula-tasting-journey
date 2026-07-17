@@ -298,25 +298,15 @@ export default function AdminDashboard() {
     void load();
   }, [load]);
 
-  // Auto-refresh + realtime with 5s debounce
+  // Auto-refresh once per hour when enabled. No Realtime subscription —
+  // keeps Cloud Network usage minimal. Manual refresh button is always available.
   useEffect(() => {
     if (!autoRefresh) return;
-    const trigger = () => {
-      const now = Date.now();
-      if (now - lastRefetchRef.current < 5000) return;
-      lastRefetchRef.current = now;
+    const iv = window.setInterval(() => {
+      lastRefetchRef.current = Date.now();
       void load();
-    };
-    const iv = window.setInterval(trigger, 30_000);
-    const ch = supabase
-      .channel("dashboard-live")
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "tasting_events" }, trigger)
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "consent_logs" }, trigger)
-      .subscribe();
-    return () => {
-      window.clearInterval(iv);
-      void supabase.removeChannel(ch);
-    };
+    }, 3_600_000); // 1 hour
+    return () => window.clearInterval(iv);
   }, [autoRefresh, load]);
 
   // ── Client-side filters (flight/device) ──────────────────────────────
@@ -604,9 +594,9 @@ export default function AdminDashboard() {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <label className="flex items-center gap-1.5 text-xs text-muted-foreground cursor-pointer">
+            <label className="flex items-center gap-1.5 text-xs text-muted-foreground cursor-pointer" title="Auto-refresh once every hour">
               <input type="checkbox" checked={autoRefresh} onChange={(e) => setAutoRefresh(e.target.checked)} />
-              Auto-refresh
+              Auto-refresh (1h)
             </label>
             <button
               onClick={() => void load({ showToast: true })}
