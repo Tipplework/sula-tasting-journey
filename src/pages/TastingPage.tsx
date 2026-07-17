@@ -6,6 +6,7 @@ import { useTastingStore } from "@/store/tasting-store";
 import { WineCard } from "@/components/WineCard";
 import { ProgressBar } from "@/components/ProgressBar";
 import { CompareInterstitial } from "@/components/CompareInterstitial";
+import { logTastingEvent } from "@/lib/tasting-events";
 
 const COMPARE_AFTER: Record<number, string> = {
   // After Wine 2 (index 1) — mid-journey comparison
@@ -23,6 +24,18 @@ export default function TastingPage() {
   useEffect(() => {
     if (!flightWines.length) navigate("/", { replace: true });
   }, [flightWines.length, navigate]);
+
+  useEffect(() => {
+    if (!session.selectedFlightId) return;
+    logTastingEvent({
+      eventType: "journey_start",
+      guestName: session.userName || null,
+      guestEmail: session.email || null,
+      guestPhone: session.phone || null,
+      flightId: session.selectedFlightId,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session.selectedFlightId]);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "auto" });
