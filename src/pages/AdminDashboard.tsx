@@ -742,14 +742,17 @@ export default function AdminDashboard() {
               drawer={drawer}
               stats={stats}
               filtered={filtered}
+              guestGroups={guestGroups}
               events={events}
               onOpenSession={(sid) => setDrawer({ kind: "session", sessionId: sid })}
               onOpenWine={(name) => setDrawer({ kind: "wine", wineName: name })}
               onExportGuests={exportAllGuests}
+              onExportVisits={exportAllVisits}
               onExportEvents={exportAllEvents}
-              onDeleteGuest={deleteGuest}
+              onDeleteGuestGroup={deleteGuestGroup}
               range={range}
             />
+
           )}
         </SheetContent>
       </Sheet>
