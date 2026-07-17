@@ -66,9 +66,10 @@ function AuthHashRouter() {
     const type = param("type");
     const errorCode = param("error_code");
     const errorDesc = param("error_description");
+    const isRecoveryAction = type === "recovery" || param("auth_action") === "recovery";
 
     // Recovery link — send them to /reset-password with the tokens preserved
-    if (type === "recovery" || hashParams.get("access_token")) {
+    if (isRecoveryAction || hashParams.get("access_token")) {
       if (loc.pathname !== "/reset-password") {
         nav(`/reset-password${window.location.search}${window.location.hash}`, { replace: true });
       }
