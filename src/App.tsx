@@ -24,7 +24,7 @@ export default function App() {
         <Route path="/flight" element={<FlightOverview />} />
         <Route path="/tasting" element={<TastingPage />} />
         <Route path="/results" element={<ResultsPage />} />
-        <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/admin" element={<AdminGate><AdminDashboard /></AdminGate>} />
 
         {/* Sula Content Experience */}
         <Route path="/login" element={<LoginPage />} />
