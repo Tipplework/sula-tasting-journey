@@ -1,0 +1,2 @@
+CREATE INDEX IF NOT EXISTS consent_logs_created_at_idx ON public.consent_logs USING btree (created_at DESC);
+CREATE INDEX IF NOT EXISTS tasting_events_session_created_idx ON public.tasting_events USING btree (session_id, created_at DESC);
