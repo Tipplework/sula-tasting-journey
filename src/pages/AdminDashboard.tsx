@@ -143,8 +143,11 @@ export default function AdminDashboard() {
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [sessionDrawer, setSessionDrawer] = useState<string | null>(null);
   const [wineDrawer, setWineDrawer] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
-  const load = async () => {
+  const load = async (opts?: { showToast?: boolean }) => {
+    setRefreshing(true);
     const [evtRes, consentRes] = await Promise.all([
       supabase.from("tasting_events").select("*").order("created_at", { ascending: false }).limit(10000),
       supabase.from("consent_logs").select("id,guest_name,flight_id,device_type,created_at,metadata").order("created_at", { ascending: false }).limit(5000),
@@ -154,6 +157,11 @@ export default function AdminDashboard() {
     setEvents((evtRes.data as TastingEventRow[]) || []);
     setConsent((consentRes.data as ConsentRow[]) || []);
     setLoading(false);
+    setRefreshing(false);
+    setLastUpdated(new Date());
+    if (opts?.showToast && !evtRes.error && !consentRes.error) {
+      toast.success("Dashboard refreshed");
+    }
   };
 
   useEffect(() => {
