@@ -196,6 +196,26 @@ export default function WelcomePage() {
               )}
             </div>
 
+            <div className="space-y-1">
+              <input
+                type="text"
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                onBlur={() => setTouched((t) => ({ ...t, city: true }))}
+                placeholder="City"
+                autoComplete="address-level2"
+                maxLength={60}
+                aria-invalid={!!(touched.city && errors.city)}
+                className="w-full text-center px-5 py-3.5 rounded-full bg-card border border-border text-foreground placeholder:text-muted-foreground/50 text-sm focus:outline-none focus:ring-2 focus:ring-wine-gold/40 transition-all"
+                onKeyDown={(e) => e.key === "Enter" && handleStart()}
+              />
+              {touched.city && errors.city && (
+                <p className="text-[0.7rem] text-destructive px-4">{errors.city}</p>
+              )}
+            </div>
+
+
+
             {/* DPDP Consent */}
             <label className="flex items-start gap-2.5 px-1 cursor-pointer pt-1">
               <input
