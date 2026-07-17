@@ -27,7 +27,8 @@ export default function WelcomePage() {
   const [name, setName] = useState(session.userName);
   const [email, setEmail] = useState(session.email);
   const [phone, setPhone] = useState(session.phone);
-  const [touched, setTouched] = useState<{ name?: boolean; email?: boolean; phone?: boolean }>({});
+  const [city, setCity] = useState(session.city);
+  const [touched, setTouched] = useState<{ name?: boolean; email?: boolean; phone?: boolean; city?: boolean }>({});
   const [privacyOpen, setPrivacyOpen] = useState(false);
 
   const errors = useMemo(() => {
