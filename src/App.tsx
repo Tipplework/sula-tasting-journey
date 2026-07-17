@@ -1,5 +1,7 @@
-import { Routes, Route } from "react-router-dom";
+import { useEffect } from "react";
+import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
+import { toast } from "sonner";
 import RootGate from "./pages/RootGate";
 import HowToEnjoyPage from "./pages/HowToEnjoyPage";
 import FlightOverview from "./pages/FlightOverview";
