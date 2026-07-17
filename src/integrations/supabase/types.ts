@@ -462,6 +462,57 @@ export type Database = {
         }
         Relationships: []
       }
+      tasting_events: {
+        Row: {
+          created_at: string
+          event_type: string
+          flight_id: string | null
+          guest_email: string | null
+          guest_name: string | null
+          guest_phone: string | null
+          id: string
+          metadata: Json | null
+          personality: string | null
+          quiz_answer: Json | null
+          rating: number | null
+          session_id: string
+          wine_id: number | null
+          wine_name: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          flight_id?: string | null
+          guest_email?: string | null
+          guest_name?: string | null
+          guest_phone?: string | null
+          id?: string
+          metadata?: Json | null
+          personality?: string | null
+          quiz_answer?: Json | null
+          rating?: number | null
+          session_id: string
+          wine_id?: number | null
+          wine_name?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          flight_id?: string | null
+          guest_email?: string | null
+          guest_name?: string | null
+          guest_phone?: string | null
+          id?: string
+          metadata?: Json | null
+          personality?: string | null
+          quiz_answer?: Json | null
+          rating?: number | null
+          session_id?: string
+          wine_id?: number | null
+          wine_name?: string | null
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
