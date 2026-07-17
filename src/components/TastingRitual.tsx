@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Check, Droplet, Wind, Wine as WineIcon } from "lucide-react";
 import { useTastingStore } from "@/store/tasting-store";
+import { logTastingEvent } from "@/lib/tasting-events";
 
 interface TastingRitualProps {
   wineId: number;
@@ -34,15 +35,32 @@ export function TastingRitual({ wineId, onComplete }: TastingRitualProps) {
   const stored = session.responses[wineId]?.ritualStep ?? 0;
   const [step, setStep] = useState<0 | 1 | 2 | 3>(stored);
   const completedFiredRef = useRef(false);
+  const stepStartRef = useRef<number>(Date.now());
 
   // Sync when wine changes
   useEffect(() => {
     setStep(stored);
     completedFiredRef.current = stored === 3;
+    stepStartRef.current = Date.now();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [wineId]);
 
   const persist = (next: 0 | 1 | 2 | 3) => {
+    // Fire an event for each ritual step completed
+    if (next > step) {
+      const durationMs = Date.now() - stepStartRef.current;
+      const completedIndex = next - 1; // step that just finished
+      logTastingEvent({
+        eventType: "ritual_step_complete",
+        wineId,
+        stepIndex: completedIndex,
+        durationMs,
+        metadata: {
+          verb: completedIndex >= 0 && completedIndex < 3 ? STEPS[completedIndex].verb : "skip",
+        },
+      });
+      stepStartRef.current = Date.now();
+    }
     setStep(next);
     setRitualStep(wineId, next);
     if (next === 3 && !completedFiredRef.current) {

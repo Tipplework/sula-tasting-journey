@@ -8,6 +8,7 @@ import { useTastingStore } from "@/store/tasting-store";
 import { SommelierQuote } from "@/components/SommelierQuote";
 import { logToSheets } from "@/lib/sheets-logger";
 import { logTastingEvent } from "@/lib/tasting-events";
+import { useDwellTimer } from "@/hooks/use-dwell-timer";
 
 const SULA_INSTAGRAM = "https://www.instagram.com/sulavineyards/";
 const SULA_GOOGLE_REVIEW = "https://www.google.com/search?q=sula+vineyards+nashik+reviews";
@@ -30,7 +31,26 @@ export default function ResultsPage() {
   // Scroll reset on mount
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "auto" });
+    logTastingEvent({
+      eventType: "results_view",
+      guestName: session.userName || null,
+      guestEmail: session.email || null,
+      flightId: session.selectedFlightId,
+      personality,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useDwellTimer(
+    () => ({
+      eventType: "results_dwell",
+      guestName: session.userName || null,
+      guestEmail: session.email || null,
+      flightId: session.selectedFlightId,
+      personality,
+    }),
+    []
+  );
 
   const phoneDigits = phone.replace(/\D/g, "");
   const emailTrim = email.trim();
