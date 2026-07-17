@@ -10,6 +10,7 @@ import { TastingRitual } from "./TastingRitual";
 import { useTastingStore } from "@/store/tasting-store";
 import { logToSheets } from "@/lib/sheets-logger";
 import { logTastingEvent } from "@/lib/tasting-events";
+import { useDwellTimer } from "@/hooks/use-dwell-timer";
 import { useSwipeNav } from "@/hooks/use-swipe-nav";
 import vivinoLogo from "@/assets/vivino-logo.png";
 
@@ -49,6 +50,7 @@ export function WineCard({
     flightId: session.selectedFlightId,
     wineId: wine.id,
     wineName: wine.name,
+    stepIndex: currentIndex,
   };
 
   // Scroll reset whenever wine changes
@@ -58,6 +60,21 @@ export function WineCard({
     logTastingEvent({ eventType: "wine_view", ...guestCtx });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [wine.id]);
+
+  // Time-on-wine dwell (fires on unmount / hide / next wine)
+  useDwellTimer(
+    () => ({
+      eventType: "wine_dwell",
+      guestName: session.userName || null,
+      guestEmail: session.email || null,
+      guestPhone: session.phone || null,
+      flightId: session.selectedFlightId,
+      wineId: wine.id,
+      wineName: wine.name,
+      stepIndex: currentIndex,
+    }),
+    [wine.id, currentIndex]
+  );
 
   const toggleOption = (option: string) => {
     const next = selectedOptions.includes(option)

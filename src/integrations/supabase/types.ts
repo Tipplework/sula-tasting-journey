@@ -465,6 +465,7 @@ export type Database = {
       tasting_events: {
         Row: {
           created_at: string
+          duration_ms: number | null
           event_type: string
           flight_id: string | null
           guest_email: string | null
@@ -476,11 +477,13 @@ export type Database = {
           quiz_answer: Json | null
           rating: number | null
           session_id: string
+          step_index: number | null
           wine_id: number | null
           wine_name: string | null
         }
         Insert: {
           created_at?: string
+          duration_ms?: number | null
           event_type: string
           flight_id?: string | null
           guest_email?: string | null
@@ -492,11 +495,13 @@ export type Database = {
           quiz_answer?: Json | null
           rating?: number | null
           session_id: string
+          step_index?: number | null
           wine_id?: number | null
           wine_name?: string | null
         }
         Update: {
           created_at?: string
+          duration_ms?: number | null
           event_type?: string
           flight_id?: string | null
           guest_email?: string | null
@@ -508,6 +513,7 @@ export type Database = {
           quiz_answer?: Json | null
           rating?: number | null
           session_id?: string
+          step_index?: number | null
           wine_id?: number | null
           wine_name?: string | null
         }
