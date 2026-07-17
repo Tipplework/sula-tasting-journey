@@ -477,8 +477,7 @@ export default function AdminDashboard() {
 
 
   // ── Exports (paginated full pull) ────────────────────────────────────
-  const exportAllGuests = async () => {
-    toast.info("Preparing full guest export…");
+  const fetchAllConsent = async (): Promise<ConsentRow[]> => {
     const startIso = rangeStartIso(range);
     const rows: ConsentRow[] = [];
     let from = 0;
@@ -490,12 +489,38 @@ export default function AdminDashboard() {
         .range(from, from + 499);
       if (startIso) q = q.gte("created_at", startIso);
       const { data, error } = await q;
-      if (error) return toast.error(error.message);
+      if (error) { toast.error(error.message); return rows; }
       if (!data?.length) break;
       rows.push(...(data as ConsentRow[]));
       if (data.length < 500) break;
       from += 500;
     }
+    return rows;
+  };
+
+  // Grouped export — one row per unique guest
+  const exportAllGuests = async () => {
+    toast.info("Preparing guest export…");
+    const rows = await fetchAllConsent();
+    const groups = groupGuests(rows);
+    const csv = toCsv(
+      groups.map((g) => ({
+        latest_visit: new Date(g.latestAt).toISOString(),
+        name: g.name,
+        email: g.email,
+        phone: g.phone,
+        visits: g.visits.length,
+        flights: g.flights.join("|"),
+        devices: g.devices.join("|"),
+      }))
+    );
+    download(`sula-guests-${new Date().toISOString().slice(0, 10)}.csv`, csv);
+  };
+
+  // Raw one-row-per-visit export
+  const exportAllVisits = async () => {
+    toast.info("Preparing raw visits export…");
+    const rows = await fetchAllConsent();
     const csv = toCsv(
       rows.map((c) => ({
         created_at: c.created_at,
@@ -506,8 +531,9 @@ export default function AdminDashboard() {
         device: c.device_type || "",
       }))
     );
-    download(`sula-guests-${new Date().toISOString().slice(0, 10)}.csv`, csv);
+    download(`sula-guest-visits-${new Date().toISOString().slice(0, 10)}.csv`, csv);
   };
+
 
   const exportAllEvents = async () => {
     toast.info("Preparing full event export…");
