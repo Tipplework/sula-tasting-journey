@@ -9,6 +9,7 @@ import { TastingRitual } from "./TastingRitual";
 
 import { useTastingStore } from "@/store/tasting-store";
 import { logToSheets } from "@/lib/sheets-logger";
+import { logTastingEvent } from "@/lib/tasting-events";
 import { useSwipeNav } from "@/hooks/use-swipe-nav";
 import vivinoLogo from "@/assets/vivino-logo.png";
 
@@ -41,10 +42,21 @@ export function WineCard({
   const [ratingNudgeShown, setRatingNudgeShown] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const guestCtx = {
+    guestName: session.userName || null,
+    guestEmail: session.email || null,
+    guestPhone: session.phone || null,
+    flightId: session.selectedFlightId,
+    wineId: wine.id,
+    wineName: wine.name,
+  };
+
   // Scroll reset whenever wine changes
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "auto" });
     setIsSubmitting(false);
+    logTastingEvent({ eventType: "wine_view", ...guestCtx });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [wine.id]);
 
   const toggleOption = (option: string) => {
@@ -53,10 +65,12 @@ export function WineCard({
       : [...selectedOptions, option].slice(0, 3);
     setSelectedOptions(next);
     setQuizAnswer(wine.id, next);
+    logTastingEvent({ eventType: "wine_quiz", ...guestCtx, quizAnswer: next });
   };
 
   const handleRating = (rating: number) => {
     setWineRating(wine.id, rating);
+    logTastingEvent({ eventType: "wine_rating", ...guestCtx, rating });
     if (!vivinoPromptShown) {
       setVivinoPromptOpen(true);
       setVivinoPromptShown(true);
@@ -116,8 +130,13 @@ export function WineCard({
   const dismissVivinoPrompt = () => setVivinoPromptOpen(false);
 
   const openVivino = () => {
+    logTastingEvent({ eventType: "vivino_click", ...guestCtx, metadata: { source: "rating_prompt" } });
     window.open(wine.vivino, "_blank", "noopener,noreferrer");
     setVivinoPromptOpen(false);
+  };
+
+  const trackInlineVivino = () => {
+    logTastingEvent({ eventType: "vivino_click", ...guestCtx, metadata: { source: "inline_link" } });
   };
 
   // Swipe + button parity — both run the same validated continue
@@ -323,6 +342,7 @@ export function WineCard({
           href={wine.vivino}
           target="_blank"
           rel="noopener noreferrer"
+          onClick={trackInlineVivino}
           className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors duration-200 opacity-80 hover:opacity-100"
         >
           <img src={vivinoLogo} alt="Vivino" className="h-4 w-auto object-contain" />

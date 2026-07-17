@@ -7,6 +7,7 @@ import { useCatalogue } from "@/lib/catalogue/useCatalogue";
 import { useTastingStore } from "@/store/tasting-store";
 import { SommelierQuote } from "@/components/SommelierQuote";
 import { logToSheets } from "@/lib/sheets-logger";
+import { logTastingEvent } from "@/lib/tasting-events";
 
 const SULA_INSTAGRAM = "https://www.instagram.com/sulavineyards/";
 const SULA_GOOGLE_REVIEW = "https://www.google.com/search?q=sula+vineyards+nashik+reviews";
@@ -98,6 +99,26 @@ export default function ResultsPage() {
           .map((r) => `${r.wineId}:${r.rating}`)
           .join("|"),
       feeling: personality,
+    });
+
+    // Final submission → tasting_events (admin dashboard)
+    logTastingEvent({
+      eventType: "tasting_complete",
+      guestName: cleanName,
+      guestEmail: emailTrim,
+      guestPhone: phoneDigits,
+      flightId: session.selectedFlightId,
+      wineId: favoriteWine.id,
+      wineName: favoriteWine.name,
+      personality,
+      metadata: {
+        city: cleanCity,
+        responses: Object.values(session.responses).map((r) => ({
+          wineId: r.wineId,
+          rating: r.rating,
+          quizAnswer: r.quizAnswer,
+        })),
+      },
     });
   };
 
