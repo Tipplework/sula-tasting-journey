@@ -717,10 +717,11 @@ export default function AdminDashboard() {
               <Tile
                 icon={Users}
                 label="Guest log"
-                value={filtered.consent.length}
-                sub={latestGuest ? `latest: ${latestGuest.guest_name || (latestGuest.metadata?.email as string) || "Guest"}` : "no guests yet"}
+                value={guestGroups.length}
+                sub={guestGroups[0] ? `latest: ${guestGroups[0].name}${guestGroups[0].visits.length > 1 ? ` · ${guestGroups[0].visits.length} visits` : ""}` : "no guests yet"}
                 onClick={() => setDrawer({ kind: "guests" })}
               />
+
               <Tile
                 icon={Activity}
                 label="Recent events"
