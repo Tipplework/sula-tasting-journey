@@ -32,7 +32,7 @@ export default function WelcomePage() {
   const [privacyOpen, setPrivacyOpen] = useState(false);
 
   const errors = useMemo(() => {
-    const e: { name?: string; email?: string; phone?: string } = {};
+    const e: { name?: string; email?: string; phone?: string; city?: string } = {};
     const n = name.trim();
     if (!n) e.name = "Please enter your full name.";
     else if (n.length < 2) e.name = "Name must be at least 2 characters.";
@@ -46,8 +46,12 @@ export default function WelcomePage() {
     else if (!/^\+?\d+$/.test(ph)) e.phone = "Numbers only (an optional +91 prefix is allowed).";
     else if (!PHONE_RE.test(ph)) e.phone = "Enter a 10-digit Indian mobile number.";
 
+    const c = city.trim();
+    if (!c) e.city = "Please enter your city.";
+    else if (c.length < 2) e.city = "City must be at least 2 characters.";
+
     return e;
-  }, [name, email, phone]);
+  }, [name, email, phone, city]);
 
   const flightSelected = !!session.selectedFlightId;
   const consentGiven = session.consent.accepted;
