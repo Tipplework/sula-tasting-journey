@@ -18,6 +18,8 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { useAuth } from "@/hooks/useAuth";
+import AccessRequestsPanel from "@/components/admin/AccessRequestsPanel";
 
 interface TastingEventRow {
   id: string;
@@ -131,6 +133,7 @@ function detectDevice(m: TastingEventRow["metadata"]): string {
 }
 
 export default function AdminDashboard() {
+  const { isSuperAdmin } = useAuth();
   const [events, setEvents] = useState<TastingEventRow[]>([]);
   const [consent, setConsent] = useState<ConsentRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -496,6 +499,9 @@ export default function AdminDashboard() {
             <button onClick={signOut} className="btn-secondary !py-2 !px-3 text-xs">Sign out</button>
           </div>
         </div>
+
+        {/* Access Requests (super admin only) */}
+        {isSuperAdmin && <AccessRequestsPanel />}
 
         {/* Filters */}
         <div className="wine-card p-3 flex flex-wrap items-center gap-2 text-xs">
