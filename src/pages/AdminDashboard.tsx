@@ -92,6 +92,68 @@ function detectDevice(m: TastingEventRow["metadata"]): string {
   return (m?.device as string) || "unknown";
 }
 
+// ─── Guest identity grouping ──────────────────────────────────────────
+interface GuestGroup {
+  key: string;
+  name: string;
+  email: string;
+  phone: string;
+  visits: ConsentRow[];         // sorted newest → oldest
+  flights: string[];            // unique flight ids
+  devices: string[];            // unique devices
+  latestAt: number;             // ms
+}
+
+function normEmail(e: string | null | undefined): string {
+  return (e || "").trim().toLowerCase();
+}
+function normPhone(p: string | null | undefined): string {
+  return (p || "").replace(/\D+/g, "");
+}
+function identityKey(c: ConsentRow): string {
+  const email = normEmail(c.metadata?.email as string | undefined);
+  if (email) return `e:${email}`;
+  const phone = normPhone(c.metadata?.phone as string | undefined);
+  if (phone) return `p:${phone}`;
+  const name = (c.guest_name || "").trim().toLowerCase();
+  return `n:${name}|d:${c.device_type || "unknown"}`;
+}
+
+function groupGuests(rows: ConsentRow[]): GuestGroup[] {
+  const map = new Map<string, GuestGroup>();
+  for (const c of rows) {
+    const key = identityKey(c);
+    let g = map.get(key);
+    if (!g) {
+      g = {
+        key,
+        name: c.guest_name || "Guest",
+        email: (c.metadata?.email as string) || "",
+        phone: (c.metadata?.phone as string) || "",
+        visits: [],
+        flights: [],
+        devices: [],
+        latestAt: 0,
+      };
+      map.set(key, g);
+    }
+    g.visits.push(c);
+    if (!g.name || g.name === "Guest") g.name = c.guest_name || g.name;
+    if (!g.email && c.metadata?.email) g.email = c.metadata.email as string;
+    if (!g.phone && c.metadata?.phone) g.phone = c.metadata.phone as string;
+    if (c.flight_id && !g.flights.includes(c.flight_id)) g.flights.push(c.flight_id);
+    const d = c.device_type || "unknown";
+    if (!g.devices.includes(d)) g.devices.push(d);
+    const t = new Date(c.created_at).getTime();
+    if (t > g.latestAt) g.latestAt = t;
+  }
+  const groups = Array.from(map.values());
+  groups.forEach((g) => g.visits.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));
+  groups.sort((a, b) => b.latestAt - a.latestAt);
+  return groups;
+}
+
+
 function toCsv(rows: Record<string, unknown>[]): string {
   if (!rows.length) return "";
   const headers = Object.keys(rows[0]);
