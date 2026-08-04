@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { UtensilsCrossed, Wine } from "lucide-react";
 import { MenuCanvas, useMenuMeta } from "./MenuCanvas";
 import { menuSession } from "@/lib/menu/session";
 import { prefetchMenu } from "@/lib/menu/useMenu";
@@ -11,7 +12,7 @@ import { MenuFooter } from "@/components/menu/MenuFooter";
 const CARDS = [
   {
     to: "/menu/wine",
-    emoji: "🍷",
+    Icon: Wine,
     title: "Wine Menu",
     cta: "View Wine Menu",
     art: glassVineyard.url,
@@ -19,13 +20,14 @@ const CARDS = [
   },
   {
     to: "/menu/food",
-    emoji: "🍽",
+    Icon: UtensilsCrossed,
     title: "Food Menu",
     cta: "View Food Menu",
     art: barrels.url,
     sections: ["Cocktails", "Small Plates", "Quick Bites", "Pizza", "Desserts"],
   },
 ];
+
 
 export default function MenuSelectPage() {
   const nav = useNavigate();
