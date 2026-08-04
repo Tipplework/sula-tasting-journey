@@ -1,4 +1,5 @@
 import sulaLogo from "@/assets/menu/art-sula-logo.webp.asset.json";
+import vineyardFooter from "@/assets/menu/art-vineyard-footer.webp.asset.json";
 import { DietaryLegend } from "./DietaryLegend";
 import { MENU_FOOTNOTES } from "@/data/tasting-room-menu";
 
@@ -7,6 +8,7 @@ export function MenuFooter() {
     <footer className="mt-8 border-t border-tr-rule/50 bg-tr-cover/40 px-5 py-8">
       <div className="mx-auto max-w-3xl">
         <DietaryLegend />
+
 
         <ul className="mt-6 space-y-1">
           {MENU_FOOTNOTES.map((note) => (
