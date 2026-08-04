@@ -311,8 +311,8 @@
    Scoped to the menu routes; nothing here affects the tasting-journey app.
    ========================================================================== */
 @theme {
-  --color-tr-cream: #fdf6e5;
-  --color-tr-cover: #f5ebd6;
+  --color-tr-cream: #fdf7e6;
+  --color-tr-cover: #f5ead3;
   --color-tr-olive: #6e7f3c;
   --color-tr-gold: #eaa338;
   --color-tr-gold-deep: #c07f1e;
