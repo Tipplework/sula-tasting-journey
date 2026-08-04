@@ -56,7 +56,7 @@ export function MenuHeader({
   return (
     <header
       data-menu-sticky-shell
-      className="tr-sticky-shell border-b border-tr-rule/50 bg-tr-cream/95"
+      className="tr-sticky-shell border-b border-tr-rule/50 bg-tr-cream"
     >
       <div className="mx-auto flex w-full max-w-[900px] items-center gap-2 px-4 py-1.5">
         <button
