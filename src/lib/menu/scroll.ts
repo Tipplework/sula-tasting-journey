@@ -1,4 +1,4 @@
-import type { MenuMode } from "./groups";
+import { familyForSlug, type MenuMode } from "./groups";
 
 /** Deterministic, stable DOM ids for every menu section. */
 const SLUG_ALIAS: Record<string, string> = {
@@ -6,12 +6,11 @@ const SLUG_ALIAS: Record<string, string> = {
   "dessert-wine": "dessert",
 };
 
-const WINE = new Set(["sparkling", "white", "rose", "red", "dessert-wine"]);
-
 export function sectionId(slug: string, mode: MenuMode) {
-  const family = mode === "all" ? (WINE.has(slug) ? "wine" : "food") : mode;
+  const family = mode === "all" ? familyForSlug(slug) : mode;
   return `${family}-${SLUG_ALIAS[slug] ?? slug}`;
 }
+
 
 /** Live height of the whole sticky shell (compact header + category rail). */
 export function stickyOffset() {
