@@ -43,6 +43,8 @@ export default function App() {
         <Route path="/content-center/privacy" element={<AdminGate><PrivacyCenter /></AdminGate>} />
         <Route path="/content-center/wines" element={<AdminGate><WinesFlightsCenter /></AdminGate>} />
         <Route path="/c/:slug" element={<ContentViewer />} />
+        <Route path="/menu" element={<TastingRoomMenuPage />} />
+
       </Routes>
       <Toaster position="top-center" />
     </>
