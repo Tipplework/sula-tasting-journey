@@ -113,6 +113,9 @@ export default function MenuListPage({ mode }: { mode: MenuMode }) {
   }, [all, openSlug]);
 
   const openItem = (slug: string) => {
+    // Remembered here so closing lands the guest exactly where they left off,
+    // whichever way they close (button, backdrop, Escape or browser Back).
+    returnY.current = window.scrollY;
     const next = new URLSearchParams(params);
     next.set("item", slug);
     setParams(next);
@@ -127,6 +130,20 @@ export default function MenuListPage({ mode }: { mode: MenuMode }) {
     next.delete("item");
     setParams(next, { replace: true });
   }, [nav, params, setParams]);
+
+  // Restore the remembered offset once the detail has closed, after the browser
+  // has finished its own history scroll restoration.
+  useEffect(() => {
+    if (openSlug || returnY.current == null) return;
+    const y = returnY.current;
+    returnY.current = null;
+    const restore = () => window.scrollTo({ top: y, behavior: "auto" });
+    requestAnimationFrame(() => {
+      restore();
+      requestAnimationFrame(restore);
+    });
+  }, [openSlug]);
+
 
   const activeFilterCount = showOnly.length + hideIf.length;
   const showFilters = mode === "food" || mode === "all";
