@@ -18,7 +18,9 @@ import HomepageEditor from "./pages/admin/HomepageEditor";
 import PrivacyCenter from "./pages/admin/PrivacyCenter";
 import WinesFlightsCenter from "./pages/admin/WinesFlightsCenter";
 import ContentViewer from "./pages/content/ContentViewer";
-import TastingRoomMenuPage from "./pages/menu/TastingRoomMenuPage";
+import MenuLandingPage from "./pages/menu/MenuLandingPage";
+import MenuSelectPage from "./pages/menu/MenuSelectPage";
+import MenuListPage from "./pages/menu/MenuListPage";
 
 
 export default function App() {
@@ -43,7 +45,18 @@ export default function App() {
         <Route path="/content-center/privacy" element={<AdminGate><PrivacyCenter /></AdminGate>} />
         <Route path="/content-center/wines" element={<AdminGate><WinesFlightsCenter /></AdminGate>} />
         <Route path="/c/:slug" element={<ContentViewer />} />
-        <Route path="/menu" element={<TastingRoomMenuPage />} />
+        {/* The Tasting Room digital menu */}
+        <Route path="/menu" element={<MenuLandingPage />} />
+        <Route path="/menu/select" element={<MenuSelectPage />} />
+        <Route path="/menu/wine" element={<MenuListPage mode="wine" />} />
+        <Route path="/menu/food" element={<MenuListPage mode="food" />} />
+        <Route path="/menu/all" element={<MenuListPage mode="all" />} />
+        <Route path="/tasting-room" element={<MenuLandingPage />} />
+        <Route path="/tasting-room/select" element={<MenuSelectPage />} />
+        <Route path="/tasting-room/wine" element={<MenuListPage mode="wine" />} />
+        <Route path="/tasting-room/food" element={<MenuListPage mode="food" />} />
+        <Route path="/tasting-room/all" element={<MenuListPage mode="all" />} />
+
 
       </Routes>
       <Toaster position="top-center" />

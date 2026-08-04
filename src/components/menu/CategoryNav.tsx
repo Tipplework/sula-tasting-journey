@@ -20,11 +20,13 @@ export function CategoryNav({
     el?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
   }, [activeSlug]);
 
+  if (categories.length < 2) return null;
+
   return (
-    <nav aria-label="Menu sections" className="border-b border-tr-rule/60">
+    <nav aria-label="Menu sections">
       <div
         ref={scroller}
-        className="tr-hide-scrollbar flex gap-1 overflow-x-auto px-3 py-2"
+        className="tr-hide-scrollbar flex gap-1.5 overflow-x-auto px-4 pb-2.5"
       >
         {categories.map((c) => {
           const active = c.slug === activeSlug;
@@ -35,10 +37,10 @@ export function CategoryNav({
               data-slug={c.slug}
               onClick={() => onSelect(c.slug)}
               aria-current={active ? "true" : undefined}
-              className={`font-tr-display shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-[0.7rem] uppercase tracking-[0.14em] transition-colors ${
+              className={`font-tr-display shrink-0 whitespace-nowrap rounded-full px-3.5 py-1.5 text-[0.68rem] uppercase tracking-[0.13em] transition-colors ${
                 active
                   ? "bg-tr-olive text-tr-cream"
-                  : "text-tr-black/70 hover:bg-tr-olive/10"
+                  : "bg-tr-olive/8 text-tr-black/65"
               }`}
             >
               {c.name}
