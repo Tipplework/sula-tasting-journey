@@ -1,3 +1,5 @@
+import grapeDivider from "@/assets/menu/art-grape-divider.webp.asset.json";
+
 export function SectionHeading({ children }: { children: string }) {
   return (
     <h2 className="mb-3 flex items-center gap-3">
@@ -5,6 +7,13 @@ export function SectionHeading({ children }: { children: string }) {
         {children}
       </span>
       <span aria-hidden="true" className="h-px flex-1 bg-tr-rule/70" />
+      <img
+        src={grapeDivider.url}
+        alt=""
+        aria-hidden="true"
+        loading="lazy"
+        className="h-5 w-auto shrink-0 opacity-70"
+      />
     </h2>
   );
 }
