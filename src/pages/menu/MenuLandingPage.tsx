@@ -45,22 +45,27 @@ export default function MenuLandingPage() {
           aria-hidden="true"
           className="pointer-events-none absolute -right-10 top-4 w-[42%] max-w-[260px] opacity-95"
         />
-        <img
-          src={hills.url}
-          alt=""
+        <div
           aria-hidden="true"
-          loading="lazy"
-          className="pointer-events-none absolute bottom-0 left-0 w-full opacity-70"
-        />
+          className="pointer-events-none absolute bottom-0 left-0 w-full"
+        >
+          <img
+            src={hills.url}
+            alt=""
+            loading="lazy"
+            className="w-full opacity-60"
+          />
+          <span className="absolute inset-x-0 top-0 h-2/3 bg-gradient-to-b from-tr-cover to-transparent" />
+        </div>
 
-        <div className="relative mx-auto flex w-full max-w-md flex-1 flex-col items-center px-7 pb-10 pt-[15vh] text-center">
+        <div className="relative mx-auto flex w-full max-w-md flex-1 flex-col items-center px-7 pb-9 pt-[13vh] text-center">
           <img
             src={trLogo.url}
             alt="The Tasting Room at Sula Vineyards"
             className="w-[48%] max-w-[190px]"
           />
 
-          <p className="font-tr-display mt-9 text-[0.66rem] uppercase tracking-[0.32em] text-tr-gold-deep">
+          <p className="font-tr-display mt-8 text-[0.66rem] uppercase tracking-[0.32em] text-tr-gold-deep">
             Welcome to
           </p>
           <h1 className="font-tr-display mt-2 text-[2.5rem] uppercase leading-[0.92] tracking-[0.02em] text-tr-black sm:text-[3rem]">
@@ -76,19 +81,20 @@ export default function MenuLandingPage() {
             Home of Indian Wine Tourism
           </p>
 
-          <div className="mt-auto w-full pt-12">
+          <div className="mt-auto w-full pt-14">
             <button
               type="button"
               onClick={start}
-              className="font-tr-display w-full rounded-full bg-tr-black py-4.5 text-[0.8rem] uppercase tracking-[0.24em] text-tr-cream shadow-lg transition-transform active:scale-[0.98]"
+              className="font-tr-display w-full rounded-full bg-tr-black py-4.5 text-[0.8rem] uppercase tracking-[0.24em] text-tr-cream shadow-xl transition-transform active:scale-[0.98]"
             >
               View Menu
             </button>
-            <p className="font-tr-body mt-3 text-[0.7rem] text-tr-body/80">
+            <p className="font-tr-body mt-3.5 text-[0.7rem] tracking-wide text-tr-ink/70">
               Nashik · Maharashtra · Est. 1999
             </p>
           </div>
         </div>
+
       </div>
 
       {step === "register" && (
