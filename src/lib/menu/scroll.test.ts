@@ -1,12 +1,15 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { scrollToSection, sectionId, stickyOffset } from "@/lib/menu/scroll";
-import { FOOD_SLUGS, WINE_SLUGS } from "@/lib/menu/groups";
+import {
+  COCKTAIL_SLUGS,
+  DRINK_SLUGS,
+  FOOD_SLUGS,
+  WINE_SLUGS,
+} from "@/lib/menu/groups";
 
 describe("sectionId", () => {
   it("produces the approved stable ids for every food category", () => {
     expect(FOOD_SLUGS.map((s) => sectionId(s, "food"))).toEqual([
-      "food-cocktails",
-      "food-drinks",
       "food-small-plates",
       "food-quick-bites",
       "food-salad",
@@ -26,9 +29,20 @@ describe("sectionId", () => {
     ]);
   });
 
+  it("gives cocktails and drinks their own top-level ids", () => {
+    expect(COCKTAIL_SLUGS.map((s) => sectionId(s, "cocktails"))).toEqual([
+      "cocktails-cocktails",
+    ]);
+    expect(DRINK_SLUGS.map((s) => sectionId(s, "drinks"))).toEqual([
+      "drinks-drinks",
+    ]);
+  });
+
   it("keeps ids unique on the complete menu", () => {
     const ids = [
       ...WINE_SLUGS.map((s) => sectionId(s, "all")),
+      ...COCKTAIL_SLUGS.map((s) => sectionId(s, "all")),
+      ...DRINK_SLUGS.map((s) => sectionId(s, "all")),
       ...FOOD_SLUGS.map((s) => sectionId(s, "all")),
     ];
     expect(new Set(ids).size).toBe(ids.length);
