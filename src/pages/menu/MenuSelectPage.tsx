@@ -65,22 +65,23 @@ export default function MenuSelectPage() {
               <Link
                 key={card.to}
                 to={card.to}
-                className="group relative flex flex-col overflow-hidden rounded-3xl border border-tr-rule/60 bg-white/55 p-6 shadow-sm transition-transform active:scale-[0.99]"
+                className="group relative flex flex-col overflow-hidden rounded-3xl border border-tr-rule/60 bg-white/60 p-6 shadow-sm transition-transform active:scale-[0.99]"
               >
                 <img
                   src={card.art}
                   alt=""
                   aria-hidden="true"
                   loading="lazy"
-                  className="pointer-events-none absolute -bottom-3 -right-4 w-32 opacity-15"
+                  className="pointer-events-none absolute -right-8 -top-6 w-36 opacity-[0.12]"
                 />
-                <span aria-hidden="true" className="text-[1.7rem] leading-none">
-                  {card.emoji}
+                <span className="relative flex h-11 w-11 items-center justify-center rounded-full bg-tr-olive/12 text-tr-olive">
+                  <card.Icon aria-hidden="true" className="h-5 w-5" />
                 </span>
-                <h2 className="font-tr-display mt-4 text-[1.05rem] uppercase tracking-[0.16em] text-tr-black">
+                <h2 className="font-tr-display relative mt-4 text-[1.05rem] uppercase tracking-[0.16em] text-tr-black">
                   {card.title}
                 </h2>
                 <ul className="font-tr-body relative mt-3 space-y-1 text-[0.8rem] text-tr-body">
+
                   {card.sections.map((s) => (
                     <li key={s}>{s}</li>
                   ))}
