@@ -44,7 +44,7 @@ export function CategoryNav({
     const el = rail?.querySelector<HTMLElement>(`[data-tab-id="${id}"]`);
     if (!rail || !el) return;
     const left = el.offsetLeft - (rail.clientWidth - el.clientWidth) / 2;
-    rail.scrollTo({
+    rail.scrollTo?.({
       left: Math.max(0, left),
       behavior:
         smooth && !window.matchMedia("(prefers-reduced-motion: reduce)").matches
