@@ -195,13 +195,32 @@ export default function MenuListPage({ mode }: { mode: MenuMode }) {
           />
         </MenuHeader>
 
-        <main className="mx-auto w-full max-w-[900px] px-5 pt-7">
-          <h1 className="font-tr-display text-[1.15rem] uppercase tracking-[0.18em] text-tr-black">
-            {meta.title}
-          </h1>
-          <p className="font-tr-body mt-1 max-w-prose text-[0.78rem] text-tr-body">
-            {meta.kicker}
-          </p>
+        <main className="relative mx-auto w-full max-w-[900px] px-5 pt-7">
+          <img
+            src={artSun.url}
+            alt=""
+            aria-hidden="true"
+            loading="lazy"
+            className="pointer-events-none absolute -right-6 -top-2 w-24 opacity-30"
+          />
+          <div className="relative flex items-start justify-between gap-4">
+            <div>
+              <h1 className="font-tr-display text-[1.15rem] uppercase tracking-[0.18em] text-tr-black">
+                {meta.title}
+              </h1>
+              <p className="font-tr-body mt-1 max-w-prose text-[0.78rem] text-tr-body">
+                {meta.kicker}
+              </p>
+            </div>
+            <img
+              src={(MODE_ART[mode] ?? artGlassVineyard).url}
+              alt=""
+              aria-hidden="true"
+              loading="lazy"
+              className="pointer-events-none h-20 w-auto shrink-0 opacity-80 sm:h-24"
+            />
+          </div>
+
 
           {filtered.length === 0 && (
             <p className="font-tr-body py-16 text-center text-[0.85rem] text-tr-body">
