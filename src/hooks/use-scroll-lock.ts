@@ -27,6 +27,7 @@ export function useScrollLock(active: boolean) {
       body.style.width = "100%";
       body.style.overflow = "hidden";
     }
+    console.log("LOCK+", locks, savedY, window.scrollY);
     locks += 1;
 
     return () => {
@@ -39,6 +40,7 @@ export function useScrollLock(active: boolean) {
         body.style.right = "";
         body.style.width = "";
         body.style.overflow = "";
+        console.log("LOCK-", savedY);
         lastRestore = { y: savedY, at: Date.now() };
         window.scrollTo({ top: savedY, behavior: "auto" });
       }
