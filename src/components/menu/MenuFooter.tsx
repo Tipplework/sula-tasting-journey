@@ -53,7 +53,16 @@ export function MenuFooter() {
           </a>
           <span>Drink responsibly · 21+</span>
         </nav>
+
+        <img
+          src={vineyardFooter.url}
+          alt=""
+          aria-hidden="true"
+          loading="lazy"
+          className="pointer-events-none mt-6 w-full opacity-60"
+        />
       </div>
     </footer>
   );
 }
+
