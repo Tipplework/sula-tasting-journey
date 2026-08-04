@@ -86,7 +86,7 @@ export default function MenuSelectPage() {
                     <li key={s}>{s}</li>
                   ))}
                 </ul>
-                <span className="font-tr-display mt-6 inline-flex items-center justify-center rounded-full bg-tr-black px-6 py-3.5 text-[0.7rem] uppercase tracking-[0.2em] text-tr-cream">
+                <span className="font-tr-display relative mt-6 inline-flex items-center justify-center rounded-full bg-tr-black px-6 py-3.5 text-[0.7rem] uppercase tracking-[0.2em] text-tr-cream">
                   {card.cta}
                 </span>
               </Link>
