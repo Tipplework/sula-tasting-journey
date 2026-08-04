@@ -255,7 +255,16 @@ export default function MenuListPage({ mode }: { mode: MenuMode }) {
               </section>
             ))}
           </div>
+
+          <img
+            src={artHills.url}
+            alt=""
+            aria-hidden="true"
+            loading="lazy"
+            className="pointer-events-none -mx-5 w-[calc(100%+2.5rem)] opacity-50"
+          />
         </main>
+
 
         <MenuFooter />
       </div>
