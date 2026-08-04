@@ -11,7 +11,7 @@ describe("top-level menu separation", () => {
       "Small Plates",
       "Quick Bites",
       "Salad",
-      "From the Bread Box",
+      "From The Bread Box",
       "Pizza",
       "Dessert",
     ]);
