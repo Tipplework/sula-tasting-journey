@@ -18,6 +18,8 @@ import HomepageEditor from "./pages/admin/HomepageEditor";
 import PrivacyCenter from "./pages/admin/PrivacyCenter";
 import WinesFlightsCenter from "./pages/admin/WinesFlightsCenter";
 import ContentViewer from "./pages/content/ContentViewer";
+import TastingRoomMenuPage from "./pages/menu/TastingRoomMenuPage";
+
 
 export default function App() {
   return (
