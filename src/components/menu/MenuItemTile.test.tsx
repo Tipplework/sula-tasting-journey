@@ -36,7 +36,7 @@ describe("MenuItemTile", () => {
     expect(tile).toHaveAttribute("type", "button");
     expect(screen.getByText("₹595")).toBeInTheDocument();
     expect(screen.getByText(/670 kcal/)).toBeInTheDocument();
-    expect(screen.getByAltText("Non-vegetarian")).toBeInTheDocument();
+    expect(screen.getByAltText("Non-Vegetarian")).toBeInTheDocument();
     expect(screen.getByText(/Pairs well with Rāsā Syrah/)).toBeInTheDocument();
     tile.click();
     expect(onOpen).toHaveBeenCalledTimes(1);
