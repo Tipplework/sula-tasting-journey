@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { MenuCanvas, useMenuMeta } from "./MenuCanvas";
 import { MenuHeader } from "@/components/menu/MenuHeader";
@@ -45,6 +45,7 @@ export default function MenuListPage({ mode }: { mode: MenuMode }) {
   }, [nav]);
 
   const openSlug = params.get("item");
+  const returnY = useRef<number | null>(null);
 
   // Entering a menu (or switching menu type) always starts at the top — unless
   // the guest arrived on a shareable item link.
