@@ -82,6 +82,9 @@ export default function MenuLandingPage() {
           </p>
 
           <div className="mt-auto w-full pt-14">
+            <p className="font-tr-display mb-4 text-[0.62rem] uppercase tracking-[0.28em] text-tr-ink/60">
+              Nashik · Maharashtra · Est. 1999
+            </p>
             <button
               type="button"
               onClick={start}
@@ -89,10 +92,8 @@ export default function MenuLandingPage() {
             >
               View Menu
             </button>
-            <p className="font-tr-body mt-3.5 text-[0.7rem] tracking-wide text-tr-ink/70">
-              Nashik · Maharashtra · Est. 1999
-            </p>
           </div>
+
         </div>
 
       </div>
