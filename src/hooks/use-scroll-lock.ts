@@ -2,18 +2,23 @@ import { useEffect } from "react";
 
 let locks = 0;
 let savedY = 0;
+let lastRestore = { y: 0, at: 0 };
 
 /**
  * Locks the single page scroll container while a dialog is open, and restores
  * the exact scroll position on close. Reference counted, so nested sheets
- * (filter sheet opened over a drawer) never fight each other.
+ * (filter sheet opened over a drawer) never fight each other. The `lastRestore`
+ * guard covers React's development double-invoked effects, where the relock
+ * happens before the browser has applied the restored offset.
  */
 export function useScrollLock(active: boolean) {
   useEffect(() => {
     if (!active) return;
 
     if (locks === 0) {
-      savedY = window.scrollY;
+      const now = window.scrollY;
+      savedY =
+        now === 0 && Date.now() - lastRestore.at < 200 ? lastRestore.y : now;
       const body = document.body;
       body.style.position = "fixed";
       body.style.top = `-${savedY}px`;
@@ -34,6 +39,7 @@ export function useScrollLock(active: boolean) {
         body.style.right = "";
         body.style.width = "";
         body.style.overflow = "";
+        lastRestore = { y: savedY, at: Date.now() };
         window.scrollTo({ top: savedY, behavior: "auto" });
       }
     };

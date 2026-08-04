@@ -337,14 +337,45 @@
   display: none;
 }
 
-/* The menu routes scroll with the document — no nested scroll containers. */
+/* The menu routes scroll with the document — no nested scroll containers.
+   The document is the single vertical scroll owner; jumps are programmatic so
+   no global `scroll-behavior: smooth` is declared here. */
 .tr-scope {
+  --menu-sticky-offset: 128px;
+  overflow: visible;
   -webkit-overflow-scrolling: touch;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  html {
-    scroll-behavior: smooth;
-  }
+.tr-menu-page {
+  min-height: 100dvh;
+  overflow: visible;
+}
+
+.tr-sticky-shell {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  padding-top: env(safe-area-inset-top);
+  backdrop-filter: saturate(1.1);
+}
+
+.tr-menu-section {
+  scroll-margin-top: var(--menu-sticky-offset, 128px);
+}
+
+.tr-category-nav {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x proximity;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x;
+}
+
+.tr-category-nav > * {
+  scroll-snap-align: center;
 }
 
