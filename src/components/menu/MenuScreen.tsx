@@ -93,11 +93,14 @@ export function MenuScreen({ categories }: { categories: MenuCategoryView[] }) {
 
   const jumpTo = (slug: string) => {
     setActiveSlug(slug);
-    const el = sectionRefs.current[slug];
-    if (!el) return;
-    const top = el.getBoundingClientRect().top + window.scrollY - 132;
-    window.scrollTo({ top, behavior: "smooth" });
+    // The document body is the scroll container in this app, so rely on
+    // scrollIntoView rather than window.scrollTo.
+    sectionRefs.current[slug]?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
   };
+
 
   return (
     <div className="min-h-[100svh] bg-tr-cream pb-2">
