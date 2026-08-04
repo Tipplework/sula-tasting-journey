@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { MenuCanvas, useMenuMeta } from "./MenuCanvas";
 import { MenuHeader } from "@/components/menu/MenuHeader";
@@ -9,6 +9,9 @@ import { DietaryFilterSheet } from "@/components/menu/DietaryFilterSheet";
 import { MenuFooter } from "@/components/menu/MenuFooter";
 import { useMenu } from "@/lib/menu/useMenu";
 import { categoriesForMode, MODE_META, type MenuMode } from "@/lib/menu/groups";
+import { scrollToSection, sectionId } from "@/lib/menu/scroll";
+import { useStickyOffset } from "@/hooks/use-sticky-offset";
+import { useActiveSection } from "@/hooks/use-active-section";
 import { menuSession } from "@/lib/menu/session";
 import type { DietaryTag } from "@/data/tasting-room-menu";
 
@@ -20,18 +23,22 @@ export default function MenuListPage({ mode }: { mode: MenuMode }) {
     `${meta.title} | The Tasting Room, Sula Vineyards`,
     `${meta.kicker} at The Tasting Room, Sula Vineyards, Nashik.`,
   );
+  useStickyOffset();
 
   const [query, setQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [showOnly, setShowOnly] = useState<DietaryTag[]>([]);
   const [hideIf, setHideIf] = useState<DietaryTag[]>([]);
-  const [activeSlug, setActiveSlug] = useState<string | null>(null);
-  const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
 
   useEffect(() => {
     if (!menuSession.introComplete()) nav("/menu", { replace: true });
   }, [nav]);
+
+  // Entering a menu (or switching food <-> wine) always starts at the top.
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "auto" });
+  }, [mode]);
 
   const scoped = useMemo(() => categoriesForMode(all, mode), [all, mode]);
 
@@ -46,6 +53,7 @@ export default function MenuListPage({ mode }: { mode: MenuMode }) {
     return scoped
       .map((c) => ({
         ...c,
+        domId: sectionId(c.slug, mode),
         items: c.items.filter((i) => {
           if (q) {
             const hay = `${i.name} ${i.description ?? ""} ${i.pairing ?? ""} ${c.name}`.toLowerCase();
@@ -58,40 +66,24 @@ export default function MenuListPage({ mode }: { mode: MenuMode }) {
         }),
       }))
       .filter((c) => c.items.length > 0);
-  }, [scoped, query, showOnly, hideIf]);
+  }, [scoped, mode, query, showOnly, hideIf]);
 
-  useEffect(() => {
-    if (!activeSlug && filtered.length) setActiveSlug(filtered[0].slug);
-  }, [filtered, activeSlug]);
+  const ids = useMemo(() => filtered.map((c) => c.domId), [filtered]);
+  const trackedActive = useActiveSection(ids);
+  const [pinned, setPinned] = useState<string | null>(null);
+  const activeId = pinned ?? trackedActive;
 
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((e) => e.isIntersecting)
-          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
-        const slug = visible?.target.getAttribute("data-section");
-        if (slug) setActiveSlug(slug);
-      },
-      { rootMargin: "-160px 0px -70% 0px", threshold: 0 },
-    );
-    Object.values(sectionRefs.current).forEach((el) => el && observer.observe(el));
-    return () => observer.disconnect();
-  }, [filtered]);
-
-  const jumpTo = (slug: string) => {
-    setActiveSlug(slug);
-    sectionRefs.current[slug]?.scrollIntoView({
-      behavior: "smooth",
-      block: "start",
-    });
+  const jumpTo = (id: string) => {
+    setPinned(id);
+    scrollToSection(id);
+    window.setTimeout(() => setPinned(null), 700);
   };
 
   const activeFilterCount = showOnly.length + hideIf.length;
 
   return (
     <MenuCanvas>
-      <div className="min-h-[100svh]">
+      <div className="tr-menu-page">
         <MenuHeader
           mode={mode}
           query={query}
@@ -103,15 +95,16 @@ export default function MenuListPage({ mode }: { mode: MenuMode }) {
           }}
           onOpenFilters={() => setFiltersOpen(true)}
           activeFilterCount={activeFilterCount}
+          showFilters={mode !== "wine"}
         >
           <CategoryNav
-            categories={filtered}
-            activeSlug={activeSlug}
+            tabs={filtered.map((c) => ({ id: c.domId, name: c.name }))}
+            activeId={activeId}
             onSelect={jumpTo}
           />
         </MenuHeader>
 
-        <main className="mx-auto max-w-3xl px-5 pt-7">
+        <main className="mx-auto w-full max-w-[900px] px-5 pt-7">
           <h1 className="font-tr-display text-[1.15rem] uppercase tracking-[0.18em] text-tr-black">
             {meta.title}
           </h1>
@@ -121,20 +114,21 @@ export default function MenuListPage({ mode }: { mode: MenuMode }) {
 
           {filtered.length === 0 && (
             <p className="font-tr-body py-16 text-center text-[0.85rem] text-tr-body">
-              Nothing matches that just yet. Try another search or clear your
-              filters.
+              {query.trim()
+                ? `Nothing matches “${query.trim()}”. Try another search or clear your filters.`
+                : "Nothing matches those filters just yet. Try clearing them."}
             </p>
           )}
 
           <div className="mt-7">
             {filtered.map((c) => (
               <section
-                key={c.slug}
-                data-section={c.slug}
-                ref={(el) => {
-                  sectionRefs.current[c.slug] = el;
-                }}
-                className="scroll-mt-40 pb-9"
+                key={c.domId}
+                id={c.domId}
+                role="tabpanel"
+                aria-labelledby={`tab-${c.domId}`}
+                data-section={c.domId}
+                className="tr-menu-section pb-9"
               >
                 <SectionHeading>{c.name}</SectionHeading>
                 {c.headingStyle === "wine" && <WinePourHeader />}

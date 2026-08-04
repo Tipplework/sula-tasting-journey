@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { X } from "lucide-react";
 import type { DietaryTag } from "@/data/tasting-room-menu";
 import { DIETARY_LABELS } from "@/data/tasting-room-menu";
@@ -29,6 +30,14 @@ export function DietaryFilterSheet({
   onClose: () => void;
 }) {
   useScrollLock(true);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
 
   const chip = (
     tag: DietaryTag,
@@ -65,7 +74,10 @@ export function DietaryFilterSheet({
         aria-label="Dietary filters"
         className="relative flex max-h-[85svh] w-full max-w-md flex-col rounded-t-3xl bg-tr-cream shadow-2xl sm:rounded-3xl"
       >
-        <div className="flex items-center justify-between px-6 pb-2 pt-5">
+        <div className="flex justify-center pt-2.5">
+          <span aria-hidden="true" className="h-1 w-10 rounded-full bg-tr-rule" />
+        </div>
+        <div className="flex items-center justify-between px-6 pb-2 pt-3">
           <h2 className="font-tr-display text-[0.8rem] uppercase tracking-[0.18em] text-tr-black">
             Dietary Filters
           </h2>
@@ -88,14 +100,14 @@ export function DietaryFilterSheet({
           </div>
 
           <p className="font-tr-display mt-6 text-[0.62rem] uppercase tracking-[0.2em] text-tr-black/55">
-            Hide items containing
+            Exclude items containing
           </p>
           <div className="mt-2.5 flex flex-wrap gap-2">
             {HIDE_IF.map((t) => chip(t, hideIf.includes(t), onToggleHideIf))}
           </div>
         </div>
 
-        <div className="flex gap-3 px-6 pb-6 pt-4">
+        <div className="flex gap-3 px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-4">
           <button
             type="button"
             onClick={onClear}
@@ -108,7 +120,7 @@ export function DietaryFilterSheet({
             onClick={onClose}
             className="font-tr-display min-h-12 flex-1 rounded-full bg-tr-black px-5 text-[0.72rem] uppercase tracking-[0.18em] text-tr-cream"
           >
-            Done
+            Apply
           </button>
         </div>
       </div>
