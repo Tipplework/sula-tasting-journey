@@ -49,11 +49,15 @@ export default function App() {
         <Route path="/menu" element={<MenuLandingPage />} />
         <Route path="/menu/select" element={<MenuSelectPage />} />
         <Route path="/menu/wine" element={<MenuListPage mode="wine" />} />
+        <Route path="/menu/cocktails" element={<MenuListPage mode="cocktails" />} />
+        <Route path="/menu/drinks" element={<MenuListPage mode="drinks" />} />
         <Route path="/menu/food" element={<MenuListPage mode="food" />} />
         <Route path="/menu/all" element={<MenuListPage mode="all" />} />
         <Route path="/tasting-room" element={<MenuLandingPage />} />
         <Route path="/tasting-room/select" element={<MenuSelectPage />} />
         <Route path="/tasting-room/wine" element={<MenuListPage mode="wine" />} />
+        <Route path="/tasting-room/cocktails" element={<MenuListPage mode="cocktails" />} />
+        <Route path="/tasting-room/drinks" element={<MenuListPage mode="drinks" />} />
         <Route path="/tasting-room/food" element={<MenuListPage mode="food" />} />
         <Route path="/tasting-room/all" element={<MenuListPage mode="all" />} />
 

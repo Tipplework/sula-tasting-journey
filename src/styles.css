@@ -381,3 +381,46 @@
   scroll-snap-align: center;
 }
 
+
+/* Interactive rectangular menu tile — the single presentation unit of the menu.
+   Soft cream field, fine olive-tinted border, restrained tonal separation. */
+.tr-tile {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  padding: 0.85rem 1rem;
+  border-radius: 14px;
+  border: 1px solid rgb(110 127 60 / 0.18);
+  background: linear-gradient(180deg, #fffdf5 0%, #fdf9ec 100%);
+  box-shadow: 0 1px 2px rgb(28 26 23 / 0.03);
+  transition:
+    background-color 120ms ease,
+    border-color 120ms ease,
+    transform 120ms ease;
+}
+
+@media (hover: hover) {
+  .tr-tile:hover {
+    border-color: rgb(110 127 60 / 0.35);
+    background: #fffdf5;
+  }
+}
+
+.tr-tile:active {
+  transform: scale(0.995);
+  background: #fbf5e4;
+}
+
+.tr-tile:focus-visible {
+  outline: 2px solid #6e7f3c;
+  outline-offset: 2px;
+}
+
+/* Item detail panel: the only permitted nested scroll area besides overlays. */
+.tr-detail-panel {
+  box-shadow: 0 -8px 40px rgb(28 26 23 / 0.18);
+}
+.tr-detail-scroll {
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}

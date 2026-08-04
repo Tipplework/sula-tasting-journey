@@ -1,39 +1,53 @@
 import { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { UtensilsCrossed, Wine } from "lucide-react";
+import { ArrowRight, Coffee, Martini, UtensilsCrossed, Wine } from "lucide-react";
 import { MenuCanvas, useMenuMeta } from "./MenuCanvas";
 import { menuSession } from "@/lib/menu/session";
 import { prefetchMenu } from "@/lib/menu/useMenu";
 import trLogo from "@/assets/menu/art-tr-logo.webp.asset.json";
 import glassVineyard from "@/assets/menu/art-glass-vineyard.webp.asset.json";
 import barrels from "@/assets/menu/art-barrels.webp.asset.json";
+import swirl from "@/assets/menu/art-swirl.webp.asset.json";
+import grapeDivider from "@/assets/menu/art-grape-divider.webp.asset.json";
 import { MenuFooter } from "@/components/menu/MenuFooter";
+import { MODE_META } from "@/lib/menu/groups";
 
 const CARDS = [
   {
-    to: "/menu/wine",
+    to: MODE_META.wine.path,
     Icon: Wine,
-    title: "Wine Menu",
-    cta: "View Wine Menu",
+    title: "Wine",
+    copy: MODE_META.wine.kicker,
     art: glassVineyard.url,
-    sections: ["Sparkling", "White", "Rosé", "Red", "Dessert Wine"],
   },
   {
-    to: "/menu/food",
+    to: MODE_META.cocktails.path,
+    Icon: Martini,
+    title: "Cocktails",
+    copy: MODE_META.cocktails.kicker,
+    art: swirl.url,
+  },
+  {
+    to: MODE_META.drinks.path,
+    Icon: Coffee,
+    title: "Drinks",
+    copy: MODE_META.drinks.kicker,
+    art: grapeDivider.url,
+  },
+  {
+    to: MODE_META.food.path,
     Icon: UtensilsCrossed,
-    title: "Food Menu",
-    cta: "View Food Menu",
+    title: "Food",
+    copy: MODE_META.food.kicker,
     art: barrels.url,
-    sections: ["Cocktails", "Small Plates", "Quick Bites", "Pizza", "Desserts"],
   },
 ];
-
 
 export default function MenuSelectPage() {
   const nav = useNavigate();
   useMenuMeta(
     "Menu | The Tasting Room, Sula Vineyards",
-    "Choose the wine list or the food menu at The Tasting Room, Sula Vineyards.",
+    "Choose wine, cocktails, drinks or food at The Tasting Room, Sula Vineyards.",
   );
 
   useEffect(() => {
@@ -60,35 +74,35 @@ export default function MenuSelectPage() {
             Select what you'd like to explore.
           </p>
 
-          <div className="mt-8 grid gap-4 sm:grid-cols-2">
+          <div className="mt-8 grid gap-3 sm:grid-cols-2">
             {CARDS.map((card) => (
               <Link
                 key={card.to}
                 to={card.to}
-                className="group relative flex flex-col overflow-hidden rounded-3xl border border-tr-rule/60 bg-white/60 p-6 shadow-sm transition-transform active:scale-[0.99]"
+                className="tr-tile group relative flex items-center gap-4 overflow-hidden"
               >
                 <img
                   src={card.art}
                   alt=""
                   aria-hidden="true"
                   loading="lazy"
-                  className="pointer-events-none absolute -right-8 -top-6 w-36 opacity-[0.12]"
+                  className="pointer-events-none absolute -right-6 -top-4 w-28 opacity-[0.1]"
                 />
-                <span className="relative flex h-11 w-11 items-center justify-center rounded-full bg-tr-olive/12 text-tr-olive">
+                <span className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-tr-olive/[0.12] text-tr-olive">
                   <card.Icon aria-hidden="true" className="h-5 w-5" />
                 </span>
-                <h2 className="font-tr-display relative mt-4 text-[1.05rem] uppercase tracking-[0.16em] text-tr-black">
-                  {card.title}
-                </h2>
-                <ul className="font-tr-body relative mt-3 space-y-1 text-[0.8rem] text-tr-body">
-
-                  {card.sections.map((s) => (
-                    <li key={s}>{s}</li>
-                  ))}
-                </ul>
-                <span className="font-tr-display relative mt-6 inline-flex items-center justify-center rounded-full bg-tr-black px-6 py-3.5 text-[0.7rem] uppercase tracking-[0.2em] text-tr-cream">
-                  {card.cta}
+                <span className="relative min-w-0 flex-1">
+                  <span className="font-tr-display block text-[1rem] uppercase tracking-[0.16em] text-tr-black">
+                    {card.title}
+                  </span>
+                  <span className="font-tr-body mt-1 block text-[0.78rem] leading-relaxed text-tr-body">
+                    {card.copy}
+                  </span>
                 </span>
+                <ArrowRight
+                  aria-hidden="true"
+                  className="relative h-4 w-4 shrink-0 text-tr-black/40 transition-transform group-hover:translate-x-0.5"
+                />
               </Link>
             ))}
           </div>
