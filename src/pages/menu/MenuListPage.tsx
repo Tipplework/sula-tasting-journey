@@ -21,6 +21,22 @@ import { useStickyOffset } from "@/hooks/use-sticky-offset";
 import { useActiveSection } from "@/hooks/use-active-section";
 import { menuSession } from "@/lib/menu/session";
 import type { DietaryTag } from "@/data/tasting-room-menu";
+import artBottle from "@/assets/menu/art-bottle.webp.asset.json";
+import artCoverGlass from "@/assets/menu/art-cover-glass.webp.asset.json";
+import artSwirl from "@/assets/menu/art-swirl.webp.asset.json";
+import artBarrels from "@/assets/menu/art-barrels.webp.asset.json";
+import artGlassVineyard from "@/assets/menu/art-glass-vineyard.webp.asset.json";
+import artHills from "@/assets/menu/art-hills.webp.asset.json";
+import artSun from "@/assets/menu/art-sun.webp.asset.json";
+
+const MODE_ART: Record<string, { url: string }> = {
+  wine: artBottle,
+  cocktails: artCoverGlass,
+  drinks: artSwirl,
+  food: artBarrels,
+  all: artGlassVineyard,
+};
+
 
 export default function MenuListPage({ mode }: { mode: MenuMode }) {
   const nav = useNavigate();
