@@ -305,3 +305,48 @@
     transition: width 0.5s ease;
   }
 }
+
+/* ==========================================================================
+   The Tasting Room digital menu — tokens taken from the approved print PDF.
+   Scoped to the menu routes; nothing here affects the tasting-journey app.
+   ========================================================================== */
+@theme {
+  --color-tr-cream: #fdf6e5;
+  --color-tr-cover: #f5ebd6;
+  --color-tr-olive: #6e7f3c;
+  --color-tr-gold: #eaa338;
+  --color-tr-gold-deep: #c07f1e;
+  --color-tr-ghost: #f8cb2a;
+  --color-tr-red: #d2372a;
+  --color-tr-ink: #3f3123;
+  --color-tr-body: #6c6154;
+  --color-tr-black: #1c1a17;
+  --color-tr-rule: #cbbfa6;
+
+  --font-tr-display: "Oswald", "Arial Narrow", sans-serif;
+  --font-tr-body: "Jost", system-ui, sans-serif;
+  --font-tr-script: "Parisienne", cursive;
+  --font-tr-brush: "Caveat Brush", cursive;
+}
+
+.tr-hide-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.tr-hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Olive keyline that reproduces the printed page frame. */
+.tr-frame {
+  border-left: 10px solid var(--color-tr-olive);
+  border-right: 10px solid var(--color-tr-olive);
+  border-bottom: 10px solid var(--color-tr-olive);
+}
+
+@media (min-width: 640px) {
+  .tr-frame {
+    border-width: 14px;
+    border-top-width: 14px;
+  }
+}
