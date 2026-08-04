@@ -337,16 +337,14 @@
   display: none;
 }
 
-/* Olive keyline that reproduces the printed page frame. */
-.tr-frame {
-  border-left: 10px solid var(--color-tr-olive);
-  border-right: 10px solid var(--color-tr-olive);
-  border-bottom: 10px solid var(--color-tr-olive);
+/* The menu routes scroll with the document — no nested scroll containers. */
+.tr-scope {
+  -webkit-overflow-scrolling: touch;
 }
 
-@media (min-width: 640px) {
-  .tr-frame {
-    border-width: 14px;
-    border-top-width: 14px;
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
   }
 }
+
