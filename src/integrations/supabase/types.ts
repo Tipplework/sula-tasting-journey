@@ -423,6 +423,255 @@ export type Database = {
         }
         Relationships: []
       }
+      menu_categories: {
+        Row: {
+          active: boolean
+          created_at: string
+          display_order: number
+          heading_style: string
+          id: string
+          name: string
+          publish_at: string | null
+          slug: string
+          updated_at: string
+          venue_id: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          display_order?: number
+          heading_style?: string
+          id?: string
+          name: string
+          publish_at?: string | null
+          slug: string
+          updated_at?: string
+          venue_id: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          display_order?: number
+          heading_style?: string
+          id?: string
+          name?: string
+          publish_at?: string | null
+          slug?: string
+          updated_at?: string
+          venue_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "menu_categories_venue_id_fkey"
+            columns: ["venue_id"]
+            isOneToOne: false
+            referencedRelation: "menu_venues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      menu_change_log: {
+        Row: {
+          action: string
+          changed_by: string | null
+          created_at: string
+          id: string
+          new_data: Json | null
+          previous_data: Json | null
+          record_id: string | null
+          table_name: string
+        }
+        Insert: {
+          action: string
+          changed_by?: string | null
+          created_at?: string
+          id?: string
+          new_data?: Json | null
+          previous_data?: Json | null
+          record_id?: string | null
+          table_name: string
+        }
+        Update: {
+          action?: string
+          changed_by?: string | null
+          created_at?: string
+          id?: string
+          new_data?: Json | null
+          previous_data?: Json | null
+          record_id?: string | null
+          table_name?: string
+        }
+        Relationships: []
+      }
+      menu_guest_registrations: {
+        Row: {
+          birth_day: number | null
+          birth_month: number | null
+          created_at: string
+          full_name: string
+          id: string
+          marketing_consent: boolean
+          mobile: string
+          session_id: string | null
+          source: string
+          utm_campaign: string | null
+          utm_medium: string | null
+          utm_source: string | null
+          venue_slug: string
+        }
+        Insert: {
+          birth_day?: number | null
+          birth_month?: number | null
+          created_at?: string
+          full_name: string
+          id?: string
+          marketing_consent?: boolean
+          mobile: string
+          session_id?: string | null
+          source?: string
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          venue_slug?: string
+        }
+        Update: {
+          birth_day?: number | null
+          birth_month?: number | null
+          created_at?: string
+          full_name?: string
+          id?: string
+          marketing_consent?: boolean
+          mobile?: string
+          session_id?: string | null
+          source?: string
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          venue_slug?: string
+        }
+        Relationships: []
+      }
+      menu_item_dietary_tags: {
+        Row: {
+          created_at: string
+          id: string
+          menu_item_id: string
+          tag: Database["public"]["Enums"]["menu_dietary_tag"]
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          menu_item_id: string
+          tag: Database["public"]["Enums"]["menu_dietary_tag"]
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          menu_item_id?: string
+          tag?: Database["public"]["Enums"]["menu_dietary_tag"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "menu_item_dietary_tags_menu_item_id_fkey"
+            columns: ["menu_item_id"]
+            isOneToOne: false
+            referencedRelation: "menu_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      menu_items: {
+        Row: {
+          active: boolean
+          bottle_price: number | null
+          calories: number | null
+          category_id: string
+          created_at: string
+          description: string | null
+          display_order: number
+          glass_price: number | null
+          id: string
+          name: string
+          pairing_text: string | null
+          publish_at: string | null
+          smaller_bottle_price: number | null
+          standard_price: number | null
+          unavailable: boolean
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          bottle_price?: number | null
+          calories?: number | null
+          category_id: string
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          glass_price?: number | null
+          id?: string
+          name: string
+          pairing_text?: string | null
+          publish_at?: string | null
+          smaller_bottle_price?: number | null
+          standard_price?: number | null
+          unavailable?: boolean
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          bottle_price?: number | null
+          calories?: number | null
+          category_id?: string
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          glass_price?: number | null
+          id?: string
+          name?: string
+          pairing_text?: string | null
+          publish_at?: string | null
+          smaller_bottle_price?: number | null
+          standard_price?: number | null
+          unavailable?: boolean
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "menu_items_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "menu_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      menu_venues: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: string
+          name: string
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          name: string
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          name?: string
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       privacy_notice_versions: {
         Row: {
           active: boolean
@@ -674,6 +923,14 @@ export type Database = {
       app_role: "admin" | "super_admin"
       asset_type: "page_image" | "gallery_image" | "thumbnail" | "download"
       content_type: "pdf" | "video" | "gallery"
+      menu_dietary_tag:
+        | "vegetarian"
+        | "non_vegetarian"
+        | "seafood"
+        | "gluten_free"
+        | "contains_dairy"
+        | "vegan"
+        | "contains_nuts"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -804,6 +1061,15 @@ export const Constants = {
       app_role: ["admin", "super_admin"],
       asset_type: ["page_image", "gallery_image", "thumbnail", "download"],
       content_type: ["pdf", "video", "gallery"],
+      menu_dietary_tag: [
+        "vegetarian",
+        "non_vegetarian",
+        "seafood",
+        "gluten_free",
+        "contains_dairy",
+        "vegan",
+        "contains_nuts",
+      ],
     },
   },
 } as const
