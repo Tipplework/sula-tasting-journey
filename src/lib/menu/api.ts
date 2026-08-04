@@ -19,6 +19,24 @@ export interface MenuItemView {
   pairing: string | null;
   unavailable: boolean;
   tags: DietaryTag[];
+  /**
+   * Future-ready fields. Nothing is stored for these yet — the detail panel
+   * simply omits any field without approved data, so the schema can grow later
+   * without touching the presentation layer.
+   */
+  imageUrl?: string | null;
+  imageAlt?: string | null;
+  imageFocalPoint?: string | null;
+  extendedDescription?: string | null;
+  ingredients?: string | null;
+  allergenNotes?: string | null;
+  servingSize?: string | null;
+  abv?: string | null;
+  varietal?: string | null;
+  region?: string | null;
+  tastingNotes?: string | null;
+  chefNote?: string | null;
+  recommendedDishes?: string | null;
 }
 
 export interface MenuCategoryView {
@@ -28,6 +46,18 @@ export interface MenuCategoryView {
   headingStyle: "wine" | "default";
   items: MenuItemView[];
 }
+
+/** Deterministic, shareable slug for a single item (used by ?item=…). */
+export function itemSlug(name: string) {
+  return name
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/&/g, " and ")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
 
 /** Converts the approved PDF seed content into the shape the UI renders. */
 function fromSeed(categories: SeedCategory[]): MenuCategoryView[] {
