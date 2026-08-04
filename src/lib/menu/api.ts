@@ -1,0 +1,173 @@
+import { supabase } from "@/integrations/supabase/client";
+import {
+  TASTING_ROOM_MENU,
+  type DietaryTag,
+  type SeedCategory,
+} from "@/data/tasting-room-menu";
+
+export const VENUE_SLUG = "tasting-room";
+
+export interface MenuItemView {
+  id: string;
+  name: string;
+  description: string | null;
+  calories: number | null;
+  standardPrice: number | null;
+  bottlePrice: number | null;
+  smallerBottlePrice: number | null;
+  glassPrice: number | null;
+  pairing: string | null;
+  unavailable: boolean;
+  tags: DietaryTag[];
+}
+
+export interface MenuCategoryView {
+  id: string;
+  slug: string;
+  name: string;
+  headingStyle: "wine" | "default";
+  items: MenuItemView[];
+}
+
+/** Converts the approved PDF seed content into the shape the UI renders. */
+function fromSeed(categories: SeedCategory[]): MenuCategoryView[] {
+  return categories.map((c) => ({
+    id: c.slug,
+    slug: c.slug,
+    name: c.name,
+    headingStyle: c.headingStyle,
+    items: c.items.map((i, idx) => ({
+      id: `${c.slug}-${idx}`,
+      name: i.name,
+      description: i.description ?? null,
+      calories: i.calories ?? null,
+      standardPrice: i.standardPrice ?? null,
+      bottlePrice: i.bottlePrice ?? null,
+      smallerBottlePrice: i.smallerBottlePrice ?? null,
+      glassPrice: i.glassPrice ?? null,
+      pairing: i.pairing ?? null,
+      unavailable: false,
+      tags: i.tags ?? [],
+    })),
+  }));
+}
+
+export const SEED_MENU: MenuCategoryView[] = fromSeed(TASTING_ROOM_MENU);
+
+/**
+ * Reads the live menu. Falls back to the approved PDF content whenever the
+ * database has not been seeded yet, so the QR code never shows an empty menu.
+ */
+export async function fetchMenu(): Promise<{
+  categories: MenuCategoryView[];
+  source: "live" | "approved";
+}> {
+  try {
+    const { data: venue } = await supabase
+      .from("menu_venues")
+      .select("id")
+      .eq("slug", VENUE_SLUG)
+      .maybeSingle();
+    if (!venue) return { categories: SEED_MENU, source: "approved" };
+
+    const [{ data: cats }, { data: items }] = await Promise.all([
+      supabase
+        .from("menu_categories")
+        .select("id, slug, name, heading_style, display_order")
+        .eq("venue_id", venue.id)
+        .order("display_order", { ascending: true }),
+      supabase
+        .from("menu_items")
+        .select(
+          "id, category_id, name, description, calories, standard_price, bottle_price, smaller_bottle_price, glass_price, pairing_text, unavailable, display_order, menu_item_dietary_tags(tag)",
+        )
+        .order("display_order", { ascending: true }),
+    ]);
+
+    if (!cats?.length || !items?.length) {
+      return { categories: SEED_MENU, source: "approved" };
+    }
+
+    const byCat = new Map<string, MenuItemView[]>();
+    for (const row of items) {
+      const list = byCat.get(row.category_id) ?? [];
+      list.push({
+        id: row.id,
+        name: row.name,
+        description: row.description,
+        calories: row.calories,
+        standardPrice: row.standard_price,
+        bottlePrice: row.bottle_price,
+        smallerBottlePrice: row.smaller_bottle_price,
+        glassPrice: row.glass_price,
+        pairing: row.pairing_text,
+        unavailable: row.unavailable,
+        tags: ((row.menu_item_dietary_tags ?? []) as { tag: DietaryTag }[]).map(
+          (t) => t.tag,
+        ),
+      });
+      byCat.set(row.category_id, list);
+    }
+
+    const categories = cats
+      .map((c) => ({
+        id: c.id,
+        slug: c.slug,
+        name: c.name,
+        headingStyle: (c.heading_style === "wine" ? "wine" : "default") as
+          | "wine"
+          | "default",
+        items: byCat.get(c.id) ?? [],
+      }))
+      .filter((c) => c.items.length > 0);
+
+    return categories.length
+      ? { categories, source: "live" }
+      : { categories: SEED_MENU, source: "approved" };
+  } catch {
+    return { categories: SEED_MENU, source: "approved" };
+  }
+}
+
+export interface GuestRegistrationInput {
+  fullName: string;
+  mobile: string;
+  birthDay: number | null;
+  birthMonth: number | null;
+  marketingConsent: boolean;
+}
+
+function sessionId(): string {
+  if (typeof window === "undefined") return "";
+  const KEY = "trMenuSessionId";
+  let sid = sessionStorage.getItem(KEY);
+  if (!sid) {
+    sid =
+      (crypto?.randomUUID?.() as string | undefined) ||
+      `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    sessionStorage.setItem(KEY, sid);
+  }
+  return sid;
+}
+
+export async function submitGuestRegistration(input: GuestRegistrationInput) {
+  const params =
+    typeof window === "undefined"
+      ? new URLSearchParams()
+      : new URLSearchParams(window.location.search);
+
+  const { error } = await supabase.from("menu_guest_registrations").insert({
+    full_name: input.fullName.trim(),
+    mobile: input.mobile,
+    birth_day: input.birthDay,
+    birth_month: input.birthMonth,
+    marketing_consent: input.marketingConsent,
+    venue_slug: VENUE_SLUG,
+    source: "qr_digital_menu",
+    utm_source: params.get("utm_source"),
+    utm_medium: params.get("utm_medium"),
+    utm_campaign: params.get("utm_campaign"),
+    session_id: sessionId(),
+  });
+  if (error) throw error;
+}
