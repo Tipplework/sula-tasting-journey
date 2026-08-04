@@ -18,7 +18,9 @@ import HomepageEditor from "./pages/admin/HomepageEditor";
 import PrivacyCenter from "./pages/admin/PrivacyCenter";
 import WinesFlightsCenter from "./pages/admin/WinesFlightsCenter";
 import ContentViewer from "./pages/content/ContentViewer";
-import TastingRoomMenuPage from "./pages/menu/TastingRoomMenuPage";
+import MenuLandingPage from "./pages/menu/MenuLandingPage";
+import MenuSelectPage from "./pages/menu/MenuSelectPage";
+import MenuListPage from "./pages/menu/MenuListPage";
 
 
 export default function App() {
