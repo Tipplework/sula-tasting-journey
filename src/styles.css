@@ -106,7 +106,10 @@
   html, body, #root {
     width: 100%;
     max-width: 100vw;
-    overflow-x: hidden;
+    /* `clip` instead of `hidden`: `hidden` turns html/body into scroll
+       containers, which makes Chrome scroll the document to the layout position
+       of sticky elements whenever one of their buttons receives focus. */
+    overflow-x: clip;
   }
 
   html, body {
