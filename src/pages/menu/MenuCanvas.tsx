@@ -5,6 +5,17 @@ import { useEffect } from "react";
  * height rules: the document is the app's only vertical scroll container.
  */
 export function MenuCanvas({ children }: { children: React.ReactNode }) {
+  // The menu owns its own scroll restoration (item details, category jumps), so
+  // the browser must not race us with its history restoration.
+  useEffect(() => {
+    if (!("scrollRestoration" in window.history)) return;
+    const previous = window.history.scrollRestoration;
+    window.history.scrollRestoration = "manual";
+    return () => {
+      window.history.scrollRestoration = previous;
+    };
+  }, []);
+
   return <div className="tr-scope bg-tr-cream">{children}</div>;
 }
 

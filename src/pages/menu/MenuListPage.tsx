@@ -143,6 +143,8 @@ export default function MenuListPage({ mode }: { mode: MenuMode }) {
       restore();
       requestAnimationFrame(restore);
     });
+    const t = window.setTimeout(restore, 80);
+    return () => window.clearTimeout(t);
   }, [openSlug]);
 
 
