@@ -1,49 +1,48 @@
-import { useEffect } from "react";
-
-let locks = 0;
-let savedY = 0;
-let lastRestore = { y: 0, at: 0 };
+import { useEffect, useId } from "react";
 
 /**
- * Locks the single page scroll container while a dialog is open, and restores
- * the exact scroll position on close. Reference counted, so nested sheets
- * (filter sheet opened over a drawer) never fight each other. The `lastRestore`
- * guard covers React's development double-invoked effects, where the relock
- * happens before the browser has applied the restored offset.
+ * Central scroll lock for every menu overlay (registration, disclaimer, filter
+ * sheet). The saved offset lives on the body's own inline style rather than in a
+ * module counter, so the state can never drift out of sync with the DOM: any
+ * overlay can lock, nested overlays share one lock, and the last one to close
+ * restores the exact original offset.
  */
+const owners = new Set<string>();
+
+function isLocked() {
+  return document.body.style.position === "fixed";
+}
+
 export function useScrollLock(active: boolean) {
+  const id = useId();
+
   useEffect(() => {
     if (!active) return;
 
-    if (locks === 0) {
-      const now = window.scrollY;
-      savedY =
-        now === 0 && Date.now() - lastRestore.at < 200 ? lastRestore.y : now;
+    if (!isLocked()) {
+      const y = window.scrollY;
       const body = document.body;
       body.style.position = "fixed";
-      body.style.top = `-${savedY}px`;
+      body.style.top = `-${y}px`;
       body.style.left = "0";
       body.style.right = "0";
       body.style.width = "100%";
       body.style.overflow = "hidden";
     }
-    console.log("LOCK+", locks, savedY, window.scrollY);
-    locks += 1;
+    owners.add(id);
 
     return () => {
-      locks -= 1;
-      if (locks === 0) {
-        const body = document.body;
-        body.style.position = "";
-        body.style.top = "";
-        body.style.left = "";
-        body.style.right = "";
-        body.style.width = "";
-        body.style.overflow = "";
-        console.log("LOCK-", savedY);
-        lastRestore = { y: savedY, at: Date.now() };
-        window.scrollTo({ top: savedY, behavior: "auto" });
-      }
+      owners.delete(id);
+      if (owners.size > 0 || !isLocked()) return;
+      const body = document.body;
+      const y = Math.abs(parseInt(body.style.top || "0", 10)) || 0;
+      body.style.position = "";
+      body.style.top = "";
+      body.style.left = "";
+      body.style.right = "";
+      body.style.width = "";
+      body.style.overflow = "";
+      window.scrollTo({ top: y, behavior: "auto" });
     };
-  }, [active]);
+  }, [active, id]);
 }
