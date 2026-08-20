@@ -1,46 +1,34 @@
+# Dashboard date range: real presets + custom dates
 
-# Cluster duplicate guests in the Guest Log
-
-Right now every consent record becomes its own row, so Amrit (same email + phone) shows up 4 separate times because he opened the app on Flight A, then B, then C, then C again. The drawer becomes noisy and the "Guests" tile inflates.
+Right now the filter bar only offers Today / 7 days / 30 days / All, and "Today" is actually the last 24 hours. There's no way to look at a specific month or a custom window, and even on "All" the guest list is capped at the 200 most recent rows (that's why the bar reads "200 in view · 856 total guests").
 
 ## What changes
 
-**Group by identity, not by row.** Identity key = normalized email → else normalized phone → else name+device. All consent records sharing that key collapse into one guest card in the drawer, and the "Guests" tile counts unique guests (with the raw row count as a subtitle).
+**Presets:** Today (calendar day, midnight to now), Yesterday, 7 days, 30 days, 90 days, This month, Last month, All time.
 
-## Guest card (grouped)
+**Custom range:** a "Custom" chip opens two date inputs (From / To). Picking dates filters everything — tiles, funnel, ratings, wines, guest log, drawers — and the chip shows the chosen window, e.g. `1 Jul – 19 Aug`. To-date includes the whole day. Invalid ranges (from after to) are rejected with a toast.
+
+**Range applies everywhere consistently:** the wine deep-dive drawer, guest log, recent events and all three CSV exports use the exact same window as the filter bar, including custom dates.
+
+**Row caps raised:** the guest log now pulls up to 2,000 consent rows instead of 200, so a 30-day or all-time view isn't silently truncated. The counter reads `X guests (Y visits) in view · Z total` and warns when the cap is hit ("showing latest 2,000 — narrow the range or use CSV for the full set").
+
+**Persistence:** the selected range (and custom dates) is remembered in the URL and on reload, so refreshing doesn't snap back to 7 days.
+
+## Layout
 
 ```text
-┌───────────────────────────────────────────────────┐
-│ Amrit                          7/17/26, 2:11 PM   │
-│ amrutpalsingh.sandhu@sulawines.com · 7722062357   │
-│ 4 visits · Flights A, B, C  · mobile              │
-│ [ Journey ▾ ]                        [🗑 delete]  │
-└───────────────────────────────────────────────────┘
+[⚲] Today  Yesterday  7d  30d  90d  This month  Last month  All  [ Custom: 1 Jul – 19 Aug ▾ ]
+    All flights ▾   All devices ▾        135 guests (200 visits) in view · 856 total
 ```
 
-- Header row shows name + the **latest** visit time.
-- Meta row shows email + phone (canonical).
-- Third row shows: `N visits · Flights X, Y · device(s)`.
-- **Journey** is a dropdown listing each individual visit (time + flight), each opening the existing per-session drawer. If there's only one visit, it acts as a single button.
-- **Delete** cascades: removes all consent rows for that identity and their tasting_events (email OR phone match), with a confirm "Delete Amrit and all 4 visits?".
-- Expanding the card (tap header) reveals the full visit list inline as an alternative to the dropdown.
+## Technical notes
 
-## Search & counters
-- Search matches against any visit under the identity (name/email/phone/flight from any row).
-- Tile "Guests" → **unique guests** number; subtitle: `X visits total`.
-- Drawer title → `Guest log · N guests (M visits)`.
-- Sort: most-recent visit first.
-
-## CSV export
-- Adds a `visits` column and a `flights` (comma-joined) column, one row per unique guest. A second link "CSV (raw visits)" keeps the current one-row-per-consent export for anyone who wants the full log.
-
-## Data / storage
-- Pure client-side grouping over the already-fetched `consent_logs` rows — no schema change, no new query.
-- Normalization: `email.trim().toLowerCase()`, phone reduced to digits only.
-
-## Files touched
-- `src/pages/AdminDashboard.tsx` — group logic in the guests drawer, update the Guests tile value/subtitle, update the guest card markup, add the CSV variants.
+- `src/pages/AdminDashboard.tsx`: replace the `DateRange` string union with a `{ preset, from?, to? }` range object; rewrite `rangeStartIso` into a `rangeBounds()` helper returning `{ startIso, endIso }`, and apply both `gte`/`lte` to every query (overview fetch, exports, wine drawer).
+- Consent overview `limit(200)` → `limit(2000)`; keep the exact head-count queries for the "total" figures.
+- Range state synced to the URL query string (`?range=30d` / `?from=…&to=…`).
+- No schema or backend change; all filtering stays in the existing queries.
 
 ## Out of scope
-- No change to how consent rows are written (each new visit still creates a row — that's needed to track return visits).
-- No change to session/wine drawers.
+
+- No change to the CRM export columns added last turn.
+- No change to how events are written.
