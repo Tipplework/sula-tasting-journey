@@ -922,7 +922,7 @@ function DrawerBody({
           <SheetTitle className="flex items-center justify-between gap-2">
             <span>Guest log · {groups.length} guests <span className="text-muted-foreground font-normal text-xs">({visitsTotal} visits)</span></span>
             <div className="flex items-center gap-1">
-              <button onClick={onExportGuests} className="btn-secondary !py-1 !px-2 text-xs flex items-center gap-1" title="One row per unique guest">
+              <button onClick={onExportGuests} className="btn-secondary !py-1 !px-2 text-xs flex items-center gap-1" title="Smart CRM export: one row per guest with wines loved / disliked, notes, Vivino clicks and segment">
                 <Download size={11} /> CSV
               </button>
               <button onClick={onExportVisits} className="btn-secondary !py-1 !px-2 text-[10px] flex items-center gap-1" title="One row per visit">
