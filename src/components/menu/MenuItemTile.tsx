@@ -46,7 +46,7 @@ export function MenuItemTile({
               src={item.imageUrl}
               alt={item.imageAlt ?? item.name}
               loading="lazy"
-              className="h-16 w-16 shrink-0 rounded-xl border border-tr-rule/50 object-cover"
+              className="h-20 w-16 shrink-0 rounded-xl border border-tr-rule/50 bg-tr-cover object-cover"
               style={{ objectPosition: item.imageFocalPoint ?? "center" }}
             />
           )}
