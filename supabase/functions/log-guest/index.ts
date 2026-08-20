@@ -70,8 +70,11 @@ Deno.serve(async (req) => {
   if (kind === "registration") {
     const fullName = str(o.fullName, 80);
     const mobile = str(o.mobile, 20);
+    const email = str(o.email, 200);
     if (!fullName || fullName.length < 2) return json({ error: "invalid_name" }, 400);
-    if (!mobile || !MOBILE_RE.test(mobile)) return json({ error: "invalid_mobile" }, 400);
+    if (!mobile && !email) return json({ error: "missing_contact" }, 400);
+    if (mobile && !MOBILE_RE.test(mobile)) return json({ error: "invalid_mobile" }, 400);
+    if (email && !EMAIL_RE.test(email)) return json({ error: "invalid_email" }, 400);
     const birthDay = num(o.birthDay);
     const birthMonth = num(o.birthMonth);
     if (birthDay !== null && (birthDay < 1 || birthDay > 31)) return json({ error: "invalid_birth_day" }, 400);
@@ -80,6 +83,7 @@ Deno.serve(async (req) => {
     const { error } = await supabase.from("menu_guest_registrations").insert({
       full_name: fullName,
       mobile,
+      email,
       birth_day: birthDay,
       birth_month: birthMonth,
       marketing_consent: o.marketingConsent === true,
