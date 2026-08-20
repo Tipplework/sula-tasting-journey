@@ -431,7 +431,7 @@ export default function AdminDashboard() {
   const load = useCallback(
     async (opts?: { showToast?: boolean }) => {
       setRefreshing(true);
-      const startIso = rangeStartIso(range);
+      const { startIso, endIso } = rangeBounds(range);
 
       let evtQ = supabase
         .from("tasting_events")
@@ -444,7 +444,7 @@ export default function AdminDashboard() {
         .from("consent_logs")
         .select("id,guest_name,flight_id,device_type,created_at,metadata")
         .order("created_at", { ascending: false })
-        .limit(200);
+        .limit(2000);
       let evtCountQ = supabase.from("tasting_events").select("id", { count: "exact", head: true });
       let consCountQ = supabase.from("consent_logs").select("id", { count: "exact", head: true });
       if (startIso) {
@@ -453,6 +453,13 @@ export default function AdminDashboard() {
         evtCountQ = evtCountQ.gte("created_at", startIso);
         consCountQ = consCountQ.gte("created_at", startIso);
       }
+      if (endIso) {
+        evtQ = evtQ.lte("created_at", endIso);
+        consQ = consQ.lte("created_at", endIso);
+        evtCountQ = evtCountQ.lte("created_at", endIso);
+        consCountQ = consCountQ.lte("created_at", endIso);
+      }
+
 
       const [evtRes, consRes, evtCount, consCount] = await Promise.all([evtQ, consQ, evtCountQ, consCountQ]);
 
