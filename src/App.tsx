@@ -17,6 +17,9 @@ import ContentEditor from "./pages/admin/ContentEditor";
 import HomepageEditor from "./pages/admin/HomepageEditor";
 import PrivacyCenter from "./pages/admin/PrivacyCenter";
 import WinesFlightsCenter from "./pages/admin/WinesFlightsCenter";
+import MenuManagement from "./pages/admin/menu/MenuManagement";
+import MenuData from "./pages/admin/menu/MenuData";
+
 import ContentViewer from "./pages/content/ContentViewer";
 import MenuLandingPage from "./pages/menu/MenuLandingPage";
 import MenuSelectPage from "./pages/menu/MenuSelectPage";
@@ -34,6 +37,10 @@ export default function App() {
         <Route path="/tasting" element={<TastingPage />} />
         <Route path="/results" element={<ResultsPage />} />
         <Route path="/admin" element={<AdminGate><AdminDashboard /></AdminGate>} />
+        {/* Tasting Room menu CMS — isolated from the Wine Flight admin */}
+        <Route path="/admin/menu" element={<AdminGate><MenuManagement /></AdminGate>} />
+        <Route path="/admin/menu/data" element={<AdminGate><MenuData /></AdminGate>} />
+
 
         {/* Sula Content Experience */}
         <Route path="/login" element={<LoginPage />} />
