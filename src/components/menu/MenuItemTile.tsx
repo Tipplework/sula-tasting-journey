@@ -41,6 +41,15 @@ export function MenuItemTile({
         className="tr-tile group w-full text-left"
       >
         <div className="flex items-start gap-3">
+          {item.imageUrl && (
+            <img
+              src={item.imageUrl}
+              alt={item.imageAlt ?? item.name}
+              loading="lazy"
+              className="h-16 w-16 shrink-0 rounded-xl border border-tr-rule/50 object-cover"
+              style={{ objectPosition: item.imageFocalPoint ?? "center" }}
+            />
+          )}
           <div className="min-w-0 flex-1">
             <div className="flex items-baseline gap-3">
               <h3 className="font-tr-display min-w-0 flex-1 text-[0.95rem] uppercase leading-snug tracking-[0.05em] text-tr-ink">
