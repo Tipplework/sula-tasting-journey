@@ -21,6 +21,13 @@ const CARDS = [
     art: glassVineyard,
   },
   {
+    to: MODE_META.food.path,
+    Icon: UtensilsCrossed,
+    title: "Food",
+    copy: MODE_META.food.kicker,
+    art: barrels,
+  },
+  {
     to: MODE_META.cocktails.path,
     Icon: Martini,
     title: "Cocktails",
@@ -33,13 +40,6 @@ const CARDS = [
     title: "Drinks",
     copy: MODE_META.drinks.kicker,
     art: grapeDivider,
-  },
-  {
-    to: MODE_META.food.path,
-    Icon: UtensilsCrossed,
-    title: "Food",
-    copy: MODE_META.food.kicker,
-    art: barrels,
   },
 ];
 

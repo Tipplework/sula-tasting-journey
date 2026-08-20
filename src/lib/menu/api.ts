@@ -164,7 +164,8 @@ export async function fetchMenu(): Promise<{
 
 export interface GuestRegistrationInput {
   fullName: string;
-  mobile: string;
+  mobile: string | null;
+  email: string | null;
   birthDay: number | null;
   birthMonth: number | null;
   marketingConsent: boolean;
@@ -196,6 +197,7 @@ export async function submitGuestRegistration(input: GuestRegistrationInput) {
       kind: "registration",
       fullName: input.fullName.trim(),
       mobile: input.mobile,
+      email: input.email,
       birthDay: input.birthDay,
       birthMonth: input.birthMonth,
       marketingConsent: input.marketingConsent,

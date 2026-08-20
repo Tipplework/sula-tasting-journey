@@ -64,7 +64,20 @@ export function categoriesForMode(
   categories: MenuCategoryView[],
   mode: MenuMode,
 ): MenuCategoryView[] {
-  if (mode === "all") return categories;
+  if (mode === "all") {
+    const familyRank = new Map(
+      SWITCHER_MODES.map((m, i) => [m, i] as const),
+    );
+    return [...categories].sort((a, b) => {
+      const fa = familyForSlug(a.slug, a.headingStyle);
+      const fb = familyForSlug(b.slug, b.headingStyle);
+      const byFamily =
+        (familyRank.get(fa) ?? 99) - (familyRank.get(fb) ?? 99);
+      if (byFamily !== 0) return byFamily;
+      const rank = ORDERS[fa];
+      return (rank.get(a.slug) ?? 99) - (rank.get(b.slug) ?? 99);
+    });
+  }
 
   const wanted = categories.filter(
     (c) => familyForSlug(c.slug, c.headingStyle) === mode,
@@ -116,7 +129,7 @@ export const MODE_META: Record<
 
 export const SWITCHER_MODES: Exclude<MenuMode, "all">[] = [
   "wine",
+  "food",
   "cocktails",
   "drinks",
-  "food",
 ];

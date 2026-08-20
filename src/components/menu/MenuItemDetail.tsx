@@ -114,13 +114,13 @@ export function MenuItemDetail({
 
         <div className="tr-detail-scroll min-h-0 flex-1 overflow-y-auto px-5 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
           {/* Future-ready image area: real photography drops straight in here. */}
-          <div className="relative aspect-[16/9] w-full overflow-hidden rounded-2xl border border-tr-rule/50 bg-tr-cover">
+          <div className="relative mx-auto aspect-[4/5] w-full max-h-[46svh] max-w-[320px] overflow-hidden rounded-2xl border border-tr-rule/50 bg-tr-cover sm:max-h-[52vh]">
             {item.imageUrl ? (
               <img
                 src={item.imageUrl}
                 alt={item.imageAlt ?? item.name}
                 loading="lazy"
-                className="h-full w-full object-cover"
+                className="h-full w-full object-cover object-center"
                 style={{ objectPosition: item.imageFocalPoint ?? "center" }}
               />
             ) : (
