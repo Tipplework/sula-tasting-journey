@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useRef } from "react";
 import { ChevronLeft, Search, SlidersHorizontal, X } from "lucide-react";
-import trLogo from "@/assets/menu/art-tr-logo.webp.asset.json";
+import trLogo from "@/assets/menu/art-tr-logo.webp";
 import { MODE_META, SWITCHER_MODES, type MenuMode } from "@/lib/menu/groups";
 
 export function MenuHeader({
@@ -84,7 +84,7 @@ export function MenuHeader({
         </button>
 
         <img
-          src={trLogo.url}
+          src={trLogo}
           alt="The Tasting Room at Sula Vineyards"
           className="h-8 w-auto"
         />

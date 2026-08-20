@@ -4,11 +4,11 @@ import { ArrowRight, Coffee, Martini, UtensilsCrossed, Wine } from "lucide-react
 import { MenuCanvas, useMenuMeta } from "./MenuCanvas";
 import { menuSession } from "@/lib/menu/session";
 import { prefetchMenu } from "@/lib/menu/useMenu";
-import trLogo from "@/assets/menu/art-tr-logo.webp.asset.json";
-import glassVineyard from "@/assets/menu/art-glass-vineyard.webp.asset.json";
-import barrels from "@/assets/menu/art-barrels.webp.asset.json";
-import swirl from "@/assets/menu/art-swirl.webp.asset.json";
-import grapeDivider from "@/assets/menu/art-grape-divider.webp.asset.json";
+import trLogo from "@/assets/menu/art-tr-logo.webp";
+import glassVineyard from "@/assets/menu/art-glass-vineyard.webp";
+import barrels from "@/assets/menu/art-barrels.webp";
+import swirl from "@/assets/menu/art-swirl.webp";
+import grapeDivider from "@/assets/menu/art-grape-divider.webp";
 import { MenuFooter } from "@/components/menu/MenuFooter";
 import { MODE_META } from "@/lib/menu/groups";
 
@@ -18,28 +18,28 @@ const CARDS = [
     Icon: Wine,
     title: "Wine",
     copy: MODE_META.wine.kicker,
-    art: glassVineyard.url,
+    art: glassVineyard,
   },
   {
     to: MODE_META.cocktails.path,
     Icon: Martini,
     title: "Cocktails",
     copy: MODE_META.cocktails.kicker,
-    art: swirl.url,
+    art: swirl,
   },
   {
     to: MODE_META.drinks.path,
     Icon: Coffee,
     title: "Drinks",
     copy: MODE_META.drinks.kicker,
-    art: grapeDivider.url,
+    art: grapeDivider,
   },
   {
     to: MODE_META.food.path,
     Icon: UtensilsCrossed,
     title: "Food",
     copy: MODE_META.food.kicker,
-    art: barrels.url,
+    art: barrels,
   },
 ];
 
@@ -60,7 +60,7 @@ export default function MenuSelectPage() {
       <div className="min-h-[100svh]">
         <header className="border-b border-tr-rule/50 bg-tr-cream/95 px-5 py-3.5">
           <img
-            src={trLogo.url}
+            src={trLogo}
             alt="The Tasting Room at Sula Vineyards"
             className="mx-auto h-9 w-auto"
           />
