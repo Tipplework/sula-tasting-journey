@@ -154,7 +154,65 @@ function groupGuests(rows: ConsentRow[]): GuestGroup[] {
 }
 
 
-function toCsv(rows: Record<string, unknown>[]): string {
+// ─── Guest wine preferences (from tasting_events) ─────────────────────
+interface GuestPrefs {
+  ratings: Map<string, number>;   // wine → latest rating
+  notes: Set<string>;             // tasting notes chosen in quizzes
+  vivino: Set<string>;            // wines whose Vivino link was clicked
+  nextPour: number;
+  personality: string;
+  completed: boolean;
+}
+
+function emptyPrefs(): GuestPrefs {
+  return { ratings: new Map(), notes: new Set(), vivino: new Set(), nextPour: 0, personality: "", completed: false };
+}
+
+/** Index tasting events by guest identity (email → phone → name). */
+function buildGuestPreferences(evs: TastingEventRow[]): Map<string, GuestPrefs> {
+  const out = new Map<string, GuestPrefs>();
+  const keysFor = (e: TastingEventRow): string[] => {
+    const k: string[] = [];
+    const email = normEmail(e.guest_email);
+    if (email) k.push(`e:${email}`);
+    const phone = normPhone(e.guest_phone);
+    if (phone) k.push(`p:${phone}`);
+    const name = (e.guest_name || "").trim().toLowerCase();
+    if (name) k.push(`n:${name}`);
+    return k;
+  };
+  // oldest → newest so latest rating wins
+  const ordered = [...evs].sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+  for (const e of ordered) {
+    for (const key of keysFor(e)) {
+      let p = out.get(key);
+      if (!p) { p = emptyPrefs(); out.set(key, p); }
+      if (e.event_type === "wine_rating" && e.wine_name && typeof e.rating === "number") {
+        p.ratings.set(e.wine_name, e.rating);
+      }
+      if (e.event_type === "wine_quiz" && Array.isArray(e.quiz_answer)) {
+        e.quiz_answer.forEach((n) => n && p!.notes.add(String(n)));
+      }
+      if (e.event_type === "vivino_click" && e.wine_name) p.vivino.add(e.wine_name);
+      if (e.event_type === "next_pour_click") p.nextPour += 1;
+      if (e.personality) p.personality = e.personality;
+      if (e.event_type === "tasting_complete") p.completed = true;
+    }
+  }
+  return out;
+}
+
+function crmSegment(x: { loved: number; disliked: number; avg: number; visits: number; completed: boolean }): string {
+  if (x.visits >= 3) return "Loyal returner";
+  if (x.loved >= 2 && x.avg >= 4) return "Enthusiast — club/case offer";
+  if (x.loved >= 1) return "Warm — recommend favourite";
+  if (x.disliked >= 2 && x.avg > 0 && x.avg < 3) return "Cool — try a different style";
+  if (x.completed) return "Completed tasting";
+  if (x.avg === 0) return "No ratings — re-engage";
+  return "Nurture";
+}
+
+
   if (!rows.length) return "";
   const headers = Object.keys(rows[0]);
   const escape = (v: unknown) => {
