@@ -508,10 +508,11 @@ export type Database = {
           birth_day: number | null
           birth_month: number | null
           created_at: string
+          email: string | null
           full_name: string
           id: string
           marketing_consent: boolean
-          mobile: string
+          mobile: string | null
           session_id: string | null
           source: string
           utm_campaign: string | null
@@ -523,10 +524,11 @@ export type Database = {
           birth_day?: number | null
           birth_month?: number | null
           created_at?: string
+          email?: string | null
           full_name: string
           id?: string
           marketing_consent?: boolean
-          mobile: string
+          mobile?: string | null
           session_id?: string | null
           source?: string
           utm_campaign?: string | null
@@ -538,10 +540,11 @@ export type Database = {
           birth_day?: number | null
           birth_month?: number | null
           created_at?: string
+          email?: string | null
           full_name?: string
           id?: string
           marketing_consent?: boolean
-          mobile?: string
+          mobile?: string | null
           session_id?: string | null
           source?: string
           utm_campaign?: string | null
