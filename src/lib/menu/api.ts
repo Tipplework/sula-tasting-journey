@@ -111,7 +111,7 @@ export async function fetchMenu(): Promise<{
       supabase
         .from("menu_items")
         .select(
-          "id, category_id, name, description, calories, standard_price, bottle_price, smaller_bottle_price, glass_price, pairing_text, unavailable, display_order, menu_item_dietary_tags(tag)",
+          "id, category_id, name, description, calories, standard_price, bottle_price, smaller_bottle_price, glass_price, pairing_text, unavailable, display_order, image_url, image_alt, menu_item_dietary_tags(tag)",
         )
         .order("display_order", { ascending: true }),
     ]);
@@ -137,10 +137,14 @@ export async function fetchMenu(): Promise<{
         tags: ((row.menu_item_dietary_tags ?? []) as { tag: DietaryTag }[]).map(
           (t) => t.tag,
         ),
-        imageUrl: foodImageFor(row.name, itemSlug(row.name)),
+        // An admin-uploaded photo always wins; otherwise the bundled
+        // photography keeps the menu instant and offline-safe.
+        imageUrl: row.image_url ?? foodImageFor(row.name, itemSlug(row.name)),
+        imageAlt: row.image_alt ?? null,
       });
       byCat.set(row.category_id, list);
     }
+
 
     const categories = cats
       .map((c) => ({
