@@ -55,7 +55,22 @@ interface ConsentRow {
   metadata: { email?: string | null; phone?: string | null } | null;
 }
 
-type DateRange = "today" | "7d" | "30d" | "all";
+type RangePreset =
+  | "today"
+  | "yesterday"
+  | "7d"
+  | "30d"
+  | "90d"
+  | "month"
+  | "lastMonth"
+  | "all"
+  | "custom";
+interface DateRange {
+  preset: RangePreset;
+  from?: string; // yyyy-mm-dd (custom only)
+  to?: string; // yyyy-mm-dd (custom only, inclusive)
+}
+
 type DrawerKind =
   | { kind: "guests" }
   | { kind: "events" }
@@ -71,14 +86,110 @@ type DrawerKind =
   | { kind: "wine"; wineName: string };
 
 // ─── Helpers ───────────────────────────────────────────────────────────
-function rangeStartIso(range: DateRange): string | null {
-  const day = 24 * 60 * 60 * 1000;
-  const now = Date.now();
-  if (range === "today") return new Date(now - day).toISOString();
-  if (range === "7d") return new Date(now - 7 * day).toISOString();
-  if (range === "30d") return new Date(now - 30 * day).toISOString();
-  return null;
+export const RANGE_PRESETS: { id: RangePreset; label: string }[] = [
+  { id: "today", label: "Today" },
+  { id: "yesterday", label: "Yesterday" },
+  { id: "7d", label: "7 days" },
+  { id: "30d", label: "30 days" },
+  { id: "90d", label: "90 days" },
+  { id: "month", label: "This month" },
+  { id: "lastMonth", label: "Last month" },
+  { id: "all", label: "All" },
+];
+
+function startOfDay(d: Date): Date {
+  const x = new Date(d);
+  x.setHours(0, 0, 0, 0);
+  return x;
 }
+
+function endOfDay(d: Date): Date {
+  const x = new Date(d);
+  x.setHours(23, 59, 59, 999);
+  return x;
+}
+
+/** Resolve a range into inclusive ISO bounds (null = unbounded). */
+function rangeBounds(range: DateRange): { startIso: string | null; endIso: string | null } {
+  const day = 24 * 60 * 60 * 1000;
+  const now = new Date();
+  switch (range.preset) {
+    case "today":
+      return { startIso: startOfDay(now).toISOString(), endIso: null };
+    case "yesterday": {
+      const y = new Date(now.getTime() - day);
+      return { startIso: startOfDay(y).toISOString(), endIso: endOfDay(y).toISOString() };
+    }
+    case "7d":
+      return { startIso: new Date(now.getTime() - 7 * day).toISOString(), endIso: null };
+    case "30d":
+      return { startIso: new Date(now.getTime() - 30 * day).toISOString(), endIso: null };
+    case "90d":
+      return { startIso: new Date(now.getTime() - 90 * day).toISOString(), endIso: null };
+    case "month":
+      return { startIso: new Date(now.getFullYear(), now.getMonth(), 1).toISOString(), endIso: null };
+    case "lastMonth":
+      return {
+        startIso: new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString(),
+        endIso: new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, -1).toISOString(),
+      };
+    case "custom": {
+      const from = range.from ? startOfDay(new Date(`${range.from}T00:00:00`)) : null;
+      const to = range.to ? endOfDay(new Date(`${range.to}T00:00:00`)) : null;
+      return {
+        startIso: from && !isNaN(from.getTime()) ? from.toISOString() : null,
+        endIso: to && !isNaN(to.getTime()) ? to.toISOString() : null,
+      };
+    }
+    default:
+      return { startIso: null, endIso: null };
+  }
+}
+
+function fmtDay(iso?: string): string {
+  if (!iso) return "…";
+  const d = new Date(`${iso}T00:00:00`);
+  return isNaN(d.getTime()) ? "…" : d.toLocaleDateString(undefined, { day: "numeric", month: "short" });
+}
+
+function rangeLabel(range: DateRange): string {
+  if (range.preset === "custom") return `${fmtDay(range.from)} – ${fmtDay(range.to)}`;
+  return RANGE_PRESETS.find((p) => p.id === range.preset)?.label || "All";
+}
+
+function rangeFromUrl(): DateRange {
+  try {
+    const p = new URLSearchParams(window.location.search);
+    const preset = p.get("range") as RangePreset | null;
+    const from = p.get("from") || undefined;
+    const to = p.get("to") || undefined;
+    if (preset === "custom" && (from || to)) return { preset: "custom", from, to };
+    if (preset && RANGE_PRESETS.some((x) => x.id === preset)) return { preset };
+  } catch {
+    /* ignore */
+  }
+  return { preset: "7d" };
+}
+
+function syncRangeToUrl(range: DateRange) {
+  try {
+    const url = new URL(window.location.href);
+    url.searchParams.set("range", range.preset);
+    if (range.preset === "custom") {
+      if (range.from) url.searchParams.set("from", range.from);
+      else url.searchParams.delete("from");
+      if (range.to) url.searchParams.set("to", range.to);
+      else url.searchParams.delete("to");
+    } else {
+      url.searchParams.delete("from");
+      url.searchParams.delete("to");
+    }
+    window.history.replaceState({}, "", url.toString());
+  } catch {
+    /* ignore */
+  }
+}
+
 
 function fmtMs(ms: number | null | undefined): string {
   if (!ms || ms < 0) return "—";
@@ -303,7 +414,12 @@ export default function AdminDashboard() {
   const [refreshing, setRefreshing] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
-  const [range, setRange] = useState<DateRange>("7d");
+  const [range, setRangeState] = useState<DateRange>(() => rangeFromUrl());
+  const setRange = useCallback((r: DateRange) => {
+    setRangeState(r);
+    syncRangeToUrl(r);
+  }, []);
+
   const [flightFilter, setFlightFilter] = useState<string>("all");
   const [deviceFilter, setDeviceFilter] = useState<string>("all");
   const [autoRefresh, setAutoRefresh] = useState(true);
@@ -315,7 +431,7 @@ export default function AdminDashboard() {
   const load = useCallback(
     async (opts?: { showToast?: boolean }) => {
       setRefreshing(true);
-      const startIso = rangeStartIso(range);
+      const { startIso, endIso } = rangeBounds(range);
 
       let evtQ = supabase
         .from("tasting_events")
@@ -328,7 +444,7 @@ export default function AdminDashboard() {
         .from("consent_logs")
         .select("id,guest_name,flight_id,device_type,created_at,metadata")
         .order("created_at", { ascending: false })
-        .limit(200);
+        .limit(2000);
       let evtCountQ = supabase.from("tasting_events").select("id", { count: "exact", head: true });
       let consCountQ = supabase.from("consent_logs").select("id", { count: "exact", head: true });
       if (startIso) {
@@ -337,6 +453,13 @@ export default function AdminDashboard() {
         evtCountQ = evtCountQ.gte("created_at", startIso);
         consCountQ = consCountQ.gte("created_at", startIso);
       }
+      if (endIso) {
+        evtQ = evtQ.lte("created_at", endIso);
+        consQ = consQ.lte("created_at", endIso);
+        evtCountQ = evtCountQ.lte("created_at", endIso);
+        consCountQ = consCountQ.lte("created_at", endIso);
+      }
+
 
       const [evtRes, consRes, evtCount, consCount] = await Promise.all([evtQ, consQ, evtCountQ, consCountQ]);
 
@@ -525,7 +648,7 @@ export default function AdminDashboard() {
 
   // ── Exports (paginated full pull) ────────────────────────────────────
   const fetchAllConsent = async (): Promise<ConsentRow[]> => {
-    const startIso = rangeStartIso(range);
+    const { startIso, endIso } = rangeBounds(range);
     const rows: ConsentRow[] = [];
     let from = 0;
     while (true) {
@@ -535,6 +658,7 @@ export default function AdminDashboard() {
         .order("created_at", { ascending: false })
         .range(from, from + 499);
       if (startIso) q = q.gte("created_at", startIso);
+      if (endIso) q = q.lte("created_at", endIso);
       const { data, error } = await q;
       if (error) { toast.error(error.message); return rows; }
       if (!data?.length) break;
@@ -546,7 +670,7 @@ export default function AdminDashboard() {
   };
 
   const fetchAllEvents = async (): Promise<TastingEventRow[]> => {
-    const startIso = rangeStartIso(range);
+    const { startIso, endIso } = rangeBounds(range);
     const rows: TastingEventRow[] = [];
     let from = 0;
     while (true) {
@@ -556,6 +680,7 @@ export default function AdminDashboard() {
         .order("created_at", { ascending: false })
         .range(from, from + 999);
       if (startIso) q = q.gte("created_at", startIso);
+      if (endIso) q = q.lte("created_at", endIso);
       const { data, error } = await q;
       if (error) { toast.error(error.message); return rows; }
       if (!data?.length) break;
@@ -638,7 +763,7 @@ export default function AdminDashboard() {
 
   const exportAllEvents = async () => {
     toast.info("Preparing full event export…");
-    const startIso = rangeStartIso(range);
+    const { startIso, endIso } = rangeBounds(range);
     const rows: TastingEventRow[] = [];
     let from = 0;
     while (true) {
@@ -648,6 +773,7 @@ export default function AdminDashboard() {
         .order("created_at", { ascending: false })
         .range(from, from + 999);
       if (startIso) q = q.gte("created_at", startIso);
+      if (endIso) q = q.lte("created_at", endIso);
       const { data, error } = await q;
       if (error) return toast.error(error.message);
       if (!data?.length) break;
@@ -728,19 +854,60 @@ export default function AdminDashboard() {
         {/* Sticky filter bar */}
         <div className="wine-card p-3 flex flex-wrap items-center gap-2 text-xs sticky top-2 z-10 backdrop-blur bg-background/85">
           <Filter size={14} className="text-muted-foreground" />
-          <div className="flex items-center gap-1">
-            {(["today", "7d", "30d", "all"] as DateRange[]).map((r) => (
+          <div className="flex flex-wrap items-center gap-1">
+            {RANGE_PRESETS.map((p) => (
               <button
-                key={r}
-                onClick={() => setRange(r)}
+                key={p.id}
+                onClick={() => setRange({ preset: p.id })}
                 className={`px-2.5 py-1 rounded-full border transition-colors ${
-                  range === r ? "bg-wine-gold text-foreground border-wine-gold" : "border-border hover:bg-muted"
+                  range.preset === p.id ? "bg-wine-gold text-foreground border-wine-gold" : "border-border hover:bg-muted"
                 }`}
               >
-                {r === "today" ? "Today" : r === "7d" ? "7 days" : r === "30d" ? "30 days" : "All"}
+                {p.label}
               </button>
             ))}
+            <button
+              onClick={() => {
+                const today = new Date().toISOString().slice(0, 10);
+                const monthAgo = new Date(Date.now() - 30 * 864e5).toISOString().slice(0, 10);
+                setRange({ preset: "custom", from: range.from || monthAgo, to: range.to || today });
+              }}
+              className={`px-2.5 py-1 rounded-full border transition-colors ${
+                range.preset === "custom" ? "bg-wine-gold text-foreground border-wine-gold" : "border-border hover:bg-muted"
+              }`}
+            >
+              {range.preset === "custom" ? `Custom: ${rangeLabel(range)}` : "Custom"}
+            </button>
           </div>
+
+          {range.preset === "custom" && (
+            <div className="flex items-center gap-1">
+              <input
+                type="date"
+                value={range.from || ""}
+                max={range.to || undefined}
+                onChange={(e) => {
+                  const from = e.target.value;
+                  if (range.to && from && from > range.to) return toast.error("From date must be before the To date");
+                  setRange({ ...range, preset: "custom", from });
+                }}
+                className="px-2 py-1 rounded border border-border bg-background"
+              />
+              <span className="text-muted-foreground">→</span>
+              <input
+                type="date"
+                value={range.to || ""}
+                min={range.from || undefined}
+                onChange={(e) => {
+                  const to = e.target.value;
+                  if (range.from && to && to < range.from) return toast.error("To date must be after the From date");
+                  setRange({ ...range, preset: "custom", to });
+                }}
+                className="px-2 py-1 rounded border border-border bg-background"
+              />
+            </div>
+          )}
+
           <select value={flightFilter} onChange={(e) => setFlightFilter(e.target.value)} className="px-2 py-1 rounded border border-border bg-background">
             <option value="all">All flights</option>
             {stats.allFlights.map((f) => <option key={f} value={f}>Flight {f}</option>)}
@@ -750,8 +917,12 @@ export default function AdminDashboard() {
             {stats.allDevices.map((d) => <option key={d} value={d}>{d}</option>)}
           </select>
           <span className="ml-auto text-muted-foreground">
-            {filtered.consent.length} in view · {totals.guests} total guests
+            {guestGroups.length} guests ({filtered.consent.length} visits) in view · {totals.guests} total
+            {consent.length >= 2000 && (
+              <span className="ml-1 text-wine-gold" title="Narrow the range or use CSV for the full set">· showing latest 2,000</span>
+            )}
           </span>
+
         </div>
 
         {loading ? (
@@ -1287,8 +1458,9 @@ function WineDrawer({ wineName, range }: { wineName: string; range: DateRange })
         .eq("wine_name", wineName)
         .order("created_at", { ascending: false })
         .limit(2000);
-      const startIso = rangeStartIso(range);
+      const { startIso, endIso } = rangeBounds(range);
       if (startIso) q = q.gte("created_at", startIso);
+      if (endIso) q = q.lte("created_at", endIso);
       const { data, error } = await q;
       if (error) toast.error(error.message);
       setRows((data as TastingEventRow[]) || []);
