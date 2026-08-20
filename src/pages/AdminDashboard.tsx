@@ -488,7 +488,7 @@ export default function AdminDashboard() {
       setLoading(false);
       setRefreshing(false);
       setLastUpdated(new Date());
-      if (opts?.showToast && !evtRes.error && !consRes.error) toast.success("Dashboard refreshed");
+      if (opts?.showToast) toast.success("Dashboard refreshed");
     },
     [range]
   );
