@@ -4,6 +4,7 @@ import {
   type DietaryTag,
   type SeedCategory,
 } from "@/data/tasting-room-menu";
+import { foodImageFor } from "./food-images";
 
 export const VENUE_SLUG = "tasting-room";
 
@@ -78,6 +79,7 @@ function fromSeed(categories: SeedCategory[]): MenuCategoryView[] {
       pairing: i.pairing ?? null,
       unavailable: false,
       tags: i.tags ?? [],
+      imageUrl: foodImageFor(i.name, itemSlug(i.name)),
     })),
   }));
 }
@@ -135,6 +137,7 @@ export async function fetchMenu(): Promise<{
         tags: ((row.menu_item_dietary_tags ?? []) as { tag: DietaryTag }[]).map(
           (t) => t.tag,
         ),
+        imageUrl: foodImageFor(row.name, itemSlug(row.name)),
       });
       byCat.set(row.category_id, list);
     }
