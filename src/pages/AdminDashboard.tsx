@@ -1469,19 +1469,30 @@ function WineDrawer({ wineName, range }: { wineName: string; range: DateRange })
   const [rows, setRows] = useState<TastingEventRow[] | null>(null);
   useEffect(() => {
     void (async () => {
-      let q = supabase
-        .from("tasting_events")
-        .select("id,session_id,event_type,rating,quiz_answer,duration_ms,created_at,wine_name")
-        .eq("wine_name", wineName)
-        .order("created_at", { ascending: false })
-        .limit(2000);
       const { startIso, endIso } = rangeBounds(range);
-      if (startIso) q = q.gte("created_at", startIso);
-      if (endIso) q = q.lte("created_at", endIso);
-      const { data, error } = await q;
-      if (error) toast.error(error.message);
-      setRows((data as TastingEventRow[]) || []);
+      const PAGE = 1000;
+      const out: TastingEventRow[] = [];
+      for (let from = 0; from < 5000; from += PAGE) {
+        let q = supabase
+          .from("tasting_events")
+          .select("id,session_id,event_type,rating,quiz_answer,duration_ms,created_at,wine_name")
+          .eq("wine_name", wineName)
+          .order("created_at", { ascending: false })
+          .range(from, from + PAGE - 1);
+        if (startIso) q = q.gte("created_at", startIso);
+        if (endIso) q = q.lte("created_at", endIso);
+        const { data, error } = await q;
+        if (error) {
+          toast.error(error.message);
+          break;
+        }
+        const page = (data as TastingEventRow[]) || [];
+        out.push(...page);
+        if (page.length < PAGE) break;
+      }
+      setRows(out);
     })();
+  }, [wineName, range]);
   }, [wineName, range]);
 
   if (!rows) return <p className="text-xs text-muted-foreground mt-4">Loading…</p>;
