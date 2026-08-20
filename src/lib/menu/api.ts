@@ -186,18 +186,27 @@ export async function submitGuestRegistration(input: GuestRegistrationInput) {
       ? new URLSearchParams()
       : new URLSearchParams(window.location.search);
 
-  const { error } = await supabase.from("menu_guest_registrations").insert({
-    full_name: input.fullName.trim(),
-    mobile: input.mobile,
-    birth_day: input.birthDay,
-    birth_month: input.birthMonth,
-    marketing_consent: input.marketingConsent,
-    venue_slug: VENUE_SLUG,
-    source: "qr_digital_menu",
-    utm_source: params.get("utm_source"),
-    utm_medium: params.get("utm_medium"),
-    utm_campaign: params.get("utm_campaign"),
-    session_id: sessionId(),
+  // PII is written server-side (validated + rate limited) — never inserted
+  // straight into the table from the browser.
+  const { data, error } = await supabase.functions.invoke("log-guest", {
+    body: {
+      kind: "registration",
+      fullName: input.fullName.trim(),
+      mobile: input.mobile,
+      birthDay: input.birthDay,
+      birthMonth: input.birthMonth,
+      marketingConsent: input.marketingConsent,
+      venueSlug: VENUE_SLUG,
+      source: "qr_digital_menu",
+      utmSource: params.get("utm_source"),
+      utmMedium: params.get("utm_medium"),
+      utmCampaign: params.get("utm_campaign"),
+      sessionId: sessionId(),
+    },
   });
   if (error) throw error;
+  if (data && typeof data === "object" && "error" in (data as Record<string, unknown>)) {
+    throw new Error(String((data as Record<string, unknown>).error));
+  }
 }
+
