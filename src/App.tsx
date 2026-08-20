@@ -34,6 +34,10 @@ export default function App() {
         <Route path="/tasting" element={<TastingPage />} />
         <Route path="/results" element={<ResultsPage />} />
         <Route path="/admin" element={<AdminGate><AdminDashboard /></AdminGate>} />
+        {/* Tasting Room menu CMS — isolated from the Wine Flight admin */}
+        <Route path="/admin/menu" element={<AdminGate><MenuManagement /></AdminGate>} />
+        <Route path="/admin/menu/data" element={<AdminGate><MenuData /></AdminGate>} />
+
 
         {/* Sula Content Experience */}
         <Route path="/login" element={<LoginPage />} />
