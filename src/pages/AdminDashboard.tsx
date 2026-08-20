@@ -154,8 +154,67 @@ function groupGuests(rows: ConsentRow[]): GuestGroup[] {
 }
 
 
+// ─── Guest wine preferences (from tasting_events) ─────────────────────
+interface GuestPrefs {
+  ratings: Map<string, number>;   // wine → latest rating
+  notes: Set<string>;             // tasting notes chosen in quizzes
+  vivino: Set<string>;            // wines whose Vivino link was clicked
+  nextPour: number;
+  personality: string;
+  completed: boolean;
+}
+
+function emptyPrefs(): GuestPrefs {
+  return { ratings: new Map(), notes: new Set(), vivino: new Set(), nextPour: 0, personality: "", completed: false };
+}
+
+/** Index tasting events by guest identity (email → phone → name). */
+function buildGuestPreferences(evs: TastingEventRow[]): Map<string, GuestPrefs> {
+  const out = new Map<string, GuestPrefs>();
+  const keysFor = (e: TastingEventRow): string[] => {
+    const k: string[] = [];
+    const email = normEmail(e.guest_email);
+    if (email) k.push(`e:${email}`);
+    const phone = normPhone(e.guest_phone);
+    if (phone) k.push(`p:${phone}`);
+    const name = (e.guest_name || "").trim().toLowerCase();
+    if (name) k.push(`n:${name}`);
+    return k;
+  };
+  // oldest → newest so latest rating wins
+  const ordered = [...evs].sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+  for (const e of ordered) {
+    for (const key of keysFor(e)) {
+      let p = out.get(key);
+      if (!p) { p = emptyPrefs(); out.set(key, p); }
+      if (e.event_type === "wine_rating" && e.wine_name && typeof e.rating === "number") {
+        p.ratings.set(e.wine_name, e.rating);
+      }
+      if (e.event_type === "wine_quiz" && Array.isArray(e.quiz_answer)) {
+        e.quiz_answer.forEach((n) => n && p!.notes.add(String(n)));
+      }
+      if (e.event_type === "vivino_click" && e.wine_name) p.vivino.add(e.wine_name);
+      if (e.event_type === "next_pour_click") p.nextPour += 1;
+      if (e.personality) p.personality = e.personality;
+      if (e.event_type === "tasting_complete") p.completed = true;
+    }
+  }
+  return out;
+}
+
+function crmSegment(x: { loved: number; disliked: number; avg: number; visits: number; completed: boolean }): string {
+  if (x.visits >= 3) return "Loyal returner";
+  if (x.loved >= 2 && x.avg >= 4) return "Enthusiast — club/case offer";
+  if (x.loved >= 1) return "Warm — recommend favourite";
+  if (x.disliked >= 2 && x.avg > 0 && x.avg < 3) return "Cool — try a different style";
+  if (x.completed) return "Completed tasting";
+  if (x.avg === 0) return "No ratings — re-engage";
+  return "Nurture";
+}
+
 function toCsv(rows: Record<string, unknown>[]): string {
   if (!rows.length) return "";
+
   const headers = Object.keys(rows[0]);
   const escape = (v: unknown) => {
     if (v == null) return "";
@@ -486,24 +545,78 @@ export default function AdminDashboard() {
     return rows;
   };
 
-  // Grouped export — one row per unique guest
-  const exportAllGuests = async () => {
-    toast.info("Preparing guest export…");
-    const rows = await fetchAllConsent();
-    const groups = groupGuests(rows);
-    const csv = toCsv(
-      groups.map((g) => ({
-        latest_visit: new Date(g.latestAt).toISOString(),
-        name: g.name,
-        email: g.email,
-        phone: g.phone,
-        visits: g.visits.length,
-        flights: g.flights.join("|"),
-        devices: g.devices.join("|"),
-      }))
-    );
-    download(`sula-guests-${new Date().toISOString().slice(0, 10)}.csv`, csv);
+  const fetchAllEvents = async (): Promise<TastingEventRow[]> => {
+    const startIso = rangeStartIso(range);
+    const rows: TastingEventRow[] = [];
+    let from = 0;
+    while (true) {
+      let q = supabase
+        .from("tasting_events")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .range(from, from + 999);
+      if (startIso) q = q.gte("created_at", startIso);
+      const { data, error } = await q;
+      if (error) { toast.error(error.message); return rows; }
+      if (!data?.length) break;
+      rows.push(...(data as TastingEventRow[]));
+      if (data.length < 1000) break;
+      from += 1000;
+    }
+    return rows;
   };
+
+  // Smart CRM export — one row per unique guest with wine preferences
+  const exportAllGuests = async () => {
+    toast.info("Preparing guest CRM export…");
+    const [rows, evs] = await Promise.all([fetchAllConsent(), fetchAllEvents()]);
+    const groups = groupGuests(rows);
+    const prefs = buildGuestPreferences(evs);
+    const csv = toCsv(
+      groups.map((g) => {
+        const p =
+          prefs.get(`e:${normEmail(g.email)}`) ||
+          prefs.get(`p:${normPhone(g.phone)}`) ||
+          prefs.get(`n:${g.name.trim().toLowerCase()}`) ||
+          emptyPrefs();
+        const rated = Array.from(p.ratings.entries()).sort((a, b) => b[1] - a[1]);
+        const loved = rated.filter(([, r]) => r >= 4);
+        const liked = rated.filter(([, r]) => r === 3);
+        const disliked = rated.filter(([, r]) => r > 0 && r <= 2);
+        const avg = rated.length ? rated.reduce((a, b) => a + b[1], 0) / rated.length : 0;
+        const vivino = Array.from(p.vivino);
+        return {
+          name: g.name,
+          email: g.email,
+          phone: g.phone,
+          latest_visit: new Date(g.latestAt).toISOString(),
+          first_visit: new Date(g.visits[g.visits.length - 1]?.created_at || g.latestAt).toISOString(),
+          visits: g.visits.length,
+          flights: g.flights.join(" | "),
+          devices: g.devices.join(" | "),
+          personality: p.personality || "",
+          wines_rated: rated.length,
+          avg_rating: rated.length ? avg.toFixed(2) : "",
+          top_wine: rated[0]?.[0] || "",
+          top_rating: rated[0]?.[1] ?? "",
+          loved_wines: loved.map(([w, r]) => `${w} (${r})`).join(" | "),
+          neutral_wines: liked.map(([w, r]) => `${w} (${r})`).join(" | "),
+          disliked_wines: disliked.map(([w, r]) => `${w} (${r})`).join(" | "),
+          all_ratings: rated.map(([w, r]) => `${w}=${r}`).join(" | "),
+          tasting_notes_chosen: Array.from(p.notes).join(" | "),
+          vivino_clicks: vivino.length,
+          vivino_wines: vivino.join(" | "),
+          next_pour_clicks: p.nextPour,
+          completed_tasting: p.completed ? "yes" : "no",
+          segment: crmSegment({ loved: loved.length, disliked: disliked.length, avg, visits: g.visits.length, completed: p.completed }),
+          recommend_next: loved[0]?.[0] || rated[0]?.[0] || "",
+          marketing_contactable: g.email || g.phone ? "yes" : "no",
+        };
+      })
+    );
+    download(`sula-guest-crm-${new Date().toISOString().slice(0, 10)}.csv`, csv);
+  };
+
 
   // Raw one-row-per-visit export
   const exportAllVisits = async () => {
@@ -809,7 +922,7 @@ function DrawerBody({
           <SheetTitle className="flex items-center justify-between gap-2">
             <span>Guest log · {groups.length} guests <span className="text-muted-foreground font-normal text-xs">({visitsTotal} visits)</span></span>
             <div className="flex items-center gap-1">
-              <button onClick={onExportGuests} className="btn-secondary !py-1 !px-2 text-xs flex items-center gap-1" title="One row per unique guest">
+              <button onClick={onExportGuests} className="btn-secondary !py-1 !px-2 text-xs flex items-center gap-1" title="Smart CRM export: one row per guest with wines loved / disliked, notes, Vivino clicks and segment">
                 <Download size={11} /> CSV
               </button>
               <button onClick={onExportVisits} className="btn-secondary !py-1 !px-2 text-[10px] flex items-center gap-1" title="One row per visit">
