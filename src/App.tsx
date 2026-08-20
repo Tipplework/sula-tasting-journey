@@ -17,6 +17,9 @@ import ContentEditor from "./pages/admin/ContentEditor";
 import HomepageEditor from "./pages/admin/HomepageEditor";
 import PrivacyCenter from "./pages/admin/PrivacyCenter";
 import WinesFlightsCenter from "./pages/admin/WinesFlightsCenter";
+import MenuManagement from "./pages/admin/menu/MenuManagement";
+import MenuData from "./pages/admin/menu/MenuData";
+
 import ContentViewer from "./pages/content/ContentViewer";
 import MenuLandingPage from "./pages/menu/MenuLandingPage";
 import MenuSelectPage from "./pages/menu/MenuSelectPage";
