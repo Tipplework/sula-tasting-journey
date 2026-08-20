@@ -7,6 +7,7 @@ export interface LogConsentInput {
   flightId: string | null;
   consentVersion: string;
   privacyVersion: string;
+  source?: string;
 }
 
 function deviceType(): string {
@@ -46,7 +47,7 @@ export async function logConsent(input: LogConsentInput): Promise<void> {
     deviceType: deviceType(),
     sessionId: sessionId(),
     userAgent: navigator.userAgent || null,
-    source: "web",
+    source: input.source || "web",
     metadata: {
       email: input.guestEmail || null,
       phone: input.guestPhone || null,

@@ -2,6 +2,9 @@ import { useState } from "react";
 import { submitGuestRegistration } from "@/lib/menu/api";
 import { toast } from "sonner";
 import { useScrollLock } from "@/hooks/use-scroll-lock";
+import { MenuPrivacyNotice } from "./MenuPrivacyNotice";
+import { logConsent } from "@/lib/consent/log";
+import { CURRENT_PRIVACY_VERSION } from "@/store/tasting-store";
 
 const MONTHS = [
   "January", "February", "March", "April", "May", "June",
@@ -22,6 +25,8 @@ export function RegistrationModal({ onDone }: { onDone: () => void }) {
   const [day, setDay] = useState("");
   const [month, setMonth] = useState("");
   const [consent, setConsent] = useState(false);
+  const [privacyAccepted, setPrivacyAccepted] = useState(false);
+  const [privacyOpen, setPrivacyOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -38,6 +43,8 @@ export function RegistrationModal({ onDone }: { onDone: () => void }) {
     if (mail && !EMAIL_RE.test(mail)) next.email = "Enter a valid email address.";
     if ((day && !month) || (!day && month))
       next.birthday = "Please choose both a day and a month, or leave both blank.";
+    if (!privacyAccepted)
+      next.privacy = "Please accept the Privacy Notice to continue.";
     setErrors(next);
     if (Object.keys(next).length) return;
 
@@ -50,6 +57,15 @@ export function RegistrationModal({ onDone }: { onDone: () => void }) {
         birthDay: day ? Number(day) : null,
         birthMonth: month ? Number(month) : null,
         marketingConsent: consent,
+      });
+      void logConsent({
+        guestName: name,
+        guestEmail: mail || undefined,
+        guestPhone: mobile.trim() ? `+91${digits}` : undefined,
+        flightId: null,
+        consentVersion: CURRENT_PRIVACY_VERSION,
+        privacyVersion: CURRENT_PRIVACY_VERSION,
+        source: "qr_digital_menu",
       });
       toast.success("Thank you — enjoy your tasting.");
       onDone();
@@ -198,6 +214,37 @@ export function RegistrationModal({ onDone }: { onDone: () => void }) {
               )}
             </div>
 
+            <div className="pt-1">
+              <label className="flex items-start gap-2.5">
+                <input
+                  type="checkbox"
+                  checked={privacyAccepted}
+                  onChange={(e) => setPrivacyAccepted(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 shrink-0 accent-tr-gold-deep"
+                />
+                <span className="font-tr-body text-[0.74rem] leading-relaxed text-tr-body">
+                  I agree to Sula Vineyards processing my information to
+                  personalise this tasting experience in accordance with the{" "}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setPrivacyOpen(true);
+                    }}
+                    className="underline text-tr-ink"
+                  >
+                    Privacy Notice
+                  </button>
+                  .
+                </span>
+              </label>
+              {errors.privacy && (
+                <p className="font-tr-body mt-1 text-[0.72rem] text-tr-red">
+                  {errors.privacy}
+                </p>
+              )}
+            </div>
+
             <label className="flex items-start gap-2.5 pt-1">
               <input
                 type="checkbox"
@@ -216,7 +263,7 @@ export function RegistrationModal({ onDone }: { onDone: () => void }) {
         <div className="px-6 pb-7">
           <button
             type="button"
-            disabled={busy}
+            disabled={busy || !privacyAccepted}
             onClick={submit}
             className="font-tr-display min-h-13 w-full rounded-full bg-tr-black py-4 text-[0.74rem] uppercase tracking-[0.2em] text-tr-cream disabled:opacity-60"
           >
@@ -227,6 +274,7 @@ export function RegistrationModal({ onDone }: { onDone: () => void }) {
           </p>
         </div>
       </div>
+      {privacyOpen && <MenuPrivacyNotice onClose={() => setPrivacyOpen(false)} />}
     </div>
   );
 }
