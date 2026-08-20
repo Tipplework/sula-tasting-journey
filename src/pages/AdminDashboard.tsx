@@ -414,7 +414,12 @@ export default function AdminDashboard() {
   const [refreshing, setRefreshing] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
-  const [range, setRange] = useState<DateRange>("7d");
+  const [range, setRangeState] = useState<DateRange>(() => rangeFromUrl());
+  const setRange = useCallback((r: DateRange) => {
+    setRangeState(r);
+    syncRangeToUrl(r);
+  }, []);
+
   const [flightFilter, setFlightFilter] = useState<string>("all");
   const [deviceFilter, setDeviceFilter] = useState<string>("all");
   const [autoRefresh, setAutoRefresh] = useState(true);
