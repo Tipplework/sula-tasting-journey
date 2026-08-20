@@ -433,45 +433,62 @@ export default function AdminDashboard() {
       setRefreshing(true);
       const { startIso, endIso } = rangeBounds(range);
 
-      let evtQ = supabase
-        .from("tasting_events")
-        .select(
-          "id,session_id,guest_name,guest_email,guest_phone,flight_id,wine_id,wine_name,event_type,rating,quiz_answer,personality,duration_ms,step_index,metadata,created_at"
-        )
-        .order("created_at", { ascending: false })
-        .limit(2000);
-      let consQ = supabase
-        .from("consent_logs")
-        .select("id,guest_name,flight_id,device_type,created_at,metadata")
-        .order("created_at", { ascending: false })
-        .limit(2000);
+      // PostgREST caps a single response at 1000 rows, so page through the
+      // window instead of relying on .limit() — otherwise wide ranges are
+      // silently truncated and every tile is computed on partial data.
+      const PAGE = 1000;
+      const MAX = 6000;
+      const pull = async <T,>(table: "tasting_events" | "consent_logs", cols: string): Promise<T[]> => {
+        const out: T[] = [];
+        for (let from = 0; from < MAX; from += PAGE) {
+          let q = supabase
+            .from(table)
+            .select(cols)
+            .order("created_at", { ascending: false })
+            .range(from, from + PAGE - 1);
+          if (startIso) q = q.gte("created_at", startIso);
+          if (endIso) q = q.lte("created_at", endIso);
+          const { data, error } = await q;
+          if (error) {
+            toast.error(error.message);
+            break;
+          }
+          const rows = (data as unknown as T[]) || [];
+          out.push(...rows);
+          if (rows.length < PAGE) break;
+        }
+        return out;
+      };
+
       let evtCountQ = supabase.from("tasting_events").select("id", { count: "exact", head: true });
       let consCountQ = supabase.from("consent_logs").select("id", { count: "exact", head: true });
       if (startIso) {
-        evtQ = evtQ.gte("created_at", startIso);
-        consQ = consQ.gte("created_at", startIso);
         evtCountQ = evtCountQ.gte("created_at", startIso);
         consCountQ = consCountQ.gte("created_at", startIso);
       }
       if (endIso) {
-        evtQ = evtQ.lte("created_at", endIso);
-        consQ = consQ.lte("created_at", endIso);
         evtCountQ = evtCountQ.lte("created_at", endIso);
         consCountQ = consCountQ.lte("created_at", endIso);
       }
 
+      const [evtRows, consRows, evtCount, consCount] = await Promise.all([
+        pull<TastingEventRow>(
+          "tasting_events",
+          "id,session_id,guest_name,guest_email,guest_phone,flight_id,wine_id,wine_name,event_type,rating,quiz_answer,personality,duration_ms,step_index,metadata,created_at"
+        ),
+        pull<ConsentRow>("consent_logs", "id,guest_name,flight_id,device_type,created_at,metadata"),
+        evtCountQ,
+        consCountQ,
+      ]);
 
-      const [evtRes, consRes, evtCount, consCount] = await Promise.all([evtQ, consQ, evtCountQ, consCountQ]);
-
-      if (evtRes.error) toast.error(evtRes.error.message);
-      if (consRes.error) toast.error(consRes.error.message);
-      setEvents((evtRes.data as TastingEventRow[]) || []);
-      setConsent((consRes.data as ConsentRow[]) || []);
+      setEvents(evtRows);
+      setConsent(consRows);
       setTotals({ guests: consCount.count ?? 0, events: evtCount.count ?? 0 });
+
       setLoading(false);
       setRefreshing(false);
       setLastUpdated(new Date());
-      if (opts?.showToast && !evtRes.error && !consRes.error) toast.success("Dashboard refreshed");
+      if (opts?.showToast) toast.success("Dashboard refreshed");
     },
     [range]
   );
@@ -1452,18 +1469,28 @@ function WineDrawer({ wineName, range }: { wineName: string; range: DateRange })
   const [rows, setRows] = useState<TastingEventRow[] | null>(null);
   useEffect(() => {
     void (async () => {
-      let q = supabase
-        .from("tasting_events")
-        .select("id,session_id,event_type,rating,quiz_answer,duration_ms,created_at,wine_name")
-        .eq("wine_name", wineName)
-        .order("created_at", { ascending: false })
-        .limit(2000);
       const { startIso, endIso } = rangeBounds(range);
-      if (startIso) q = q.gte("created_at", startIso);
-      if (endIso) q = q.lte("created_at", endIso);
-      const { data, error } = await q;
-      if (error) toast.error(error.message);
-      setRows((data as TastingEventRow[]) || []);
+      const PAGE = 1000;
+      const out: TastingEventRow[] = [];
+      for (let from = 0; from < 5000; from += PAGE) {
+        let q = supabase
+          .from("tasting_events")
+          .select("id,session_id,event_type,rating,quiz_answer,duration_ms,created_at,wine_name")
+          .eq("wine_name", wineName)
+          .order("created_at", { ascending: false })
+          .range(from, from + PAGE - 1);
+        if (startIso) q = q.gte("created_at", startIso);
+        if (endIso) q = q.lte("created_at", endIso);
+        const { data, error } = await q;
+        if (error) {
+          toast.error(error.message);
+          break;
+        }
+        const page = (data as TastingEventRow[]) || [];
+        out.push(...page);
+        if (page.length < PAGE) break;
+      }
+      setRows(out);
     })();
   }, [wineName, range]);
 
