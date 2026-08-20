@@ -8,15 +8,17 @@ const MONTHS = [
   "July", "August", "September", "October", "November", "December",
 ];
 
-/** Entirely optional — a guest can always skip straight through to the menu. */
-export function RegistrationModal({
-  onDone,
-}: {
-  onDone: (registered: boolean) => void;
-}) {
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/**
+ * Mandatory guest capture — the menu opens only once a name and at least one
+ * contact (mobile or email) have been saved. There is no skip.
+ */
+export function RegistrationModal({ onDone }: { onDone: () => void }) {
   useScrollLock(true);
   const [fullName, setFullName] = useState("");
   const [mobile, setMobile] = useState("");
+  const [email, setEmail] = useState("");
   const [day, setDay] = useState("");
   const [month, setMonth] = useState("");
   const [consent, setConsent] = useState(false);
@@ -26,10 +28,14 @@ export function RegistrationModal({
   const submit = async () => {
     const next: Record<string, string> = {};
     const name = fullName.trim();
+    const mail = email.trim();
     const digits = mobile.replace(/\D/g, "").slice(-10);
     if (name.length < 2) next.fullName = "Please enter your name.";
-    if (!/^[6-9]\d{9}$/.test(digits))
+    if (!mobile.trim() && !mail)
+      next.contact = "Please add a mobile number or an email address.";
+    if (mobile.trim() && !/^[6-9]\d{9}$/.test(digits))
       next.mobile = "Enter a 10-digit Indian mobile number.";
+    if (mail && !EMAIL_RE.test(mail)) next.email = "Enter a valid email address.";
     if ((day && !month) || (!day && month))
       next.birthday = "Please choose both a day and a month, or leave both blank.";
     setErrors(next);
@@ -39,16 +45,16 @@ export function RegistrationModal({
     try {
       await submitGuestRegistration({
         fullName: name,
-        mobile: `+91${digits}`,
+        mobile: mobile.trim() ? `+91${digits}` : null,
+        email: mail || null,
         birthDay: day ? Number(day) : null,
         birthMonth: month ? Number(month) : null,
         marketingConsent: consent,
       });
       toast.success("Thank you — enjoy your tasting.");
-      onDone(true);
+      onDone();
     } catch {
-      toast.error("We couldn't save that. Please continue to the menu.");
-      onDone(false);
+      toast.error("We couldn't save that. Please check your details and try again.");
     } finally {
       setBusy(false);
     }
@@ -76,8 +82,8 @@ export function RegistrationModal({
             Welcome
           </h2>
           <p className="font-tr-body mt-1.5 text-[0.82rem] leading-relaxed text-tr-body">
-            Leave your details for tasting invitations and harvest news — or skip
-            straight to the menu.
+            Please leave your details to view the menu — we'll also send you
+            tasting invitations and harvest news.
           </p>
         </div>
 
@@ -92,6 +98,7 @@ export function RegistrationModal({
                 className={field}
                 value={fullName}
                 autoComplete="name"
+                maxLength={80}
                 onChange={(e) => setFullName(e.target.value)}
                 placeholder="Your name"
               />
@@ -125,6 +132,34 @@ export function RegistrationModal({
                 </p>
               )}
             </div>
+
+            <div>
+              <label className={label} htmlFor="tr-email">
+                Email address
+              </label>
+              <input
+                id="tr-email"
+                className={field}
+                value={email}
+                type="email"
+                inputMode="email"
+                autoComplete="email"
+                maxLength={200}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
+              />
+              {errors.email && (
+                <p className="font-tr-body mt-1 text-[0.72rem] text-tr-red">
+                  {errors.email}
+                </p>
+              )}
+            </div>
+
+            {errors.contact && (
+              <p className="font-tr-body text-[0.72rem] text-tr-red">
+                {errors.contact}
+              </p>
+            )}
 
             <div>
               <span className={label}>Date of birth (optional)</span>
@@ -185,15 +220,11 @@ export function RegistrationModal({
             onClick={submit}
             className="font-tr-display min-h-13 w-full rounded-full bg-tr-black py-4 text-[0.74rem] uppercase tracking-[0.2em] text-tr-cream disabled:opacity-60"
           >
-            {busy ? "Saving…" : "Register & Continue"}
+            {busy ? "Saving…" : "Continue to Menu"}
           </button>
-          <button
-            type="button"
-            onClick={() => onDone(false)}
-            className="font-tr-display mt-2.5 min-h-12 w-full rounded-full border border-tr-rule py-3.5 text-[0.72rem] uppercase tracking-[0.2em] text-tr-body"
-          >
-            Skip to Menu
-          </button>
+          <p className="font-tr-body mt-3 text-center text-[0.68rem] text-tr-body/70">
+            Your details stay with Sula Vineyards.
+          </p>
         </div>
       </div>
     </div>
