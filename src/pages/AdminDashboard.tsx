@@ -86,14 +86,110 @@ type DrawerKind =
   | { kind: "wine"; wineName: string };
 
 // ─── Helpers ───────────────────────────────────────────────────────────
-function rangeStartIso(range: DateRange): string | null {
-  const day = 24 * 60 * 60 * 1000;
-  const now = Date.now();
-  if (range === "today") return new Date(now - day).toISOString();
-  if (range === "7d") return new Date(now - 7 * day).toISOString();
-  if (range === "30d") return new Date(now - 30 * day).toISOString();
-  return null;
+export const RANGE_PRESETS: { id: RangePreset; label: string }[] = [
+  { id: "today", label: "Today" },
+  { id: "yesterday", label: "Yesterday" },
+  { id: "7d", label: "7 days" },
+  { id: "30d", label: "30 days" },
+  { id: "90d", label: "90 days" },
+  { id: "month", label: "This month" },
+  { id: "lastMonth", label: "Last month" },
+  { id: "all", label: "All" },
+];
+
+function startOfDay(d: Date): Date {
+  const x = new Date(d);
+  x.setHours(0, 0, 0, 0);
+  return x;
 }
+
+function endOfDay(d: Date): Date {
+  const x = new Date(d);
+  x.setHours(23, 59, 59, 999);
+  return x;
+}
+
+/** Resolve a range into inclusive ISO bounds (null = unbounded). */
+function rangeBounds(range: DateRange): { startIso: string | null; endIso: string | null } {
+  const day = 24 * 60 * 60 * 1000;
+  const now = new Date();
+  switch (range.preset) {
+    case "today":
+      return { startIso: startOfDay(now).toISOString(), endIso: null };
+    case "yesterday": {
+      const y = new Date(now.getTime() - day);
+      return { startIso: startOfDay(y).toISOString(), endIso: endOfDay(y).toISOString() };
+    }
+    case "7d":
+      return { startIso: new Date(now.getTime() - 7 * day).toISOString(), endIso: null };
+    case "30d":
+      return { startIso: new Date(now.getTime() - 30 * day).toISOString(), endIso: null };
+    case "90d":
+      return { startIso: new Date(now.getTime() - 90 * day).toISOString(), endIso: null };
+    case "month":
+      return { startIso: new Date(now.getFullYear(), now.getMonth(), 1).toISOString(), endIso: null };
+    case "lastMonth":
+      return {
+        startIso: new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString(),
+        endIso: new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, -1).toISOString(),
+      };
+    case "custom": {
+      const from = range.from ? startOfDay(new Date(`${range.from}T00:00:00`)) : null;
+      const to = range.to ? endOfDay(new Date(`${range.to}T00:00:00`)) : null;
+      return {
+        startIso: from && !isNaN(from.getTime()) ? from.toISOString() : null,
+        endIso: to && !isNaN(to.getTime()) ? to.toISOString() : null,
+      };
+    }
+    default:
+      return { startIso: null, endIso: null };
+  }
+}
+
+function fmtDay(iso?: string): string {
+  if (!iso) return "…";
+  const d = new Date(`${iso}T00:00:00`);
+  return isNaN(d.getTime()) ? "…" : d.toLocaleDateString(undefined, { day: "numeric", month: "short" });
+}
+
+function rangeLabel(range: DateRange): string {
+  if (range.preset === "custom") return `${fmtDay(range.from)} – ${fmtDay(range.to)}`;
+  return RANGE_PRESETS.find((p) => p.id === range.preset)?.label || "All";
+}
+
+function rangeFromUrl(): DateRange {
+  try {
+    const p = new URLSearchParams(window.location.search);
+    const preset = p.get("range") as RangePreset | null;
+    const from = p.get("from") || undefined;
+    const to = p.get("to") || undefined;
+    if (preset === "custom" && (from || to)) return { preset: "custom", from, to };
+    if (preset && RANGE_PRESETS.some((x) => x.id === preset)) return { preset };
+  } catch {
+    /* ignore */
+  }
+  return { preset: "7d" };
+}
+
+function syncRangeToUrl(range: DateRange) {
+  try {
+    const url = new URL(window.location.href);
+    url.searchParams.set("range", range.preset);
+    if (range.preset === "custom") {
+      if (range.from) url.searchParams.set("from", range.from);
+      else url.searchParams.delete("from");
+      if (range.to) url.searchParams.set("to", range.to);
+      else url.searchParams.delete("to");
+    } else {
+      url.searchParams.delete("from");
+      url.searchParams.delete("to");
+    }
+    window.history.replaceState({}, "", url.toString());
+  } catch {
+    /* ignore */
+  }
+}
+
 
 function fmtMs(ms: number | null | undefined): string {
   if (!ms || ms < 0) return "—";
