@@ -854,19 +854,60 @@ export default function AdminDashboard() {
         {/* Sticky filter bar */}
         <div className="wine-card p-3 flex flex-wrap items-center gap-2 text-xs sticky top-2 z-10 backdrop-blur bg-background/85">
           <Filter size={14} className="text-muted-foreground" />
-          <div className="flex items-center gap-1">
-            {(["today", "7d", "30d", "all"] as DateRange[]).map((r) => (
+          <div className="flex flex-wrap items-center gap-1">
+            {RANGE_PRESETS.map((p) => (
               <button
-                key={r}
-                onClick={() => setRange(r)}
+                key={p.id}
+                onClick={() => setRange({ preset: p.id })}
                 className={`px-2.5 py-1 rounded-full border transition-colors ${
-                  range === r ? "bg-wine-gold text-foreground border-wine-gold" : "border-border hover:bg-muted"
+                  range.preset === p.id ? "bg-wine-gold text-foreground border-wine-gold" : "border-border hover:bg-muted"
                 }`}
               >
-                {r === "today" ? "Today" : r === "7d" ? "7 days" : r === "30d" ? "30 days" : "All"}
+                {p.label}
               </button>
             ))}
+            <button
+              onClick={() => {
+                const today = new Date().toISOString().slice(0, 10);
+                const monthAgo = new Date(Date.now() - 30 * 864e5).toISOString().slice(0, 10);
+                setRange({ preset: "custom", from: range.from || monthAgo, to: range.to || today });
+              }}
+              className={`px-2.5 py-1 rounded-full border transition-colors ${
+                range.preset === "custom" ? "bg-wine-gold text-foreground border-wine-gold" : "border-border hover:bg-muted"
+              }`}
+            >
+              {range.preset === "custom" ? `Custom: ${rangeLabel(range)}` : "Custom"}
+            </button>
           </div>
+
+          {range.preset === "custom" && (
+            <div className="flex items-center gap-1">
+              <input
+                type="date"
+                value={range.from || ""}
+                max={range.to || undefined}
+                onChange={(e) => {
+                  const from = e.target.value;
+                  if (range.to && from && from > range.to) return toast.error("From date must be before the To date");
+                  setRange({ ...range, preset: "custom", from });
+                }}
+                className="px-2 py-1 rounded border border-border bg-background"
+              />
+              <span className="text-muted-foreground">→</span>
+              <input
+                type="date"
+                value={range.to || ""}
+                min={range.from || undefined}
+                onChange={(e) => {
+                  const to = e.target.value;
+                  if (range.from && to && to < range.from) return toast.error("To date must be after the From date");
+                  setRange({ ...range, preset: "custom", to });
+                }}
+                className="px-2 py-1 rounded border border-border bg-background"
+              />
+            </div>
+          )}
+
           <select value={flightFilter} onChange={(e) => setFlightFilter(e.target.value)} className="px-2 py-1 rounded border border-border bg-background">
             <option value="all">All flights</option>
             {stats.allFlights.map((f) => <option key={f} value={f}>Flight {f}</option>)}
@@ -876,8 +917,12 @@ export default function AdminDashboard() {
             {stats.allDevices.map((d) => <option key={d} value={d}>{d}</option>)}
           </select>
           <span className="ml-auto text-muted-foreground">
-            {filtered.consent.length} in view · {totals.guests} total guests
+            {guestGroups.length} guests ({filtered.consent.length} visits) in view · {totals.guests} total
+            {consent.length >= 2000 && (
+              <span className="ml-1 text-wine-gold" title="Narrow the range or use CSV for the full set">· showing latest 2,000</span>
+            )}
           </span>
+
         </div>
 
         {loading ? (
