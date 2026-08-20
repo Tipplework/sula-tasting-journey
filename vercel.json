@@ -1,10 +1,6 @@
 {
   "rewrites": [
     { "source": "/c/:slug", "destination": "/api/c?slug=:slug" },
-    {
-      "source": "/__l5e/:path*",
-      "destination": "https://sula-sip-discover.lovable.app/__l5e/:path*"
-    },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

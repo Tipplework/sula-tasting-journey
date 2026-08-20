@@ -1,22 +1,22 @@
 import type { DietaryTag } from "@/data/tasting-room-menu";
 import { DIETARY_LABELS } from "@/data/tasting-room-menu";
-import icVeg from "@/assets/menu/ic-veg.webp.asset.json";
-import icNonVeg from "@/assets/menu/ic-nonveg.webp.asset.json";
-import icSeafood from "@/assets/menu/ic-seafood.webp.asset.json";
-import icGlutenFree from "@/assets/menu/ic-glutenfree.webp.asset.json";
-import icDairy from "@/assets/menu/ic-dairy.webp.asset.json";
-import icVegan from "@/assets/menu/ic-vegan.webp.asset.json";
-import icNuts from "@/assets/menu/ic-nuts.webp.asset.json";
+import icVeg from "@/assets/menu/ic-veg.webp";
+import icNonVeg from "@/assets/menu/ic-nonveg.webp";
+import icSeafood from "@/assets/menu/ic-seafood.webp";
+import icGlutenFree from "@/assets/menu/ic-glutenfree.webp";
+import icDairy from "@/assets/menu/ic-dairy.webp";
+import icVegan from "@/assets/menu/ic-vegan.webp";
+import icNuts from "@/assets/menu/ic-nuts.webp";
 
 /** Exact approved markers lifted from the printed menu artwork. */
 export const DIETARY_ICONS: Record<DietaryTag, string> = {
-  vegetarian: icVeg.url,
-  non_vegetarian: icNonVeg.url,
-  seafood: icSeafood.url,
-  gluten_free: icGlutenFree.url,
-  contains_dairy: icDairy.url,
-  vegan: icVegan.url,
-  contains_nuts: icNuts.url,
+  vegetarian: icVeg,
+  non_vegetarian: icNonVeg,
+  seafood: icSeafood,
+  gluten_free: icGlutenFree,
+  contains_dairy: icDairy,
+  vegan: icVegan,
+  contains_nuts: icNuts,
 };
 
 export const DIETARY_ORDER: DietaryTag[] = [

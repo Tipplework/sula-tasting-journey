@@ -1,4 +1,4 @@
-import sulaLogo from "@/assets/menu/art-sula-logo.webp.asset.json";
+import sulaLogo from "@/assets/menu/art-sula-logo.webp";
 import { DietaryLegend } from "./DietaryLegend";
 import { MENU_FOOTNOTES } from "@/data/tasting-room-menu";
 
@@ -29,7 +29,7 @@ export function MenuFooter() {
             </p>
           </div>
           <img
-            src={sulaLogo.url}
+            src={sulaLogo}
             alt="Sula Vineyards"
             loading="lazy"
             className="h-8 w-auto"

@@ -6,16 +6,16 @@ import type { MenuItemView } from "@/lib/menu/api";
 import type { MenuMode } from "@/lib/menu/groups";
 import { useScrollLock } from "@/hooks/use-scroll-lock";
 import { money, POUR_LABELS } from "./MenuItemTile";
-import artBottle from "@/assets/menu/art-bottle.webp.asset.json";
-import artSwirl from "@/assets/menu/art-swirl.webp.asset.json";
-import artGrape from "@/assets/menu/art-grape-divider.webp.asset.json";
-import artBarrels from "@/assets/menu/art-barrels.webp.asset.json";
+import artBottle from "@/assets/menu/art-bottle.webp";
+import artSwirl from "@/assets/menu/art-swirl.webp";
+import artGrape from "@/assets/menu/art-grape-divider.webp";
+import artBarrels from "@/assets/menu/art-barrels.webp";
 
 const PLACEHOLDER_ART: Record<string, string> = {
-  wine: artBottle.url,
-  cocktails: artSwirl.url,
-  drinks: artGrape.url,
-  food: artBarrels.url,
+  wine: artBottle,
+  cocktails: artSwirl,
+  drinks: artGrape,
+  food: artBarrels,
 };
 
 /** Only ever renders fields that carry approved data. */
@@ -126,7 +126,7 @@ export function MenuItemDetail({
             ) : (
               <>
                 <img
-                  src={PLACEHOLDER_ART[family] ?? artSwirl.url}
+                  src={PLACEHOLDER_ART[family] ?? artSwirl}
                   alt=""
                   aria-hidden="true"
                   loading="lazy"

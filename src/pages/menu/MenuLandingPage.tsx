@@ -5,10 +5,10 @@ import { RegistrationModal } from "@/components/menu/RegistrationModal";
 import { DisclaimerModal } from "@/components/menu/DisclaimerModal";
 import { menuSession } from "@/lib/menu/session";
 import { prefetchMenu } from "@/lib/menu/useMenu";
-import trLogo from "@/assets/menu/art-tr-logo.webp.asset.json";
-import coverPour from "@/assets/menu/art-cover-pour.webp.asset.json";
-import coverSwirl from "@/assets/menu/art-cover-swirl.webp.asset.json";
-import hills from "@/assets/menu/art-hills.webp.asset.json";
+import trLogo from "@/assets/menu/art-tr-logo.webp";
+import coverPour from "@/assets/menu/art-cover-pour.webp";
+import coverSwirl from "@/assets/menu/art-cover-swirl.webp";
+import hills from "@/assets/menu/art-hills.webp";
 
 type Step = "landing" | "register" | "disclaimer";
 
@@ -34,13 +34,13 @@ export default function MenuLandingPage() {
     <MenuCanvas>
       <div className="relative flex min-h-[100svh] flex-col overflow-hidden bg-tr-cover">
         <img
-          src={coverSwirl.url}
+          src={coverSwirl}
           alt=""
           aria-hidden="true"
           className="pointer-events-none absolute -left-14 -top-6 w-[46%] max-w-[280px] opacity-70"
         />
         <img
-          src={coverPour.url}
+          src={coverPour}
           alt=""
           aria-hidden="true"
           className="pointer-events-none absolute -right-10 top-4 w-[42%] max-w-[260px] opacity-95"
@@ -50,7 +50,7 @@ export default function MenuLandingPage() {
           className="pointer-events-none absolute bottom-0 left-0 w-full"
         >
           <img
-            src={hills.url}
+            src={hills}
             alt=""
             loading="lazy"
             className="w-full opacity-60"
@@ -60,7 +60,7 @@ export default function MenuLandingPage() {
 
         <div className="relative mx-auto flex w-full max-w-md flex-1 flex-col items-center px-7 pb-9 pt-[13vh] text-center">
           <img
-            src={trLogo.url}
+            src={trLogo}
             alt="The Tasting Room at Sula Vineyards"
             className="w-[48%] max-w-[190px]"
           />
