@@ -55,7 +55,22 @@ interface ConsentRow {
   metadata: { email?: string | null; phone?: string | null } | null;
 }
 
-type DateRange = "today" | "7d" | "30d" | "all";
+type RangePreset =
+  | "today"
+  | "yesterday"
+  | "7d"
+  | "30d"
+  | "90d"
+  | "month"
+  | "lastMonth"
+  | "all"
+  | "custom";
+interface DateRange {
+  preset: RangePreset;
+  from?: string; // yyyy-mm-dd (custom only)
+  to?: string; // yyyy-mm-dd (custom only, inclusive)
+}
+
 type DrawerKind =
   | { kind: "guests" }
   | { kind: "events" }
