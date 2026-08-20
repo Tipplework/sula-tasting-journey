@@ -648,7 +648,7 @@ export default function AdminDashboard() {
 
   // ── Exports (paginated full pull) ────────────────────────────────────
   const fetchAllConsent = async (): Promise<ConsentRow[]> => {
-    const startIso = rangeStartIso(range);
+    const { startIso, endIso } = rangeBounds(range);
     const rows: ConsentRow[] = [];
     let from = 0;
     while (true) {
@@ -658,6 +658,7 @@ export default function AdminDashboard() {
         .order("created_at", { ascending: false })
         .range(from, from + 499);
       if (startIso) q = q.gte("created_at", startIso);
+      if (endIso) q = q.lte("created_at", endIso);
       const { data, error } = await q;
       if (error) { toast.error(error.message); return rows; }
       if (!data?.length) break;
@@ -669,7 +670,7 @@ export default function AdminDashboard() {
   };
 
   const fetchAllEvents = async (): Promise<TastingEventRow[]> => {
-    const startIso = rangeStartIso(range);
+    const { startIso, endIso } = rangeBounds(range);
     const rows: TastingEventRow[] = [];
     let from = 0;
     while (true) {
@@ -679,6 +680,7 @@ export default function AdminDashboard() {
         .order("created_at", { ascending: false })
         .range(from, from + 999);
       if (startIso) q = q.gte("created_at", startIso);
+      if (endIso) q = q.lte("created_at", endIso);
       const { data, error } = await q;
       if (error) { toast.error(error.message); return rows; }
       if (!data?.length) break;
@@ -761,7 +763,7 @@ export default function AdminDashboard() {
 
   const exportAllEvents = async () => {
     toast.info("Preparing full event export…");
-    const startIso = rangeStartIso(range);
+    const { startIso, endIso } = rangeBounds(range);
     const rows: TastingEventRow[] = [];
     let from = 0;
     while (true) {
@@ -771,6 +773,7 @@ export default function AdminDashboard() {
         .order("created_at", { ascending: false })
         .range(from, from + 999);
       if (startIso) q = q.gte("created_at", startIso);
+      if (endIso) q = q.lte("created_at", endIso);
       const { data, error } = await q;
       if (error) return toast.error(error.message);
       if (!data?.length) break;
@@ -1410,8 +1413,9 @@ function WineDrawer({ wineName, range }: { wineName: string; range: DateRange })
         .eq("wine_name", wineName)
         .order("created_at", { ascending: false })
         .limit(2000);
-      const startIso = rangeStartIso(range);
+      const { startIso, endIso } = rangeBounds(range);
       if (startIso) q = q.gte("created_at", startIso);
+      if (endIso) q = q.lte("created_at", endIso);
       const { data, error } = await q;
       if (error) toast.error(error.message);
       setRows((data as TastingEventRow[]) || []);
