@@ -129,7 +129,7 @@ export const MODE_META: Record<
 
 export const SWITCHER_MODES: Exclude<MenuMode, "all">[] = [
   "wine",
+  "food",
   "cocktails",
   "drinks",
-  "food",
 ];
