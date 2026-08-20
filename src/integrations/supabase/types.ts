@@ -594,6 +594,9 @@ export type Database = {
           display_order: number
           glass_price: number | null
           id: string
+          image_alt: string | null
+          image_path: string | null
+          image_url: string | null
           name: string
           pairing_text: string | null
           publish_at: string | null
@@ -612,6 +615,9 @@ export type Database = {
           display_order?: number
           glass_price?: number | null
           id?: string
+          image_alt?: string | null
+          image_path?: string | null
+          image_url?: string | null
           name: string
           pairing_text?: string | null
           publish_at?: string | null
@@ -630,6 +636,9 @@ export type Database = {
           display_order?: number
           glass_price?: number | null
           id?: string
+          image_alt?: string | null
+          image_path?: string | null
+          image_url?: string | null
           name?: string
           pairing_text?: string | null
           publish_at?: string | null
