@@ -212,8 +212,9 @@ function crmSegment(x: { loved: number; disliked: number; avg: number; visits: n
   return "Nurture";
 }
 
-
+function toCsv(rows: Record<string, unknown>[]): string {
   if (!rows.length) return "";
+
   const headers = Object.keys(rows[0]);
   const escape = (v: unknown) => {
     if (v == null) return "";
