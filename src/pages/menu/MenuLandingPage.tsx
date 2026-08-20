@@ -44,7 +44,7 @@ export default function MenuLandingPage() {
           src={glassVineyard}
           alt=""
           aria-hidden="true"
-          className="pointer-events-none absolute inset-x-0 bottom-[7%] mx-auto w-[80%] max-w-[420px] opacity-95"
+          className="pointer-events-none absolute inset-x-0 bottom-[16%] mx-auto w-[92%] max-w-[460px] opacity-95"
         />
         <div
           aria-hidden="true"
@@ -72,7 +72,7 @@ export default function MenuLandingPage() {
             className="mt-2 block h-[3px] w-20 rounded-full bg-tr-gold"
           />
 
-          <div className="mt-auto w-full pt-[40vh]">
+          <div className="mt-auto w-full pt-[46vh]">
             <p className="font-tr-display mb-2 text-[0.62rem] uppercase tracking-[0.28em] text-tr-ink/60">
               Nashik · Maharashtra · Est. 1999
             </p>
