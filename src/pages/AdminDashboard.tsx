@@ -1493,7 +1493,6 @@ function WineDrawer({ wineName, range }: { wineName: string; range: DateRange })
       setRows(out);
     })();
   }, [wineName, range]);
-  }, [wineName, range]);
 
   if (!rows) return <p className="text-xs text-muted-foreground mt-4">Loading…</p>;
   const ratings = rows.filter((r) => r.event_type === "wine_rating" && r.rating);
