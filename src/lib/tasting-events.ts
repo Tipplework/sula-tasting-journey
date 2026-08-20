@@ -94,11 +94,39 @@ export function logTastingEvent(input: TastingEventInput): void {
       }
     }
 
+    const hasPii = Boolean(input.guestName || input.guestEmail || input.guestPhone);
+
+    if (hasPii) {
+      // Guest PII goes through the validated, rate-limited edge function.
+      void supabase.functions
+        .invoke("log-guest", {
+          body: {
+            kind: "tasting_event",
+            sessionId: sid,
+            eventType: input.eventType,
+            guestName: input.guestName ?? null,
+            guestEmail: input.guestEmail ?? null,
+            guestPhone: input.guestPhone ?? null,
+            flightId: input.flightId ?? null,
+            wineId: input.wineId ?? null,
+            wineName: input.wineName ?? null,
+            rating: typeof input.rating === "number" ? input.rating : null,
+            quizAnswer: input.quizAnswer ?? null,
+            personality: input.personality ?? null,
+            durationMs: typeof input.durationMs === "number" ? input.durationMs : null,
+            stepIndex: typeof input.stepIndex === "number" ? input.stepIndex : null,
+            metadata: meta,
+          },
+        })
+        .then(() => undefined, () => undefined);
+      return;
+    }
+
     const row = {
       session_id: sid,
-      guest_name: input.guestName ?? null,
-      guest_email: input.guestEmail ?? null,
-      guest_phone: input.guestPhone ?? null,
+      guest_name: null,
+      guest_email: null,
+      guest_phone: null,
       flight_id: input.flightId ?? null,
       wine_id: input.wineId ?? null,
       wine_name: input.wineName ?? null,
@@ -115,4 +143,5 @@ export function logTastingEvent(input: TastingEventInput): void {
     /* ignore */
   }
 }
+
 
