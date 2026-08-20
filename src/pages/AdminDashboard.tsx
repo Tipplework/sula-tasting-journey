@@ -862,7 +862,9 @@ export default function AdminDashboard() {
               <RefreshCw size={12} className={refreshing ? "animate-spin" : ""} />
               {refreshing ? "Refreshing…" : "Refresh"}
             </button>
+            <a href="/admin/menu" className="btn-secondary !py-2 !px-3 text-xs">Tasting Room menu</a>
             <button onClick={signOut} className="btn-secondary !py-2 !px-3 text-xs">Sign out</button>
+
           </div>
         </div>
 
