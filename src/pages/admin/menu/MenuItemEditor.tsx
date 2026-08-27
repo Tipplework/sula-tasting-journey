@@ -21,7 +21,10 @@ import {
   saveItem,
   uploadItemImage,
 } from "@/lib/admin/menu/api";
+import { foodImageFor } from "@/lib/menu/food-images";
+import { itemSlug } from "@/lib/menu/api";
 import type { DietaryTag } from "@/data/tasting-room-menu";
+
 
 const TAG_LABELS: Record<DietaryTag, string> = {
   vegetarian: "Vegetarian",
