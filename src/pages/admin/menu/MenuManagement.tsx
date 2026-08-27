@@ -22,8 +22,7 @@ import {
   updateCategory,
 } from "@/lib/admin/menu/api";
 import MenuItemEditor from "./MenuItemEditor";
-import { foodImageFor } from "@/lib/menu/food-images";
-import { itemSlug } from "@/lib/menu/api";
+import { resolveMenuItemImage } from "@/lib/menu/food-images";
 
 
 export default function MenuManagement() {
@@ -224,8 +223,7 @@ export default function MenuManagement() {
 
               <ul className="space-y-2">
                 {currentItems.map((item, idx) => {
-                  const builtInImage = foodImageFor(item.name, itemSlug(item.name));
-                  const itemImage = item.image_url?.trim() || builtInImage;
+                  const itemImage = resolveMenuItemImage(item.name, item.image_url);
 
                   return (
                     <li
@@ -253,11 +251,6 @@ export default function MenuManagement() {
                         src={itemImage}
                         alt={item.image_alt ?? item.name}
                         loading="lazy"
-                        onError={(event) => {
-                          if (builtInImage && event.currentTarget.src !== builtInImage) {
-                            event.currentTarget.src = builtInImage;
-                          }
-                        }}
                         className="h-14 w-12 rounded object-cover"
                       />
                     ) : (
