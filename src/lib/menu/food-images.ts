@@ -57,10 +57,8 @@ export function foodImageFor(name: string, slug: string): string | null {
 }
 
 /**
- * The original menu seed stored temporary remote asset URLs in image_url.
- * Prefer the bundled photograph for known dishes so the admin and guest menu
- * stay independent of expired or deployment-specific URLs. Uploaded CMS
- * photos remain authoritative for dishes without a bundled photograph.
+ * Admin-uploaded CMS photos are authoritative. Bundled photographs are only
+ * the fallback for dishes that do not yet have a saved image URL.
  */
 export function resolveMenuItemImage(
   name: string,
@@ -71,5 +69,5 @@ export function resolveMenuItemImage(
     .replace(/&/g, "and")
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
-  return FOOD_IMAGES[slug] ?? imageUrl?.trim() ?? null;
+  return imageUrl?.trim() || FOOD_IMAGES[slug] || null;
 }
