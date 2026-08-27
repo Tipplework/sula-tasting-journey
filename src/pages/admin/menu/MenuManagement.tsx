@@ -244,9 +244,9 @@ export default function MenuManagement() {
                         ▼
                       </button>
                     </div>
-                    {item.image_url ? (
+                    {(item.image_url ?? foodImageFor(item.name, itemSlug(item.name))) ? (
                       <img
-                        src={item.image_url}
+                        src={item.image_url ?? foodImageFor(item.name, itemSlug(item.name))!}
                         alt={item.image_alt ?? item.name}
                         loading="lazy"
                         className="h-14 w-12 rounded object-cover"
@@ -254,6 +254,7 @@ export default function MenuManagement() {
                     ) : (
                       <div className="h-14 w-12 rounded bg-muted" />
                     )}
+
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium">
                         <span className={item.active ? "" : "line-through opacity-60"}>
