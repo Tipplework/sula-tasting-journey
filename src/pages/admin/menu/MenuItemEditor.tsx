@@ -71,7 +71,8 @@ export default function MenuItemEditor({
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
-  const previewUrl = imageUrl ?? foodImageFor(name, itemSlug(name));
+  const builtInImage = foodImageFor(name, itemSlug(name));
+  const previewUrl = imageUrl?.trim() || builtInImage;
 
 
   async function pickImage(file: File) {
@@ -245,9 +246,14 @@ export default function MenuItemEditor({
                 <img
                   src={previewUrl}
                   alt={imageAlt || name}
+                  onError={(event) => {
+                    if (builtInImage && event.currentTarget.src !== builtInImage) {
+                      event.currentTarget.src = builtInImage;
+                    }
+                  }}
                   className="aspect-[4/5] w-32 rounded-md object-cover"
                 />
-                {imageUrl && (
+                {Boolean(imageUrl?.trim()) && (
                   <button
                     type="button"
                     onClick={() => {
@@ -260,7 +266,7 @@ export default function MenuItemEditor({
                     <X className="h-3.5 w-3.5" />
                   </button>
                 )}
-                {!imageUrl && (
+                {!imageUrl?.trim() && (
                   <p className="mt-1 text-[10px] uppercase tracking-wide text-muted-foreground">
                     Built-in photo
                   </p>
@@ -295,7 +301,7 @@ export default function MenuItemEditor({
               ) : (
                 <Upload className="mr-1.5 h-4 w-4" />
               )}
-              {imageUrl ? "Replace photo" : "Upload photo"}
+              {imageUrl?.trim() ? "Replace photo" : "Upload photo"}
             </Button>
             <Input
               value={imageAlt}
