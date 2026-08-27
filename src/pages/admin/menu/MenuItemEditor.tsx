@@ -21,7 +21,10 @@ import {
   saveItem,
   uploadItemImage,
 } from "@/lib/admin/menu/api";
+import { foodImageFor } from "@/lib/menu/food-images";
+import { itemSlug } from "@/lib/menu/api";
 import type { DietaryTag } from "@/data/tasting-room-menu";
+
 
 const TAG_LABELS: Record<DietaryTag, string> = {
   vegetarian: "Vegetarian",
@@ -68,6 +71,8 @@ export default function MenuItemEditor({
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const previewUrl = imageUrl ?? foodImageFor(name, itemSlug(name));
+
 
   async function pickImage(file: File) {
     if (file.size > 8 * 1024 * 1024) {
@@ -235,30 +240,38 @@ export default function MenuItemEditor({
 
           <div className="space-y-2">
             <Label>Photo</Label>
-            {imageUrl ? (
+            {previewUrl ? (
               <div className="relative w-32">
                 <img
-                  src={imageUrl}
+                  src={previewUrl}
                   alt={imageAlt || name}
                   className="aspect-[4/5] w-32 rounded-md object-cover"
                 />
-                <button
-                  type="button"
-                  onClick={() => {
-                    setImageUrl(null);
-                    setImagePath(null);
-                  }}
-                  className="absolute -right-2 -top-2 rounded-full bg-background p-1 shadow"
-                  aria-label="Remove photo"
-                >
-                  <X className="h-3.5 w-3.5" />
-                </button>
+                {imageUrl && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setImageUrl(null);
+                      setImagePath(null);
+                    }}
+                    className="absolute -right-2 -top-2 rounded-full bg-background p-1 shadow"
+                    aria-label="Remove photo"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                )}
+                {!imageUrl && (
+                  <p className="mt-1 text-[10px] uppercase tracking-wide text-muted-foreground">
+                    Built-in photo
+                  </p>
+                )}
               </div>
             ) : (
               <p className="text-xs text-muted-foreground">
                 Portrait photos work best (4:5).
               </p>
             )}
+
             <input
               ref={fileRef}
               type="file"
