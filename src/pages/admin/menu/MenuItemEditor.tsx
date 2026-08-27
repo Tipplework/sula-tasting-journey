@@ -21,8 +21,7 @@ import {
   saveItem,
   uploadItemImage,
 } from "@/lib/admin/menu/api";
-import { foodImageFor } from "@/lib/menu/food-images";
-import { itemSlug } from "@/lib/menu/api";
+import { resolveMenuItemImage } from "@/lib/menu/food-images";
 import type { DietaryTag } from "@/data/tasting-room-menu";
 
 
@@ -71,8 +70,7 @@ export default function MenuItemEditor({
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
-  const builtInImage = foodImageFor(name, itemSlug(name));
-  const previewUrl = imageUrl?.trim() || builtInImage;
+  const previewUrl = resolveMenuItemImage(name, imageUrl);
 
 
   async function pickImage(file: File) {
@@ -246,11 +244,6 @@ export default function MenuItemEditor({
                 <img
                   src={previewUrl}
                   alt={imageAlt || name}
-                  onError={(event) => {
-                    if (builtInImage && event.currentTarget.src !== builtInImage) {
-                      event.currentTarget.src = builtInImage;
-                    }
-                  }}
                   className="aspect-[4/5] w-32 rounded-md object-cover"
                 />
                 {Boolean(imageUrl?.trim()) && (

@@ -55,3 +55,21 @@ export const FOOD_IMAGES: Record<string, string> = {
 export function foodImageFor(name: string, slug: string): string | null {
   return FOOD_IMAGES[slug] ?? null;
 }
+
+/**
+ * The original menu seed stored temporary remote asset URLs in image_url.
+ * Prefer the bundled photograph for known dishes so the admin and guest menu
+ * stay independent of expired or deployment-specific URLs. Uploaded CMS
+ * photos remain authoritative for dishes without a bundled photograph.
+ */
+export function resolveMenuItemImage(
+  name: string,
+  imageUrl?: string | null,
+): string | null {
+  const slug = name
+    .toLowerCase()
+    .replace(/&/g, "and")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  return FOOD_IMAGES[slug] ?? imageUrl?.trim() ?? null;
+}
