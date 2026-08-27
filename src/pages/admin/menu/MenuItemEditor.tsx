@@ -68,6 +68,8 @@ export default function MenuItemEditor({
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const previewUrl = imageUrl ?? foodImageFor(name, itemSlug(name));
+
 
   async function pickImage(file: File) {
     if (file.size > 8 * 1024 * 1024) {
