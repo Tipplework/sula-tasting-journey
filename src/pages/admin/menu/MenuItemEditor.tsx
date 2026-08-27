@@ -235,30 +235,38 @@ export default function MenuItemEditor({
 
           <div className="space-y-2">
             <Label>Photo</Label>
-            {imageUrl ? (
+            {previewUrl ? (
               <div className="relative w-32">
                 <img
-                  src={imageUrl}
+                  src={previewUrl}
                   alt={imageAlt || name}
                   className="aspect-[4/5] w-32 rounded-md object-cover"
                 />
-                <button
-                  type="button"
-                  onClick={() => {
-                    setImageUrl(null);
-                    setImagePath(null);
-                  }}
-                  className="absolute -right-2 -top-2 rounded-full bg-background p-1 shadow"
-                  aria-label="Remove photo"
-                >
-                  <X className="h-3.5 w-3.5" />
-                </button>
+                {imageUrl && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setImageUrl(null);
+                      setImagePath(null);
+                    }}
+                    className="absolute -right-2 -top-2 rounded-full bg-background p-1 shadow"
+                    aria-label="Remove photo"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                )}
+                {!imageUrl && (
+                  <p className="mt-1 text-[10px] uppercase tracking-wide text-muted-foreground">
+                    Built-in photo
+                  </p>
+                )}
               </div>
             ) : (
               <p className="text-xs text-muted-foreground">
                 Portrait photos work best (4:5).
               </p>
             )}
+
             <input
               ref={fileRef}
               type="file"
