@@ -22,6 +22,9 @@ import {
   updateCategory,
 } from "@/lib/admin/menu/api";
 import MenuItemEditor from "./MenuItemEditor";
+import { foodImageFor } from "@/lib/menu/food-images";
+import { itemSlug } from "@/lib/menu/api";
+
 
 export default function MenuManagement() {
   const [categories, setCategories] = useState<AdminCategory[]>([]);
