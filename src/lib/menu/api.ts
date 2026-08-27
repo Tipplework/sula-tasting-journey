@@ -4,7 +4,7 @@ import {
   type DietaryTag,
   type SeedCategory,
 } from "@/data/tasting-room-menu";
-import { foodImageFor } from "./food-images";
+import { foodImageFor, resolveMenuItemImage } from "./food-images";
 
 export const VENUE_SLUG = "tasting-room";
 
@@ -137,9 +137,9 @@ export async function fetchMenu(): Promise<{
         tags: ((row.menu_item_dietary_tags ?? []) as { tag: DietaryTag }[]).map(
           (t) => t.tag,
         ),
-        // An admin-uploaded photo always wins; otherwise the bundled
-        // photography keeps the menu instant and offline-safe.
-        imageUrl: row.image_url ?? foodImageFor(row.name, itemSlug(row.name)),
+        // An admin-uploaded photo always wins; bundled photography is fallback.
+        // Treat blank legacy values as missing as well.
+        imageUrl: resolveMenuItemImage(row.name, row.image_url),
         imageAlt: row.image_alt ?? null,
       });
       byCat.set(row.category_id, list);
